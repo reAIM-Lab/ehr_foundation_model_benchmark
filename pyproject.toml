@@ -20,7 +20,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "cehrbert"
+    "cehrbert",
+    "polars"
 ]
 
 [tool.setuptools_scm]
