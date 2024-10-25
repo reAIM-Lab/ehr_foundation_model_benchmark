@@ -1,0 +1,28 @@
+defaults:
+  - _extract
+  - _self_
+
+input_dir: ${oc.env:COLUMBIA_MEDS_SAMPLE}
+cohort_dir: ${oc.env:COLUMBIA_MEDS_SAMPLE_UNIT_CONCATENATED}
+
+etl_metadata:
+  dataset_name: COLUMBIA-MEDS-SAMPLE
+  dataset_version: 2023q4r3deid
+
+stage_configs:
+  extract_values:
+    _match_revise_mode: multi_match_and_revise
+    _match_revise:
+      - _matcher:
+          code:
+            regex: '.+'
+        code: "{code}//{unit}"
+      - _matcher:
+          unit: ''
+        code: "{code}"
+  reshard_to_split:
+    n_subjects_per_shard: 50000
+
+stages:
+  - extract_values
+  - reshard_to_split
