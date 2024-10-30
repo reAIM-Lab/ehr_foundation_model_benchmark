@@ -21,7 +21,7 @@ classifiers = [
 
 dependencies = [
     "cehrbert",
-    "polars"
+    "polars",
 ]
 
 [tool.setuptools_scm]
