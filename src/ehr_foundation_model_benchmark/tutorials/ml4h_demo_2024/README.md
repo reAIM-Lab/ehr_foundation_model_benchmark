@@ -1,6 +1,6 @@
 # Columbia MEDS Data Processing Pipeline Demo
 
-This guide explains how to process Columbia MEDS data, generate samples, convert the data for `meds_reader`, and train predictive models with `GenHPF`. Follow these steps to install the necessary packages, process the data, and run the model training pipeline.
+This guide explains how to process Columbia MEDS data, generate samples, convert the data for `meds_reader`, and train predictive models with `MOTOR`, `CEHRBERT` and `GenHPF`. Follow these steps to install the necessary packages, process the data, and run the model training pipeline.
 
 ## Requirements
 Ensure you have the following installed:
@@ -122,6 +122,22 @@ accelerate launch \
     --dropout 0.3 \
     --seed 2020 \
     --patience 5
+```
+
+### 9. Pretrain/Finetune CEHR-GPT Model
+Install cehrbert
+```bash
+conda create -n cehrbert python=3.10
+conda activate cehrbert
+pip install cehrbert
+```
+Pretrain cehrbert
+```bash
+python -m cehrbert.runners.hf_cehrbert_pretrain_runner ml4h_demo_2024/cehrbert/cehrbert_pretrain_config.yml
+```
+Finetune Cehrbert on 30-day readmission
+```bash
+python -m cehrbert.runners.hf_cehrbert_finetune_runner ml4h_demo_2024/cehrbert/cehrbert_finetuning_config.yml
 ```
 
 This completes the data processing, transformation, and model training pipeline for Columbia MEDS data.

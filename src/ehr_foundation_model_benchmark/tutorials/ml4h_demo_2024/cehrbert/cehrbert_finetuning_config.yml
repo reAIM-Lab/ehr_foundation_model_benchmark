@@ -1,0 +1,65 @@
+model_name_or_path: "ml4h_demo/cehrbert"
+tokenizer_name_or_path: "ml4h_demo/cehrbert"
+
+cohort_folder: "ml4h_demo/task_labels/readmission/general_hospital/30d/"
+data_folder: "to_be_set:meds_data_folder" #to be set
+dataset_prepared_path: "ml4h_demo/cehrbert/dataset_prepared"
+validation_split_percentage: 0.05
+preprocessing_num_workers: 20
+preprocessing_batch_size: 1280
+
+#LORA
+use_lora: False
+lora_rank: 64
+lora_alpha: 16
+target_modules: [ "query", "value" ]
+lora_dropout: 0.1
+
+#Tokenizer
+vocab_size: 100000
+min_frequency: 10
+min_num_tokens: 10
+
+# Below is a list of Med-to-CehrBert related arguments
+att_function_type: "cehr_bert"
+is_data_in_med: true
+inpatient_att_function_type: "mix"
+include_auxiliary_token: true
+include_demographic_prompt: false
+include_value_prediction: false
+meds_to_cehrbert_conversion_type: "MedsToCehrbertOMOP"
+
+finetune_model_type: lstm
+
+do_train: true
+do_predict: true
+
+overwrite_output_dir: false
+resume_from_checkpoint: # path to the checkpoint folder
+seed: 42
+
+# torch dataloader configs
+dataloader_num_workers: 40
+dataloader_prefetch_factor: 2
+
+output_dir: "ml4h_demo/cehrbert_finetuned_readmission"
+evaluation_strategy: "epoch"
+save_strategy: "epoch"
+eval_accumulation_steps: 10
+learning_rate: 0.00001
+per_device_train_batch_size: 32
+per_device_eval_batch_size: 32
+gradient_accumulation_steps: 2
+
+num_train_epochs: 10
+warmup_steps: 50
+weight_decay: 0.01
+logging_dir: "./logs"
+logging_steps: 10
+
+save_total_limit:
+load_best_model_at_end: true
+metric_for_best_model: "eval_loss"
+greater_is_better: false
+
+report_to: "tensorboard"
