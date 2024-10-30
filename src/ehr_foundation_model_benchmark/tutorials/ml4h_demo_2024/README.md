@@ -26,10 +26,10 @@ export OUTPUT_MEDS_READER="$2/meds_sample_reader"
 ## Steps
 
 ### 1. Generate a Sample of Columbia Data
-Run the following command to generate a sample of 5,000 records from the Columbia MEDS dataset:
+Run the following command to generate a sample of 10,000 records from the Columbia MEDS dataset:
 
 ```bash
-PYTHONPATH=./:$PYTHONPATH python sample_columbia_meds.py --input_meds $INPUT_MEDS --output_meds $OUTPUT_MEDS_TEMP --sample_size 5000
+PYTHONPATH=./:$PYTHONPATH python sample_columbia_meds.py --input_meds $INPUT_MEDS --output_meds $OUTPUT_MEDS_TEMP --sample_size 10000
 ```
 
 ### 2. Combine Unit with Code for Numeric Events
