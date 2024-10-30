@@ -1,0 +1,55 @@
+#Model arguments
+model_name_or_path: "hf_cehrbert_mimic4"
+tokenizer_name_or_path: "hf_cehrbert_mimic4"
+num_hidden_layers: 6
+max_position_embeddings: 1024
+hidden_size: 768
+vocab_size: 100000
+min_frequency: 50
+include_value_prediction: false # additional CEHR-BERT learning objective
+
+#Data arguments
+data_folder: "mimic-iv-meds-reader"
+dataset_prepared_path: "dataset_prepared"
+
+# Below is a list of Med-to-CehrBert related arguments
+preprocessing_num_workers: 20
+preprocessing_batch_size: 128
+# if is_data_in_med is false, it assumes the data is in the cehrbert format
+is_data_in_med: true
+att_function_type: "cehr_bert"
+inpatient_att_function_type: "mix"
+include_auxiliary_token: true
+include_demographic_prompt: false
+# if the data is in the meds format, the validation split will be omitted
+# as the meds already provide train/tuning/held_out splits
+validation_split_percentage: 0.05
+
+# Huggingface Arguments
+dataloader_num_workers: 40
+dataloader_prefetch_factor: 2
+
+overwrite_output_dir: false
+resume_from_checkpoint: # automatically infer the latest checkpoint from the output folder
+seed: 42
+
+output_dir: "hf_cehrbert_mimic4"
+evaluation_strategy: "epoch"
+save_strategy: "epoch"
+eval_accumulation_steps: 10
+
+learning_rate: 0.00005
+per_device_train_batch_size: 8
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 2
+
+num_train_epochs: 10
+warmup_steps: 500
+weight_decay: 0.01
+logging_dir: "./logs"
+logging_steps: 10
+
+save_total_limit:
+load_best_model_at_end: true
+metric_for_best_model: "eval_loss"
+greater_is_better: false
