@@ -1,6 +1,6 @@
-# Columbia Medication Data Processing Pipeline
+# Columbia MEDS Data Processing Pipeline Demo
 
-This guide explains how to process Columbia medication data, generate samples, convert the data for `meds_reader`, and train predictive models with `GenHPF`. Follow these steps to install the necessary packages, process the data, and run the model training pipeline.
+This guide explains how to process Columbia MEDS data, generate samples, convert the data for `meds_reader`, and train predictive models with `GenHPF`. Follow these steps to install the necessary packages, process the data, and run the model training pipeline.
 
 ## Requirements
 Ensure you have the following installed:
@@ -11,7 +11,7 @@ Ensure you have the following installed:
 ## Usage
 
 This pipeline takes two command-line arguments:
-1. **`INPUT_MEDS`**: Path to the input medication data file.
+1. **`INPUT_MEDS`**: Path to the input MEDS data file.
 2. **`OUTPUT_MEDS`**: Path to the output directory where processed data will be saved.
 
 To run the pipeline, set up the following environment variables:
@@ -26,7 +26,7 @@ export OUTPUT_MEDS_READER="$2/meds_sample_reader"
 ## Steps
 
 ### 1. Generate a Sample of Columbia Data
-Run the following command to generate a sample of 5,000 records from the Columbia medication dataset:
+Run the following command to generate a sample of 5,000 records from the Columbia MEDS dataset:
 
 ```bash
 PYTHONPATH=./:$PYTHONPATH python sample_columbia_meds.py --input_meds $INPUT_MEDS --output_meds $OUTPUT_MEDS_TEMP --sample_size 5000
@@ -124,4 +124,4 @@ accelerate launch \
     --patience 5
 ```
 
-This completes the data processing, transformation, and model training pipeline for Columbia medication data.
+This completes the data processing, transformation, and model training pipeline for Columbia MEDS data.
