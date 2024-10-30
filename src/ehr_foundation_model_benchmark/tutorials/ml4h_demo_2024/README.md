@@ -59,9 +59,14 @@ meds_reader_convert $OUTPUT_MEDS $OUTPUT_MEDS_READER
 ```
 
 ### 4. Extract Task-Specific Data
-Run the extraction task to prepare `OMOP` data related to 30-day readmission rates:
+Run the extraction task using the `OMOP` predicate to generate the 30-day readmission cohort:
 
 ```bash
+git clone https://github.com/mmcdermott/MEDS-DEV.git
+cd MEDS-DEV
+conda create -n meds_dev python=3.10
+conda activate meds_dev
+pip install .
 sh src/MEDS_DEV/helpers/extract_task.sh $OUTPUT_MEDS OMOP readmission/general_hospital/30d
 ```
 
