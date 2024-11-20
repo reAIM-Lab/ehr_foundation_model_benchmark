@@ -12,6 +12,10 @@ from ehr_foundation_model_benchmark.tools.mappings import get_conversions, get_o
 # Demo mode does not process all the labs, only one for each pipeline step to check the pipeline runs
 demo = True
 
+def report_harmonized(data, name):
+    print(f"Harmonized units percentage {name}", 100 - data['harmonized_value_as_number'].isnull().sum() * 100 / len(data), "%") # or use mean https://stackoverflow.com/questions/51070985/find-out-the-percentage-of-missing-values-in-each-column-in-the-given-dataset
+
+
 ###############
 # TODO: parallel processing for each file with multiprocessing - very long otherwise (5-10 hours)
 ###############
@@ -44,6 +48,8 @@ for file in files:
         if demo:
             break
 
+    report_harmonized(data, "after single unit labs")
+
     # ONE UNIT AND MISSING LABS
     for measurement_id in tqdm(get_one_unit_and_missing_lab(), desc="Single unit + missing labs"):
         cdt = data['measurement_concept_id'] == measurement_id
@@ -53,6 +59,8 @@ for file in files:
         
         if demo:
             break
+
+    report_harmonized(data, "after single unit and missing labs")
 
     # MULTI-UNIT LABS
     to_convert = get_conversions()
@@ -77,8 +85,10 @@ for file in files:
             data.loc[cdt, 'harmonized_value_as_number'] = data.loc[cdt, 'value_as_number'].apply(mapping_fun)
             data.loc[cdt, 'harmonized_unit_concept_id'] = to_unit_id
         
-        if demo:
-            break
+        # if demo:
+        #     break
+
+    report_harmonized(data, "after conversion")
 
     # RARE UNITS
     # for rare units, convert to nan (0) in the unit_concept_id
@@ -100,7 +110,7 @@ for file in files:
     # TODO
     ###########################################
 
-    print("Harmonized units percentage", 100 - data['harmonized_value_as_number'].isnull().sum() * 100 / len(data)) # or use mean https://stackoverflow.com/questions/51070985/find-out-the-percentage-of-missing-values-in-each-column-in-the-given-dataset
+    report_harmonized(data, "at the end of the pipeline")
 
     if not demo:
         print('save')
