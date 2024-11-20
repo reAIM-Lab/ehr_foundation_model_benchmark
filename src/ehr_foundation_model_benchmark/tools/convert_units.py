@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
-from path import files
-from ehr_foundation_model_benchmark.tools.mappings import get_conversions, get_one_unit_lab, compute_most_common_units, get_one_unit_and_missing_lab, convert_mappings_to_id, get_rare_units_labs
+from ehr_foundation_model_benchmark.tools.path import files
+from ehr_foundation_model_benchmark.tools.mappings import get_conversions, get_one_unit_lab, compute_most_common_units, get_one_unit_and_missing_lab, convert_mappings_to_id, get_rare_units_labs, simplify_equivalent_units
 
 ### PREREQUISITES
 ### The file measurement measurement_unit_counts.csv should have been created before and be in the current working directory
@@ -23,6 +23,11 @@ for file in files:
     data['harmonized_unit_concept_id'] = None
 
     most_common_units = compute_most_common_units()
+
+    # EQUIVALENT UNITS
+    print("Simplifying units")
+    data = simplify_equivalent_units(data)
+    print("End simplifying unis")
 
     # UNDEFINED LABS
     print(len(data))
@@ -49,18 +54,25 @@ for file in files:
         if demo:
             break
 
-
     # MULTI-UNIT LABS
     to_convert = get_conversions()
     mapping_functions_id = convert_mappings_to_id()
     for measurement_id, from_unit_id, to_unit_id in tqdm(to_convert, desc="Multi unit labs"):
-        if (from_unit_id, to_unit_id) in mapping_functions_id:
+        cdt2 = (from_unit_id, to_unit_id, measurement_id) in mapping_functions_id
+        if (from_unit_id, to_unit_id, None) in mapping_functions_id or \
+            cdt2:
             cdt = (data['unit_concept_id'] == from_unit_id) & (data['measurement_concept_id'] == measurement_id)
+            if cdt2:
+                print("Applying additional filter")
+                cdt = cdt & (data['measurement_concept_id'] == measurement_id)
 
-            # print("Converting", measurement_id, from_unit_id, to_unit_id, np.count_nonzero(cdt))
+            print("Converting", measurement_id, from_unit_id, to_unit_id, np.count_nonzero(cdt))
             # count can be 0 because only one file here and not everything is loaded like for the measurement_unit_counts
 
-            mapping_fun = mapping_functions_id[(from_unit_id, to_unit_id)]
+            if cdt2:
+                mapping_fun = mapping_functions_id[(from_unit_id, to_unit_id, measurement_id)]
+            else:
+                mapping_fun = mapping_functions_id[(from_unit_id, to_unit_id, None)]
             
             data.loc[cdt, 'harmonized_value_as_number'] = data.loc[cdt, 'value_as_number'].apply(mapping_fun)
             data.loc[cdt, 'harmonized_unit_concept_id'] = to_unit_id
@@ -72,7 +84,10 @@ for file in files:
     # for rare units, convert to nan (0) in the unit_concept_id
     rare_units = get_rare_units_labs()
     for measurement_id, unit_id in tqdm(rare_units, desc="Rare units"):
-        cdt = (data['unit_concept_id'] == unit_id) & (data['measurement_concept_id'] == measurement_id)
+        cdt = (data['unit_concept_id'] == unit_id) & \
+            (data['measurement_concept_id'] == measurement_id) & \
+            (data['harmonized_value_as_number'].isnull()) # not already converted
+        
         data.loc[cdt, 'unit_concept_id'] = 0
         data.loc[cdt, 'unit_concept_name'] = 'No matching concept'
 

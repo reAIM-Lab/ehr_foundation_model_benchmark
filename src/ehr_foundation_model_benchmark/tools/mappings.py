@@ -4,29 +4,94 @@ import warnings
 
 from ehr_foundation_model_benchmark.tools.path import concepts_path
 
+identity = lambda x: x
+
+# third column is measurement id when it is lab specific
+# all identities should be in equivalent?
 mapping_functions = \
 {
-    ("degree Celsius", "degree Fahrenheit"): lambda x: x*9/5 + 32,
-    ("pound (US)", "ounce (avoirdupois)"): lambda x: x*16,
-    ("kilogram", "ounce (avoirdupois)"): lambda x: x*35.274,
-    ("centimeter", "inch (US)"): lambda x: x*0.393701,
-    ("nanogram per milliliter", "milligram per liter"): lambda x: x*0.001,
-    ("milligram per liter", "milligram per deciliter"): lambda x: x*0.1,
-    ("per microliter", "billion per liter"): lambda x: x*0.001,
-    ("milligram per liter", "milligram per deciliter"): lambda x: x*0.1,
-    # continue mappings based on table
+    ("degree Celsius", "degree Fahrenheit", None): lambda x: x*9/5 + 32,
+    ("pound (US)", "ounce (avoirdupois)", None): lambda x: x*16,
+    ("kilogram", "ounce (avoirdupois)", None): lambda x: x*35.274,
+    ("centimeter", "inch (US)", None): lambda x: x*0.393701,
+    ("nanogram per milliliter", "milligram per liter", None): lambda x: x*0.001,
+    ("milligram per liter", "milligram per deciliter", None): lambda x: x*0.1,
+    ("per microliter", "billion per liter", None): lambda x: x*0.001,
+    ("milligram per liter", "milligram per deciliter", None): lambda x: x*0.1,
+    ("millimeter mercury column", "percent", None): identity,
+    ("milliequivalent per liter", "millimole per liter", None): identity, # only for univalent ion like Na+, K+
+    ("millimole per liter", "milligram per deciliter", None): lambda x: x*11.312, # to check the unit conversion, mismatch
+    ("percent", "gram per deciliter", None): identity,
+    ("picogram", "femtoliter", None): identity, # doubtful
+    ("million per microliter", "trillion per liter", None): identity,
+    ("femtoliter", "percent", None): identity,
+    
+    ("millimole per liter", "milligram per deciliter", 3006906): lambda x: x*4.008,
 
+    ("milliequivalent per liter", "millimole per liter", None): identity,
+    ("unit per liter", "international unit per liter", None): identity,
+    ("gram per deciliter", "milligram per deciliter", None): lambda x: x*1000,
+    ("per 100 white blood cells", "percent", None): identity,
+    ('per microliter', 'billion per liter', None): lambda x: x/1000,
+    ("international unit per liter", "milligram per deciliter", None): identity,
+    ("milligram per deciliter", "gram per deciliter", None): lambda x: x/1000,
+    ("kilo-international unit per liter", "thousand per microliter", None): lambda x: x*1e6, # to check, no LLM got it right!
+    ("billion per liter", "thousand per microliter", None): identity, # better than mapping equivalent units because applied only taking into account most common units
+    # can be a bit complex in two steps: thousand per cubic millitmeter (31, None) will be mapped as billion per liter which will be converted as well
+    ("microgram per deciliter", "milligram per milliliter", None): lambda x: x*0.1,
+    ("per microliter", "thousand per microliter", None): lambda x: x*0.001,
+    ("millimole per liter", "milligram per deciliter", 3027114): lambda x: x*38.67, # to check chat gpt
+    ("nanogram per milliliter", "milligram per deciliter", None): lambda x: x*0.0001,
+    ("calculated", "ratio", None): identity,
+    ("milligram per deciliter", "ratio", None): identity,
+    ("milligram", "milligram per deciliter", None): identity,
+    # ("Ehrlich unit per deciliter", "milligram per deciliter", None): identity,
+    ("milli-international unit per milliliter", "micro-international unit per milliliter", None): lambda x: x*1000,
+    ("milli-international unit per liter", "micro-international unit per milliliter", None): identity,
+    ("cells per high power field", "per high power field", None): identity,
+    ("milligram per deciliter", "millimole per liter", 3050068): lambda x: x*0.2496,
+    ("per cubic millimeter", "thousand per microliter", None): lambda x: x*0.001,
+    ("millimeter", "millimeter per hour", None): identity,
+    ("millimeter mercury column", "millimeter", None): identity,
+    ("milligram per deciliter", "Ehrlich unit", None): identity,
+    ("Ehrlich unit per deciliter", "milligram per deciliter", None): identity,
+    ("nanogram per deciliter", "nanogram per milliliter", None): lambda x: x*0.01,
+    ("international unit per deciliter", "international unit per liter", None): lambda x: x*10,
+    ("milligram per liter", "microgram per deciliter", None): lambda x: x*100,
+    ("gram per liter", "milligram per deciliter", None): lambda x: x*100,
+    ("milligram", "milligram per deciliter", None): identity,
+    ("milligram per liter", "milligram per deciliter", None): lambda x: x*0.1,
+    ("nanogram per milliliter", "nanogram per deciliter", None): lambda x: x*100,
+    # ("milligram per liter", "", None): identity
+
+    # order to find more easily in it
+    ("milli-international unit per milliliter", "milli-international unit per liter", None): lambda x: x*1000,
+    ("micro-international unit per milliliter", "milli-international unit per liter", None): identity,
+    ("phot", "pH", None): identity,
+    ("milligram per deciliter", "pH", None): identity,
+    ("milligram per deciliter", "pH", None): identity,
+    ("milligram per liter", 'microgram per deciliter', None): lambda x:x*100,
+    ("gram per deciliter", 'ratio', None): identity,
 }
+
+# group units
+
+# check no unit from the first column of mappings is in the first column of mapping
+# check no unit from the second column of mappings is in the first column of mapping
+# check if to convert is affected as well
+# to replace then.
 
 def convert_mappings_to_id():
     mapping_functions_id = {}
-    for (from_unit, to_unit), val in mapping_functions.items():
-        mapping_functions_id[(convert_to_id(from_unit), convert_to_id(to_unit))] = val
+    for (from_unit, to_unit, filters), val in mapping_functions.items():
+        print('MAPPING', from_unit, to_unit)
+        mapping_functions_id[(convert_to_id(from_unit), convert_to_id(to_unit), filters)] = val
     return mapping_functions_id
 
 
 # how was this list obtained?
 # could it be just in mapping_functions with identity to simplify?
+# most common units use renamed units? yes 
 mappings_equivalent_units = {'counts per minute':'per minute',
            'thousand per microliter': 'billion per liter', 
            'thousand per cubic millimeter': 'billion per liter',
@@ -69,7 +134,9 @@ def convert_to_id(name):
 
 
 def simplify_equivalent_units(df_labs):
-    df_labs['unit_concept_name'] = df_labs['unit_concept_name'].replace(mappings_equivalent_units)
+    # should be applied to the whole dataset in addition to aggregated
+    if 'unit_concept_name' in df_labs.columns:
+        df_labs['unit_concept_name'] = df_labs['unit_concept_name'].replace(mappings_equivalent_units)
     mappings_equivalent_units_id = {}
     for key, item in (mappings_equivalent_units.items()):
         mappings_equivalent_units_id[convert_to_id(key)] = convert_to_id(item)
@@ -85,6 +152,7 @@ def load_data():
     df_labs.fillna({'unit_concept_name': 'No matching concept'}, inplace=True)
 
     df_labs = simplify_equivalent_units(df_labs)
+    # how will it impact the statistics ?
 
     df_labs = df_labs.groupby(['measurement_concept_id', 'measurement_name','unit_concept_id', 'unit_concept_name']).sum().reset_index()
     return df_labs
@@ -92,6 +160,7 @@ def load_data():
 
 def get_one_unit_lab():
     df_labs = load_data()
+
     labs_per_unit = df_labs.groupby('measurement_concept_id').count()['unit_concept_id']
     one_lab_per_unit = labs_per_unit.loc[labs_per_unit == 1].index
     return one_lab_per_unit.values
@@ -110,10 +179,11 @@ def get_one_unit_and_missing_lab(): # retour index of labs
 
 def get_rare_units_labs():
     df_labs = load_data()
+
     # should we apply the transformation to the original dataset 
-    # we should regenerate load_data()
-    # partial stats per file?
-    # use cudf
+    # or should we recompute the counts after the first groups of conversion
+    # potential issue: partial stats per file?
+    # use cudf / dask to speed up?
 
     rare_units = []
     for i in df_labs['measurement_concept_id'].unique():
