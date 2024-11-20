@@ -1,43 +1,96 @@
 
 import pandas as pd
-from ehr_foundation_model_benchmark.src.ehr_foundation_model_benchmark.tools.mappings import mapping_functions, get_unit_id, get_measurements, get_one_unit_lab
 import numpy as np
 from tqdm import tqdm
 
-from path import file, file_out
+from path import files
+from ehr_foundation_model_benchmark.tools.mappings import get_conversions, get_one_unit_lab, compute_most_common_units, get_one_unit_and_missing_lab, convert_mappings_to_id, get_rare_units_labs
 
-print("Loading")
+### PREREQUISITES
+### The file measurement measurement_unit_counts.csv should have been created before and be in the current working directory
 
-data = pd.read_parquet(file)
-print(data.columns)
+# Demo mode does not process all the labs, only one for each pipeline step to check the pipeline runs
+demo = True
 
-data['harmonized_value_as_number'] = None
-data['harmonized_unit_concept_id'] = None
+###############
+# TODO: parallel processing for each file with multiprocessing - very long otherwise (5-10 hours)
+###############
+for file in files:
+    print("Loading", file)
+    data = pd.read_parquet(file)
 
-for measurement_id in tqdm(get_one_unit_lab(), desc="Single unit labs"):
-    cdt = data['measurement_concept_id'] == measurement_id
+    data['harmonized_value_as_number'] = None
+    data['harmonized_unit_concept_id'] = None
 
-    data.loc[cdt, 'harmonized_value_as_number'] = data.loc[cdt, 'value_as_number']
-    data.loc[cdt, 'harmonized_unit_concept_id'] = data.loc[cdt, 'unit_concept_id']
+    most_common_units = compute_most_common_units()
 
-for mapping_key, mapping_fun in tqdm(mapping_functions.items(), desc="Multi unit labs"):
-    cdt = (data['unit_concept_id'] == get_unit_id(mapping_key[0])) & data['measurement_concept_id'].isin(get_measurements(mapping_key))
-    print("Converting", mapping_key, np.count_nonzero(cdt))
-    
-    data.loc[cdt, 'harmonized_value_as_number'] = data.loc[cdt, 'value_as_number'].apply(mapping_fun)
-    data.loc[cdt, 'harmonized_unit_concept_id'] = get_unit_id(mapping_key[1])
+    # UNDEFINED LABS
+    print(len(data))
+    if not demo:
+        data = data.loc[data.measurement_concept_id != 0] # check 130 millions
 
-print(data)
-print(data[data['unit_concept_id'] == get_unit_id(mapping_key[0])])
-print("Harmonized units percentage", 100 - data['harmonized_value_as_number'].isnull().sum() * 100 / len(data)) # or use mean https://stackoverflow.com/questions/51070985/find-out-the-percentage-of-missing-values-in-each-column-in-the-given-dataset
+    # SINGLE UNIT LABS
+    for measurement_id in tqdm(get_one_unit_lab(), desc="Single unit labs"):
+        cdt = data['measurement_concept_id'] == measurement_id
 
-# print('save')
-# data.to_parquet(file_out)
-# print('end')
+        data.loc[cdt, 'harmonized_value_as_number'] = data.loc[cdt, 'value_as_number']
+        data.loc[cdt, 'harmonized_unit_concept_id'] = data.loc[cdt, 'unit_concept_id']
 
-# next time:
-# - add unit equivalent
-# - add most common determination
-# - add unit removal
-# - continue mapping
-# - implement partial saving to avoid recomputing everything
+        if demo:
+            break
+
+    # ONE UNIT AND MISSING LABS
+    for measurement_id in tqdm(get_one_unit_and_missing_lab(), desc="Single unit + missing labs"):
+        cdt = data['measurement_concept_id'] == measurement_id
+
+        data.loc[cdt, 'harmonized_value_as_number'] = data.loc[cdt, 'value_as_number']
+        data.loc[cdt, 'harmonized_unit_concept_id'] = most_common_units[measurement_id]
+        
+        if demo:
+            break
+
+
+    # MULTI-UNIT LABS
+    to_convert = get_conversions()
+    mapping_functions_id = convert_mappings_to_id()
+    for measurement_id, from_unit_id, to_unit_id in tqdm(to_convert, desc="Multi unit labs"):
+        if (from_unit_id, to_unit_id) in mapping_functions_id:
+            cdt = (data['unit_concept_id'] == from_unit_id) & (data['measurement_concept_id'] == measurement_id)
+
+            # print("Converting", measurement_id, from_unit_id, to_unit_id, np.count_nonzero(cdt))
+            # count can be 0 because only one file here and not everything is loaded like for the measurement_unit_counts
+
+            mapping_fun = mapping_functions_id[(from_unit_id, to_unit_id)]
+            
+            data.loc[cdt, 'harmonized_value_as_number'] = data.loc[cdt, 'value_as_number'].apply(mapping_fun)
+            data.loc[cdt, 'harmonized_unit_concept_id'] = to_unit_id
+        
+        if demo:
+            break
+
+    # RARE UNITS
+    # for rare units, convert to nan (0) in the unit_concept_id
+    rare_units = get_rare_units_labs()
+    for measurement_id, unit_id in tqdm(rare_units, desc="Rare units"):
+        cdt = (data['unit_concept_id'] == unit_id) & (data['measurement_concept_id'] == measurement_id)
+        data.loc[cdt, 'unit_concept_id'] = 0
+        data.loc[cdt, 'unit_concept_name'] = 'No matching concept'
+
+        if demo:
+            break
+
+    ###########################################
+    # FURTHER PROCESSING NEEDED TO RESOLVE NANS
+    ###########################################
+    # TODO
+    ###########################################
+
+    print("Harmonized units percentage", 100 - data['harmonized_value_as_number'].isnull().sum() * 100 / len(data)) # or use mean https://stackoverflow.com/questions/51070985/find-out-the-percentage-of-missing-values-in-each-column-in-the-given-dataset
+
+    if not demo:
+        print('save')
+        data.to_parquet(file.replace(".snappy.parquet", "-harmonized.snappy.parquet"))
+        print('end')
+
+    if demo:
+        break

@@ -110,81 +110,46 @@ def get_one_unit_and_missing_lab(): # retour index of labs
 
 def get_rare_units_labs():
     df_labs = load_data()
+    # should we apply the transformation to the original dataset 
+    # we should regenerate load_data()
+    # partial stats per file?
+    # use cudf
 
-    to_remove = []
+    rare_units = []
     for i in df_labs['measurement_concept_id'].unique():
         temp_multi_labs = df_labs.loc[df_labs['measurement_concept_id']==i]
         temp_multi_labs = (temp_multi_labs.groupby('unit_concept_id').sum()['counts']/temp_multi_labs['counts'].sum()).reset_index()
-        if temp_multi_labs['counts'].min() < 0.001 and len(temp_multi_labs) >= 3:
-            # print(i)
-            # print(temp_multi_labs)
+        if temp_multi_labs['counts'].min() < 0.001 and len(temp_multi_labs) >= 2: # if two units not nan
             for idx, row in temp_multi_labs.iterrows():
                 if row['counts'] < 0.001:
-                    to_remove.append((i, idx))
+                    rare_units.append((i, idx))
 
-    # idxes = []
-    # for measurement_concept_id, unit_concept_id in to_remove:
-    #     idxes.extend(df_labs[
-    #         (df_labs['measurement_concept_id'] == measurement_concept_id) &
-    #         (df_labs['unit_concept_id'] == unit_concept_id)
-    #     ].index)
+    return rare_units
 
-    return to_remove
-
-    # delete the rows
-
-    # print(len(idxes), idxes)
-    # print(len(df_labs))
-    # df_labs = df_labs.loc[~df_labs.index.isin(idxes)]
-    # print(len(df_labs))
-
-    return idxes
-
-    
-
-    # dict_units = compute_most_common_units()
-    # # issue if most common unit is below 0.1%
-    # print(dict_units[3011163])
-
-
-
-# def get_unit_id(name): # group of equivalent unit_id
-#     # unit_concept_name
-#     # csv = pd.read_csv('measurement_unit_counts.csv')
-#     # return csv[csv['unit_concept_name'] == name]['unit_concept_id'].values[0]
-#     return convert_to_id(name)
 
 def compute_most_common_units():
     # returns: dict
 
     df_labs = load_data()
 
-    # df_labs['most_common_unit_id'] = None
     dict_most_common_id = {}
     for i in df_labs['measurement_concept_id'].unique():
         temp_labs = df_labs.loc[df_labs['measurement_concept_id'] == i]
-        # dict_most_common[i] = temp_labs.loc[temp_labs['counts']==temp_labs['counts'].max(), 'unit_concept_name'].values[0]
-        # units = temp_labs.loc[temp_labs['counts']==temp_labs['counts'].max(), 'unit_concept_id']
         units = temp_labs.sort_values('counts', ascending=False)
-        # print(units)
 
         units = units[~(units.unit_concept_id == 0)]
         try:
             dict_most_common_id[i] = units['unit_concept_id'].values[0]
         except:
             dict_most_common_id[i] = 0 # not unit for all measurements
-        # multi_unit_labs.loc[multi_unit_labs['measurement_concept_id']==i, 'most_common_unit'] = dict_most_common[i]
-        # df_labs.loc[df_labs['measurement_concept_id']==i, 'most_common_unit_id'] = dict_most_common_id[i]
 
-    # df_labs = df_labs.groupby('measurement_concept_id')#.set_index('measurement_concept_id')
-
-    # return df_labs
     return dict_most_common_id
 
 def get_conversions():
     df_labs = load_data()
     to_convert = []
     most_common = compute_most_common_units()
+
     for i in tqdm(df_labs['measurement_concept_id'].unique(), 'Conversions'):
         temp_multi_labs = df_labs.loc[df_labs['measurement_concept_id'] == i]
         if len(temp_multi_labs) >= 2: # two different units
@@ -193,29 +158,12 @@ def get_conversions():
                 if unit != 0 and to_unit != unit:
                     to_convert.append((i, unit, to_unit))
 
-    # print(len(to_convert))
     return to_convert
-
-
-def get_measurements(mapping_key):
-    # df_labs = load_data()
-    # select the multi units labs
-    # csv['unit_concept_name'] == mapping_key[0]
-
-    csv = pd.read_csv('to_convert.csv')
-
-    # df_labs = load_data()
-
-    # TBD
-
-    return csv[(csv['unit_concept_name'] == mapping_key[0]) & (csv['most_common_unit'] == mapping_key[1])]['measurement_concept_id'].values
 
 
 def get_filter(df, mapping_key):
     return (df['unit_concept_name'] == mapping_key[0]) & (df['most_common_unit'] == mapping_key[1])
 
-# print(get_unit_id("degree Fahrenheit"))
-# print(get_measurements(list(mapping_functions.keys())[0]))
 
 if __name__ == '__main__':
     # print(remove_rare[3007461])
