@@ -1,4 +1,5 @@
-import pandas as pd
+# import pandas as pd
+import cudf as pd
 import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
@@ -12,6 +13,7 @@ from ehr_foundation_model_benchmark.tools.mappings import (
     convert_mappings_to_id,
     get_rare_units_labs,
     simplify_equivalent_units,
+    load_data
 )
 
 ### PREREQUISITES
@@ -36,6 +38,10 @@ def process_file(file):
     print("Loading", file)
     data = pd.read_parquet(file)
 
+    # print(data.dtypes)
+    # print(load_data().dtypes)
+    # exit()
+
     data["harmonized_value_as_number"] = None
     data["harmonized_unit_concept_id"] = None
 
@@ -49,14 +55,25 @@ def process_file(file):
     # UNDEFINED LABS
     print(len(data))
     if not demo:
-        data = data.loc[data.measurement_concept_id != 0]  # check 130 millions
+        # data = data.loc[data.measurement_concept_id != 0]  # check 130 millions
+        pass
 
     # SINGLE UNIT LABS
-    for measurement_id in tqdm(get_one_unit_lab(), desc="Single unit labs"):
-        cdt = data["measurement_concept_id"] == measurement_id
+    for measurement_id in tqdm(get_one_unit_lab()[48:], desc="Single unit labs"):
+        cdt = (data["measurement_concept_id"] == measurement_id.get()) & \
+            (~data["value_as_number"].isnull())
+        
+        print(cdt.sum())
+        to_replace = data.loc[cdt, "value_as_number"]
+        to_replace_concept = data.loc[cdt, "unit_concept_id"]
+        
+        if cdt.sum()==1:
+            print(to_replace)
+            to_replace = to_replace.values[0]
+            to_replace_concept = to_replace_concept.values[0]
 
-        data.loc[cdt, "harmonized_value_as_number"] = data.loc[cdt, "value_as_number"]
-        data.loc[cdt, "harmonized_unit_concept_id"] = data.loc[cdt, "unit_concept_id"]
+        data.loc[cdt, "harmonized_value_as_number"] = to_replace
+        data.loc[cdt, "harmonized_unit_concept_id"] = to_replace_concept
 
         if demo:
             break
@@ -67,10 +84,18 @@ def process_file(file):
     for measurement_id in tqdm(
         get_one_unit_and_missing_lab(), desc="Single unit + missing labs"
     ):
-        cdt = data["measurement_concept_id"] == measurement_id
+        cdt = (data["measurement_concept_id"] == measurement_id) & \
+            (~data["value_as_number"].isnull())
+        
+        print(cdt.sum())
 
-        data.loc[cdt, "harmonized_value_as_number"] = data.loc[cdt, "value_as_number"]
-        data.loc[cdt, "harmonized_unit_concept_id"] = most_common_units[measurement_id]
+        to_replace = data.loc[cdt, "value_as_number"]
+        
+        if cdt.sum()==1:
+            to_replace = to_replace.values[0]
+
+        data.loc[cdt, "harmonized_value_as_number"] = to_replace
+        data.loc[cdt, "harmonized_unit_concept_id"] = int(most_common_units[measurement_id])
 
         if demo:
             break
@@ -83,11 +108,14 @@ def process_file(file):
     for measurement_id, from_unit_id, to_unit_id in tqdm(
         to_convert, desc="Multi unit labs"
     ):
+        measurement_id = int(measurement_id)
+        from_unit_id = int(from_unit_id)
+        to_unit_id = int(to_unit_id)
         cdt2 = (from_unit_id, to_unit_id, measurement_id) in mapping_functions_id
         if (from_unit_id, to_unit_id, None) in mapping_functions_id or cdt2:
             cdt = (data["unit_concept_id"] == from_unit_id) & (
                 data["measurement_concept_id"] == measurement_id
-            )
+            ) & (~data['value_as_number'].isnull())
             if cdt2:
                 print("Applying additional filter")
                 cdt = cdt & (data["measurement_concept_id"] == measurement_id)
@@ -97,7 +125,8 @@ def process_file(file):
                 measurement_id,
                 from_unit_id,
                 to_unit_id,
-                np.count_nonzero(cdt),
+                # np.count_nonzero(cdt),
+                cdt.sum()
             )
             # count can be 0 because only one file here and not everything is loaded like for the measurement_unit_counts
 
@@ -108,9 +137,12 @@ def process_file(file):
             else:
                 mapping_fun = mapping_functions_id[(from_unit_id, to_unit_id, None)]
 
+            # mapping_fun = lambda x: float(mapping_fun(x))
+
             data.loc[cdt, "harmonized_value_as_number"] = data.loc[
                 cdt, "value_as_number"
-            ].apply(mapping_fun)
+            ].map(mapping_fun).to_numpy() # when some nulls in the columns, exclude them?
+            # if not null, do not convert => exclude before??
             data.loc[cdt, "harmonized_unit_concept_id"] = to_unit_id
 
         if demo:
@@ -120,6 +152,8 @@ def process_file(file):
 
     # RARE UNITS
     # for rare units, convert to nan (0) in the unit_concept_id
+
+    # print(data.columns)
     rare_units = get_rare_units_labs()
     for measurement_id, unit_id in tqdm(rare_units, desc="Rare units"):
         cdt = (
@@ -129,7 +163,7 @@ def process_file(file):
         )  # not already converted
 
         data.loc[cdt, "unit_concept_id"] = 0
-        data.loc[cdt, "unit_concept_name"] = "No matching concept"
+        # data.loc[cdt, "unit_concept_name"] = "No matching concept"
 
         if demo:
             break
@@ -150,16 +184,16 @@ def process_file(file):
     
 if __name__ == "__main__":
 
-    max_processes = 2 # 16 makes the server crash
+    max_processes = 1 # 16 makes the server crash
 
     # print(len(files))
     # exit()
 
-    if demo:
-        files = [files[0], files[1]]
+    if True:
+        files = [files[0]]#, files[1]]
 
     # Create a pool of workers (with a maximum of 4 processes)
-    with mp.Pool(processes=max_processes) as pool:
+    with mp.get_context("spawn").Pool(processes=max_processes) as pool:
         # Map the process_file function to each file path in the list
         results = pool.map(process_file, files)
 

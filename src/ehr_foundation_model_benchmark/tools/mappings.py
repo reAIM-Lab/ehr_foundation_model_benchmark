@@ -1,4 +1,6 @@
-import pandas as pd
+# import pandas as pd#
+import cudf as pd
+
 from tqdm import tqdm
 import warnings
 
@@ -124,6 +126,9 @@ def convert_to_id(name):
             )
         ]
 
+        # gpu
+        concepts_df['concept_id'] = concepts_df['concept_id'].astype("uint32")
+
     try:
         matches = concepts_df[concepts_df["concept_name"] == name]
         assert len(matches) == 1
@@ -134,7 +139,8 @@ def convert_to_id(name):
         matches = concepts_df_valid[concepts_df_valid["concept_name"] == name]
         assert len(matches) == 1
 
-    return matches["concept_id"].values[0]
+    # return int(matches["concept_id"].values[0])
+    return matches["concept_id"].iloc[0]
 
 
 def simplify_equivalent_units(df_labs):
@@ -144,10 +150,24 @@ def simplify_equivalent_units(df_labs):
             mappings_equivalent_units
         )
     mappings_equivalent_units_id = {}
+    to_rep = []
+    values = []
     for key, item in mappings_equivalent_units.items():
+        # print(convert_to_id(key))
         mappings_equivalent_units_id[convert_to_id(key)] = convert_to_id(item)
+        to_rep.append(convert_to_id(key))
+        values.append(convert_to_id(item))
+
+    # gpu    
+    df_labs["unit_concept_id"] = df_labs["unit_concept_id"].astype("uint32")
+    # print(df_labs.dtypes)
+    # print(mappings_equivalent_units_id)
+
+    # df_labs["unit_concept_id"] = df_labs["unit_concept_id"].replace(
+    #     mappings_equivalent_units_id
+    # )
     df_labs["unit_concept_id"] = df_labs["unit_concept_id"].replace(
-        mappings_equivalent_units_id
+        to_rep, values
     )
     return df_labs
 
@@ -189,9 +209,9 @@ def get_one_unit_and_missing_lab():  # retour index of labs
     df_labs = load_data()
 
     single_unit_plus_missing_labs = []
-    for i in df_labs.measurement_concept_id.unique():
+    for i in df_labs.measurement_concept_id.unique().values_host:
         temp_labs = df_labs.set_index("measurement_concept_id").loc[i]
-        if (len(temp_labs) == 2) and (0 in list(temp_labs["unit_concept_id"])):
+        if (len(temp_labs) == 2) and (0 in list(temp_labs["unit_concept_id"].values_host)):
             single_unit_plus_missing_labs.append(i)
 
     return single_unit_plus_missing_labs
@@ -206,16 +226,16 @@ def get_rare_units_labs():
     # use cudf / dask to speed up?
 
     rare_units = []
-    for i in df_labs["measurement_concept_id"].unique():
+    for i in df_labs["measurement_concept_id"].unique().values_host:
         temp_multi_labs = df_labs.loc[df_labs["measurement_concept_id"] == i]
         temp_multi_labs = (
-            temp_multi_labs.groupby("unit_concept_id").sum()["counts"]
+            temp_multi_labs.groupby("unit_concept_id")["counts"].sum()
             / temp_multi_labs["counts"].sum()
         ).reset_index()
         if (
             temp_multi_labs["counts"].min() < 0.001 and len(temp_multi_labs) >= 2
         ):  # if two units not nan
-            for idx, row in temp_multi_labs.iterrows():
+            for idx, row in temp_multi_labs.to_pandas().iterrows():
                 if row["counts"] < 0.001:
                     rare_units.append((i, idx))
 
@@ -228,7 +248,8 @@ def compute_most_common_units():
     df_labs = load_data()
 
     dict_most_common_id = {}
-    for i in df_labs["measurement_concept_id"].unique():
+    # for i in df_labs["measurement_concept_id"].unique():
+    for i in df_labs["measurement_concept_id"].unique().values_host:
         temp_labs = df_labs.loc[df_labs["measurement_concept_id"] == i]
         units = temp_labs.sort_values("counts", ascending=False)
 
@@ -246,11 +267,11 @@ def get_conversions():
     to_convert = []
     most_common = compute_most_common_units()
 
-    for i in tqdm(df_labs["measurement_concept_id"].unique(), "Conversions"):
+    for i in tqdm(df_labs["measurement_concept_id"].unique().values_host, "Conversions"):
         temp_multi_labs = df_labs.loc[df_labs["measurement_concept_id"] == i]
         if len(temp_multi_labs) >= 2:  # two different units
             to_unit = most_common[i]
-            for unit in temp_multi_labs["unit_concept_id"]:
+            for unit in temp_multi_labs["unit_concept_id"].values_host:
                 if unit != 0 and to_unit != unit:
                     to_convert.append((i, unit, to_unit))
 
@@ -270,3 +291,10 @@ if __name__ == "__main__":
     # print(load_data())
     # print(get_rare_units_labs())
     print(get_conversions())
+
+
+# Pandas to CUDF adaptation
+# .get()
+# .values_host
+# replace list
+# types
