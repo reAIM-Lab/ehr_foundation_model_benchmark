@@ -129,6 +129,8 @@ def process_file(file):
         )  # not already converted
 
         data.loc[cdt, "unit_concept_id"] = 0
+        
+        # column does not exist in data in fact, no need
         data.loc[cdt, "unit_concept_name"] = "No matching concept"
 
         if demo:
@@ -158,8 +160,10 @@ if __name__ == "__main__":
     if demo:
         files = [files[0], files[1]]
 
+    files = [files[3], files[5], files[7], files[9], files[11]]
+
     # Create a pool of workers (with a maximum of 4 processes)
-    with mp.Pool(processes=max_processes) as pool:
+    with mp.get_context("spawn").Pool(processes=max_processes) as pool:
         # Map the process_file function to each file path in the list
         results = pool.map(process_file, files)
 
