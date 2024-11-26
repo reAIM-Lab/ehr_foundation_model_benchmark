@@ -160,7 +160,7 @@ if __name__ == "__main__":
     if demo:
         files = [files[0], files[1]]
 
-    files = [files[3], files[5], files[7], files[9], files[11]]
+    # files = [files[3], files[5], files[9], files[11]]
 
     # Create a pool of workers (with a maximum of 4 processes)
     with mp.get_context("spawn").Pool(processes=max_processes) as pool:
