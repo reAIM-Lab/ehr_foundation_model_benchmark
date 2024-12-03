@@ -88,9 +88,10 @@ def process_file(file):
             cdt = (data["unit_concept_id"] == from_unit_id) & (
                 data["measurement_concept_id"] == measurement_id
             )
-            if cdt2:
-                print("Applying additional filter")
-                cdt = cdt & (data["measurement_concept_id"] == measurement_id)
+            # useless
+            # if cdt2:
+            #     print("Applying additional filter")
+            #     cdt = cdt & (data["measurement_concept_id"] == measurement_id)
 
             print(
                 "Converting",
