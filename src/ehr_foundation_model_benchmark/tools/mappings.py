@@ -2,6 +2,7 @@ import pandas as pd
 from tqdm import tqdm
 import warnings
 
+import json
 from ehr_foundation_model_benchmark.tools.path import concepts_path
 
 identity = lambda x: x
@@ -71,8 +72,8 @@ mapping_functions = {
     ("per microliter", "billion per liter", None): lambda x: x * 0.001,
     ("pound (US)", "ounce (avoirdupois)", None): lambda x: x * 16,
 }
-# check no unit from the first column of mappings is in the first column of mapping
-# check no unit from the second column of mappings is in the first column of mapping
+# check no unit from the first column of conversion mappings is in the first column of equivalent mappings
+# check no unit from the second column of conversion mappings is in the first column of equivalent mappings
 
 
 def convert_mappings_to_id():
@@ -140,12 +141,14 @@ def convert_to_id(name):
 def simplify_equivalent_units(df_labs):
     # should be applied to the whole dataset in addition to aggregated
     if "unit_concept_name" in df_labs.columns:
+        df_labs["original_unit_concept_name"] = df_labs["unit_concept_name"].copy()
         df_labs["unit_concept_name"] = df_labs["unit_concept_name"].replace(
             mappings_equivalent_units
         )
     mappings_equivalent_units_id = {}
     for key, item in mappings_equivalent_units.items():
         mappings_equivalent_units_id[convert_to_id(key)] = convert_to_id(item)
+    df_labs["original_unit_concept_id"] = df_labs["unit_concept_id"].copy()
     df_labs["unit_concept_id"] = df_labs["unit_concept_id"].replace(
         mappings_equivalent_units_id
     )
@@ -248,7 +251,7 @@ def get_conversions():
 
     for i in tqdm(df_labs["measurement_concept_id"].unique(), "Conversions"):
         temp_multi_labs = df_labs.loc[df_labs["measurement_concept_id"] == i]
-        if len(temp_multi_labs) >= 2:  # two different units
+        if len(temp_multi_labs) >= 2:  # two different units, include nan and real unit
             to_unit = most_common[i]
             for unit in temp_multi_labs["unit_concept_id"]:
                 if unit != 0 and to_unit != unit:
@@ -265,8 +268,14 @@ def get_filter(df, mapping_key):
 
 if __name__ == "__main__":
     # print(remove_rare[3007461])
-    # print(compute_most_common_units())
+    most_common_units = compute_most_common_units()
+    most_common_units = {int(key): value for key, value in most_common_units.items()}
+
+    print(most_common_units)
+
+    with open('most_common_units.json', 'w') as f:
+        json.dump(most_common_units, f)
     # print(convert_to_id('per minute'))
     # print(load_data())
     # print(get_rare_units_labs())
-    print(get_conversions())
+    # print(get_conversions())

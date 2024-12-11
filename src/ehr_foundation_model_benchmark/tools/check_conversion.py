@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
-from path import files
+from ehr_foundation_model_benchmark.tools.path import files
 
-demo = False
+from ehr_foundation_model_benchmark.tools.mappings import compute_most_common_units
+
+demo = True
 
 def compute_percentage(count, df):
     return count, (count / len(df)) * 100
@@ -17,8 +19,10 @@ val_c = []
 val_d = []
 val_e = []
 
+most_common_units = compute_most_common_units()
+
 for i, file in enumerate(files):
-    file = file.replace(".snappy.parquet", "-harmonized-harmonized-2.snappy.parquet")
+    file = file.replace(".snappy.parquet", "-harmonized-harmonized-3.snappy.parquet")
     print()
     print("File", file)
     
@@ -48,8 +52,9 @@ for i, file in enumerate(files):
 
     result = result.sort_values(by='total_measurements', ascending=False)
 
-
     # Display or print the result
+    result['most_common_unit_id'] = result['measurement_concept_id'].apply(lambda x: most_common_units[x])
+    result['file'] = file
     print(result)
     print(result['unique_unit_count'].value_counts())
     result.to_csv(f'agg-{i}.csv')
@@ -65,14 +70,18 @@ for i, file in enumerate(files):
     # print(df[['measurement_concept_id', 'unit_concept_name', 'value_as_number', 'harmonized_value_as_number',
     #     'harmonized_unit_concept_id']])
 
+    cdt_null_info = ~df['harmonized_unit_concept_id'].isnull() & \
+        df['value_as_number'].isnull() & \
+        df['value_as_concept_id'].isnull()
+    print("Null values in harmonized units", compute_percentage(np.count_nonzero(cdt_null_info), df))
 
-    # result2 = df[~df['harmonized_unit_concept_id'].isnull()].groupby('measurement_concept_id').agg(
-    #     unique_unit_count=('harmonized_unit_concept_id', 'nunique'),
-    #     total_measurements=('measurement_id', 'count')
-    # ).reset_index()
-    # result2 = result2.sort_values(by='total_measurements', ascending=False)
-    # print(result2)
-    # print(result2['unique_unit_count'].value_counts())
+    result2 = df[~df['harmonized_unit_concept_id'].isnull()].groupby('measurement_concept_id').agg(
+        unique_unit_count=('harmonized_unit_concept_id', 'nunique'),
+        total_measurements=('measurement_id', 'count')
+    ).reset_index()
+    result2 = result2.sort_values(by='total_measurements', ascending=False)
+    print(result2)
+    print(result2['unique_unit_count'].value_counts())
     # no overlap?
 
     # Count the number of rows in the DataFrame
