@@ -167,7 +167,7 @@ def process_file(file):
     # TODO
     ###########################################
 
-        print('Getting majority/minority and value type counts')
+    print('Getting majority/minority and value type counts')
     f = open('most_common_units.json',)
     most_common_units = json.load(f)
     most_common_units_df = pd.Series(most_common_units).reset_index()
