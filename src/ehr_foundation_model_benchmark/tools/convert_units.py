@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
+import json
 
 from ehr_foundation_model_benchmark.tools.path import files
 from ehr_foundation_model_benchmark.tools.mappings import (
