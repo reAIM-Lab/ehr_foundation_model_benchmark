@@ -7,8 +7,8 @@ from ehr_foundation_model_benchmark.tools.path import files
 from ehr_foundation_model_benchmark.tools.mappings import (
     get_conversions,
     get_one_unit_lab,
-    # compute_most_common_units,
-    # get_one_unit_and_missing_lab,
+    compute_most_common_units,
+    get_one_unit_and_missing_lab,
     convert_mappings_to_id,
     get_rare_units_labs,
     simplify_equivalent_units,
@@ -18,7 +18,8 @@ from ehr_foundation_model_benchmark.tools.mappings import (
 ### The file measurement measurement_unit_counts.csv should have been created before and be in the current working directory
 
 # Demo mode does not process all the labs, only one for each pipeline step to check the pipeline runs
-demo = True
+demo = False
+one_file = True
 
 
 def report_harmonized(data, name):
@@ -89,13 +90,13 @@ def process_file(file):
                 data["measurement_concept_id"] == measurement_id
             )
 
-            print(
-                "Converting",
-                measurement_id,
-                from_unit_id,
-                to_unit_id,
-                np.count_nonzero(cdt),
-            )
+            # print(
+            #     "Converting",
+            #     measurement_id,
+            #     from_unit_id,
+            #     to_unit_id,
+            #     np.count_nonzero(cdt),
+            # )
             # count can be 0 because only one file here and not everything is loaded like for the measurement_unit_counts
 
             if cdt2:
@@ -123,13 +124,13 @@ def process_file(file):
             cdt = (data["unit_concept_id"] == to_unit_id) & (
                 data["measurement_concept_id"] == measurement_id
             )
-            print(
-                "Converting",
-                measurement_id,
-                to_unit_id,
-                to_unit_id,
-                np.count_nonzero(cdt),
-            )
+            # print(
+            #     "Converting",
+            #     measurement_id,
+            #     to_unit_id,
+            #     to_unit_id,
+            #     np.count_nonzero(cdt),
+            # )
             mapping_fun = lambda x: x
 
             data.loc[cdt, "harmonized_value_as_number"] = data.loc[
@@ -170,7 +171,8 @@ def process_file(file):
 
     if not demo:
         print("save")
-        data.to_parquet(file.replace(".snappy.parquet", "-harmonized.snappy.parquet"))
+        data.to_parquet(file.replace(".snappy.parquet", "-harmonized-v3.snappy.parquet"))
+        # data.to_parquet(file.replace(".snappy.parquet", "-harmonized-v2-one-and-missing-2.snappy.parquet"))
         print("end")
 
     
@@ -179,6 +181,9 @@ if __name__ == "__main__":
 
     if demo:
         files = [files[0], files[1]]
+
+    if one_file:
+        files = [files[0]]
 
     with mp.get_context("spawn").Pool(processes=max_processes) as pool:
         results = pool.map(process_file, files)

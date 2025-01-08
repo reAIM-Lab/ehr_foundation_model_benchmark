@@ -183,7 +183,7 @@ def load_data():
 def get_one_unit_lab():
     df_labs = load_data()
 
-    labs_per_unit = df_labs.groupby("measurement_concept_id").count()["unit_concept_id"]
+    labs_per_unit = df_labs.groupby("measurement_concept_id").count()["unit_concept_id"] # should not be NaN
     one_lab_per_unit = labs_per_unit.loc[labs_per_unit == 1].index
     return one_lab_per_unit.values
 

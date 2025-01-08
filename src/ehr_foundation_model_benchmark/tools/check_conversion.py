@@ -4,7 +4,7 @@ from ehr_foundation_model_benchmark.tools.path import files
 
 from ehr_foundation_model_benchmark.tools.mappings import compute_most_common_units
 
-demo = True
+demo = False
 
 def compute_percentage(count, df):
     return count, (count / len(df)) * 100
@@ -22,7 +22,8 @@ val_e = []
 most_common_units = compute_most_common_units()
 
 for i, file in enumerate(files):
-    file = file.replace(".snappy.parquet", "-harmonized-harmonized-3.snappy.parquet")
+    # file = file.replace(".snappy.parquet", "-harmonized-harmonized-3.snappy.parquet")
+    file = file.replace(".snappy.parquet", "-harmonized-v2.snappy.parquet")
     print()
     print("File", file)
     
