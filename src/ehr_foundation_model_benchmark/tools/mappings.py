@@ -152,7 +152,10 @@ def simplify_equivalent_units(df_labs):
     df_labs["unit_concept_id"] = df_labs["unit_concept_id"].replace(
         mappings_equivalent_units_id
     )
-    return df_labs
+    replaced_count = (df_labs["original_unit_concept_id"] != df_labs["unit_concept_id"]).sum()
+    # print(f"Number of rows replaced: {replaced_count}")
+
+    return df_labs, replaced_count
 
 
 def load_data():
@@ -162,7 +165,7 @@ def load_data():
     df_labs.fillna({"unit_concept_id": 0}, inplace=True)
     df_labs.fillna({"unit_concept_name": "No matching concept"}, inplace=True)
 
-    df_labs = simplify_equivalent_units(df_labs)
+    df_labs, _ = simplify_equivalent_units(df_labs)
     # how will it impact the statistics ?
 
     df_labs = (
@@ -258,6 +261,20 @@ def get_conversions():
                     to_convert.append((i, unit, to_unit))
 
     return to_convert
+
+def get_copy_majority_units():
+    df_labs = load_data()
+    to_copy = []
+    most_common = compute_most_common_units()
+
+    for i in tqdm(df_labs["measurement_concept_id"].unique(), "Conversions"):
+        temp_multi_labs = df_labs.loc[df_labs["measurement_concept_id"] == i]
+        if len(temp_multi_labs) >= 2:  # two different units, include nan and real unit
+            to_unit = most_common[i]
+            to_copy.append((i, to_unit, to_unit))
+
+    return to_copy
+
 
 
 def get_filter(df, mapping_key):
