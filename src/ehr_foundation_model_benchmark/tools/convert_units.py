@@ -20,7 +20,7 @@ from ehr_foundation_model_benchmark.tools.mappings import (
 ### The file measurement measurement_unit_counts.csv should have been created before and be in the current working directory
 
 # Demo mode does not process all the labs, only one for each pipeline step to check the pipeline runs
-demo = True
+demo = False
 one_file = True
 
 class NumpyEncoder(json.JSONEncoder):
@@ -181,31 +181,31 @@ def process_file(file):
 
     # RARE UNITS
     # for rare units, convert to nan (0) in the unit_concept_id
-    rare_units = get_rare_units_labs()
-    n_rows_rare = 0
-    for measurement_id, unit_id in tqdm(rare_units, desc="Rare units"):
-        cdt = (
-            (data["unit_concept_id"] == unit_id)
-            & (data["measurement_concept_id"] == measurement_id)
-            & (data["harmonized_value_as_number"].isnull())
-        )  # not already converted
-        n_rows_rare += np.count_nonzero(cdt)
+    # rare_units = get_rare_units_labs()
+    # n_rows_rare = 0
+    # for measurement_id, unit_id in tqdm(rare_units, desc="Rare units"):
+    #     cdt = (
+    #         (data["unit_concept_id"] == unit_id)
+    #         & (data["measurement_concept_id"] == measurement_id)
+    #         & (data["harmonized_value_as_number"].isnull())
+    #     )  # not already converted
+    #     n_rows_rare += np.count_nonzero(cdt)
 
-        data.loc[cdt, "unit_concept_id"] = 0
+    #     data.loc[cdt, "unit_concept_id"] = 0
         
-        # column does not exist in data in fact, no need
-        data.loc[cdt, "unit_concept_name"] = "No matching concept"
+    #     # column does not exist in data in fact, no need
+    #     data.loc[cdt, "unit_concept_name"] = "No matching concept"
 
-        if demo:
-            break
+    #     if demo:
+    #         break
 
-    report_data.append(("Rare units", n_rows_rare, n_rows_rare / len(data) * 100))
+    # report_data.append(("Rare units", n_rows_rare, n_rows_rare / len(data) * 100))
 
-    print(
-        f"Rare units",
-        n_rows_rare * 100 / len(data),
-        "%",
-    ) 
+    # print(
+    #     f"Rare units",
+    #     n_rows_rare * 100 / len(data),
+    #     "%",
+    # ) 
 
     print(report_data)
     with open(file.replace(".snappy.parquet", "-processed_stats.csv"), 'w') as f:
@@ -257,7 +257,7 @@ def process_file(file):
 
     if not demo:
         print("save")
-        data.to_parquet(file.replace(".snappy.parquet", "-harmonized-v4.snappy.parquet"))
+        data.to_parquet(file.replace(".snappy.parquet", "-harmonized-v5.snappy.parquet"))
         # data.to_parquet(file.replace(".snappy.parquet", "-harmonized-v2-one-and-missing-2.snappy.parquet"))
         print("end")
 
