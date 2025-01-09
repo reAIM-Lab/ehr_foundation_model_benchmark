@@ -137,6 +137,7 @@ def process_file(file):
                 cdt, "value_as_number"
             ].apply(mapping_fun)
             data.loc[cdt, "harmonized_unit_concept_id"] = to_unit_id
+            already_done.append((measurement_id, to_unit_id))
             
         if demo:
             break
