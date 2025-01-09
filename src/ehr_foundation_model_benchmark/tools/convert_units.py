@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
+import json
 
 from ehr_foundation_model_benchmark.tools.path import files
 from ehr_foundation_model_benchmark.tools.mappings import (
@@ -167,6 +168,42 @@ def process_file(file):
     ###########################################
     # TODO
     ###########################################
+
+    print('Getting majority/minority and value type counts')
+    f = open('most_common_units.json',)
+    most_common_units = json.load(f)
+    most_common_units_df = pd.Series(most_common_units).reset_index()
+    most_common_units_df['index'] = most_common_units_df['index'].astype(int)
+    most_common_units_df.set_index('index', inplace=True)
+    most_common_units = most_common_units_df.to_dict()[0]
+    
+    #get majority unit
+    data['majority_unit_id'] = pd.DataFrame(data['measurement_concept_id']).replace(to_replace=most_common_units)['measurement_concept_id']
+    
+    
+    print('Finished filling in majority units')
+    # fill in unit match type: majority, minority, nan (acceptable, unacceptable)
+    data['unit_match_type'] = 'to_fill'
+    data['harmonized_unit_concept_id'].fillna(0, inplace=True)
+    data.loc[(data['harmonized_unit_concept_id'] == data['majority_unit_id']) & (data['majority_unit_id'] == 0), 'unit_match_type'] = 'Mapped to majority unit (nan)'
+    data.loc[(data['harmonized_unit_concept_id'] == data['majority_unit_id']) & (data['majority_unit_id'] != 0), 'unit_match_type'] = 'Mapped to majority unit (non-nan)'
+    data.loc[(data['harmonized_unit_concept_id'] != data['majority_unit_id']) & (data['majority_unit_id'] != 0), 'unit_match_type'] = 'Mapped to minority unit'
+    data.loc[(data['harmonized_unit_concept_id'] == 0) & (data['majority_unit_id'] != 0), 'unit_match_type'] = 'Unmapped nan'
+    
+    # fill in concept id type
+    data['value_match_type'] = 'to_fill'
+    data.loc[~(data['harmonized_value_as_number'].isna()), 'value_match_type'] = 'Numerical value'
+    data.loc[(data['harmonized_value_as_number'].isna()) & ~((data['value_as_concept_id'].isna())), 'value_match_type'] = 'Concept value (no number)'
+    data.loc[(data['harmonized_value_as_number'].isna()) & ((data['value_as_concept_id'].isna())), 'value_match_type'] = 'Nan concept and number'
+
+    # added: is the original unit concept ID nan/0? 
+    data['original_unit_type'] = 'Non-Nan'
+    data.loc[((data['unit_concept_id'].isna()) | (data['unit_concept_id']==0)), 'original_unit_type'] = 'Nan'
+    
+    counts = data.groupby(by=["unit_match_type", "value_match_type", "original_unit_type"]).size().reset_index()
+    
+    counts.to_csv(file.replace(".snappy.parquet", "-processed_unit_value_counts.csv"))
+
 
     report_harmonized(data, "at the end of the pipeline")
 
