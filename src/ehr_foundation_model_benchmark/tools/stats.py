@@ -54,7 +54,13 @@ for file in files:
     # added: is the original unit concept ID nan/0? 
     data['original_unit_type'] = 'Non-Nan'
     data.loc[((data['unit_concept_id'].isna()) | (data['unit_concept_id']==0)), 'original_unit_type'] = 'Nan'
+
+    data['original_value_type'] = 'to_fill'
+    data.loc[~(data['value_as_number'].isna()), 'original_value_type'] = 'Numerical value'
+    data.loc[(data['value_as_number'].isna()) & ~((data['value_as_concept_id'].isna())), 'original_value_type'] = 'Concept value (no number)'
+    data.loc[(data['value_as_number'].isna()) & ((data['value_as_concept_id'].isna())), 'original_value_type'] = 'Nan concept and number'
+
     
-    counts = data.groupby(by=["unit_match_type", "value_match_type", "original_unit_type"]).size().reset_index()
+    counts = data.groupby(by=["unit_match_type", "value_match_type", "original_unit_type", 'original_value_type']).size().reset_index()
     
     counts.to_csv(file.replace(".snappy.parquet", "-v5-processed_unit_value_counts.csv"))

@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
 import json
+from time import perf_counter as pc
 
 from ehr_foundation_model_benchmark.tools.path import files
 from ehr_foundation_model_benchmark.tools.mappings import (
@@ -12,7 +13,7 @@ from ehr_foundation_model_benchmark.tools.mappings import (
     # compute_most_common_units,
     # get_one_unit_and_missing_lab,
     convert_mappings_to_id,
-    get_rare_units_labs,
+    # get_rare_units_labs,
     simplify_equivalent_units,
 )
 
@@ -21,7 +22,7 @@ from ehr_foundation_model_benchmark.tools.mappings import (
 
 # Demo mode does not process all the labs, only one for each pipeline step to check the pipeline runs
 demo = False
-one_file = True
+one_file = False
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -53,24 +54,30 @@ def process_file(file):
 
     # EQUIVALENT UNITS
     print("Simplifying units")
+    s1 = pc()
     data, count = simplify_equivalent_units(data)
+    s2 = pc()
     print("End simplifying units")
-    report_data.append(("Simplifying units", count, count / len(data) * 100))
+    report_data.append(("Simplifying units", count, count / len(data) * 100, s2 - s1))
     # exit()
 
     # UNDEFINED LABS
     print(len(data))
+    s1 = pc()
     cdt = data.measurement_concept_id != 0
     count = np.count_nonzero(cdt)
-    report_data.append(("Undefined labs", len(data) - count, 100 - count / len(data) * 100))
+    len_data_before = len(data)
     # print(report_data)
     # exit()
     if not demo:
         data = data.loc[cdt].copy()  # check 130 millions
+    s2 = pc()
+    report_data.append(("Undefined labs", len_data_before - count, 100 - count / len_data_before * 100, s2 - s1)) # then denominator change caution
 
 
     # SINGLE UNIT LABS
     n_rows_sul = 0
+    s1 = pc()
     for measurement_id in tqdm(get_one_unit_lab(), desc="Single unit labs"):
         cdt = data["measurement_concept_id"] == measurement_id
         count = np.count_nonzero(cdt)
@@ -86,8 +93,10 @@ def process_file(file):
             if demo:
                 break
 
+    s2 = pc()
+
     report_harmonized(data, "after single unit labs")
-    report_data.append(("Single unit labs", n_rows_sul, n_rows_sul / len(data) * 100))
+    report_data.append(("Single unit labs", n_rows_sul, n_rows_sul / len(data) * 100, s2 - s1))
 
     # ONE UNIT AND MISSING LABS
     # for measurement_id in tqdm(
@@ -101,9 +110,10 @@ def process_file(file):
     #     if demo:
     #         break
 
-    report_harmonized(data, "after single unit and missing labs")
+    # report_harmonized(data, "after single unit and missing labs")
 
     # MULTI-UNIT LABS - CONVERSION
+    s1 = pc()
     to_convert = get_conversions()
     mapping_functions_id = convert_mappings_to_id()
     n_rows_converted = 0
@@ -143,13 +153,14 @@ def process_file(file):
 
             if demo:
                 break
-
+    s2 = pc()
     report_harmonized(data, "after conversion")
-    report_data.append(("Converted rows", n_rows_converted, n_rows_converted / len(data) * 100))
+    report_data.append(("Converted rows", n_rows_converted, n_rows_converted / len(data) * 100, s2 - s1))
 
      # MULTI-UNIT LABS - COPY MAJORITY UNITS
      # it is modelled as a conversion from target_unit to target_unit
     # already_done = []
+    s1 = pc()
     to_copy = get_copy_majority_units()
     n_rows_copied = 0
     for measurement_id, from_unit_id, to_unit_id in tqdm(
@@ -176,8 +187,9 @@ def process_file(file):
         if demo:
             break
 
+    s2 = pc()
     report_harmonized(data, "after majority units copy")
-    report_data.append(("Copied rows", n_rows_copied, n_rows_copied / len(data) * 100))
+    report_data.append(("Copied rows", n_rows_copied, n_rows_copied / len(data) * 100, s2 - s1))
 
     # RARE UNITS
     # for rare units, convert to nan (0) in the unit_concept_id

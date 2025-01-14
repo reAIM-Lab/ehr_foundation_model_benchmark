@@ -272,6 +272,7 @@ def get_copy_majority_units():
         if len(temp_multi_labs) >= 2:  # two different units, include nan and real unit
             to_unit = most_common[i]
             to_copy.append((i, to_unit, to_unit))
+            # to unit can be nan?
 
     return to_copy
 
