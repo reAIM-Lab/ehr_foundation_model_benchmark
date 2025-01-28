@@ -38,6 +38,9 @@ def main(args):
             pl.col("harmonized_value_as_number").alias("value_as_number"),
             pl.col("unit_concept_id").alias("original_unit_concept_id"),
             pl.col("harmonized_unit_concept_id").alias("unit_concept_id")
+        ]).with_columns([
+            pl.col("visit_occurrence_id").cast(pl.Int32),
+            pl.col("visit_detail_id").cast(pl.Int32),
         ])
         # Write output using lazy execution
         labs.collect().write_parquet(measurement_folder_path / parquet_file.name)
