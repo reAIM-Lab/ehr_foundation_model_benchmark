@@ -16,10 +16,13 @@ def main(args):
     # Copy everything from the omop folder to the new output folder, excluding the 'measurement' directory
     for item in omop_folder_path.iterdir():
         if item.name != 'measurement':
+            print(f"Copying {item.name} from {omop_folder_path} to {output_folder_path}")
             if item.is_dir():
                 shutil.copytree(item, output_folder_path / item.name)
             else:
                 shutil.copy2(item, output_folder_path / item.name)
+        else:
+            print(f"Skipping copying measurement")
 
     # Prepare the measurement folder in the destination
     measurement_folder_path = output_folder_path / "measurement"
@@ -27,6 +30,7 @@ def main(args):
 
     # Process each Parquet file without assuming 'v5' in the file names
     for parquet_file in harmonized_labs_folder_path.glob("*v5*parquet"):
+        print(f"Converting {parquet_file.name} from {harmonized_labs_folder_path} to {measurement_folder_path}")
         labs = pl.scan_parquet(parquet_file)
         # Lazily rename columns
         labs = labs.with_columns([
