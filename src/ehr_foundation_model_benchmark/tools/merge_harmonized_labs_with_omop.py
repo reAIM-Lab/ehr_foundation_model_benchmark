@@ -26,7 +26,7 @@ def main(args):
     measurement_folder_path.mkdir(exist_ok=True)
 
     # Process each Parquet file without assuming 'v5' in the file names
-    for parquet_file in harmonized_labs_folder_path.glob("*.parquet"):
+    for parquet_file in harmonized_labs_folder_path.glob("*v5*parquet"):
         labs = pl.scan_parquet(parquet_file)
         # Lazily rename columns
         labs = labs.with_columns([
