@@ -18,7 +18,7 @@ def main(args):
         if item.name != 'measurement':
             print(f"Copying {item.name} from {omop_folder_path} to {output_folder_path}")
             if item.is_dir():
-                shutil.copytree(item, output_folder_path / item.name)
+                shutil.copytree(item, output_folder_path / item.name, dirs_exist_ok=True)
             else:
                 shutil.copy2(item, output_folder_path / item.name)
         else:
@@ -40,13 +40,28 @@ def main(args):
             pl.col("harmonized_unit_concept_id").alias("unit_concept_id")
         ])
         # Write output using lazy execution
-        labs.write_parquet(measurement_folder_path / parquet_file.name)
+        labs.collect().write_parquet(measurement_folder_path / parquet_file.name)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Merge harmonized labs with omop")
-    parser.add_argument("omop_folder", help="Path to the OMOP folder")
-    parser.add_argument("harmonized_labs_folder", help="Path to the harmonized labs folder")
-    parser.add_argument("output_folder", help="Path to the output folder")
+    parser.add_argument(
+        "--omop_folder",
+        dest="omop_folder",
+        help="Path to the OMOP folder",
+        required=True,
+    )
+    parser.add_argument(
+        "--harmonized_labs_folder",
+        dest="harmonized_labs_folder",
+        help="Path to the harmonized labs folder",
+        required = True,
+    )
+    parser.add_argument(
+        "--output_folder",
+        dest="output_folder",
+        help="Path to the output folder",
+        required=True,
+    )
     args = parser.parse_args()
     main(args)
