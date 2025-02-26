@@ -47,3 +47,18 @@ python -u -m femr.omop_meds_tutorial.prepare_motor \
   --meds_reader $OMOP_MEDS_READER \
   --motor_codes_to_skip $MOTOR_CODES_TO_SKIP
 ```
+Verify that the motor tasks do not contain any codes that we want to remove
+```python
+import os
+import pickle
+import polars as pl
+motor_task_pickle_file = os.path.join(os.environ["PRETRAINING_DATA"], "motor_task.pkl")
+motor_codes_to_skip_file = os.environ["MOTOR_CODES_TO_SKIP"]
+with open(motor_task_pickle_file, "rb") as f:
+    tasks = pickle.load(f)
+pretraining_task_codes = [t[0] for t in tasks.pretraining_task_info]
+print(pretraining_task_codes[:100])
+motor_codes_to_skip = pl.read_parquet(motor_codes_to_skip_file)
+# this should return zero rows
+print(motor_codes_to_skip.filter(pl.col("code").is_in(pretraining_task_codes)))
+```
