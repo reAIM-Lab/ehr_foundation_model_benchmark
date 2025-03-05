@@ -1,0 +1,13 @@
+tb_logs/
+
+checkpoints/
+*.ckpt
+
+models/
+*.pth
+
+__pycache__/
+*.py[cod]
+*.so
+*.pyo
+*.pyd
