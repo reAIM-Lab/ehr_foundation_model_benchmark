@@ -20,6 +20,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "femr @ git+https://github.com/ChaoPang/femr.git@omop_meds_v3_tutorial",
     "cehrbert",
     "polars",
 ]
