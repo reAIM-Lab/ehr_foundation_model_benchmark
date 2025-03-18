@@ -85,10 +85,11 @@ def main(args):
     for split in [train_split, tuning_split, held_out_split]:
         print(f"Processing {split}")
         parquet_files = glob.glob(os.path.join(meds_data_dir, split, '*.parquet'), recursive=True)
-
+        output_data_split_dir = output_data_dir / split
+        output_data_split_dir.mkdir(exist_ok=True, parents=True)
         # Process each file in the split
         for parquet_file in tqdm(parquet_files, total=len(parquet_files)):
-            output_file = output_data_dir / os.path.basename(parquet_file)
+            output_file = output_data_split_dir / os.path.basename(parquet_file)
 
             # Read MEDS file
             meds = pl.read_parquet(parquet_file)
@@ -147,6 +148,11 @@ def main(args):
                 meds_without_demographics
             ]).sort(["subject_id", "time", "code"])
 
+            assert (
+                len(new_meds) >= len(meds),
+                f"the patched meds partition at {output_file} "
+                f"must have more rows than the original partition at {parquet_file}"
+            )
             # Write processed file
             new_meds.write_parquet(output_file)
 
