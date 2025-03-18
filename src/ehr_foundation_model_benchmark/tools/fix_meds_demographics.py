@@ -34,6 +34,7 @@ from pathlib import Path
 from meds import train_split, tuning_split, held_out_split, birth_code
 import polars as pl
 from tqdm import tqdm
+from polars.testing import assert_frame_equal
 
 
 def main(args):
@@ -153,6 +154,12 @@ def main(args):
                 f"the patched meds partition at {output_file} "
                 f"must have more rows than the original partition at {parquet_file}"
             )
+            # Validate whether subjects have the same numbers of clinical events between the two versions
+            if assert_frame_equal(
+                    meds.filter(pl.col("table") != "person").group_by("subject_id").count().sort("subject_id"),
+                    new_meds.filter(pl.col("table") != "person").group_by("subject_id").count().sort("subject_id")
+            ) is None:
+                print(f"Passed validation: {parquet_file}")
             # Write processed file
             new_meds.write_parquet(output_file)
 
