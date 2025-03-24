@@ -165,6 +165,25 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
         echo "Error: Baseline training failed for task $TASK_NAME"
     fi
 
+    # Run the third command to compute the metrics:
+    echo "Running meds-evaluation for gbm for $TASK_NAME..."
+    meds-evaluation-cli predictions_path="$PRETRAINING_DATA/results/$TASK_NAME/gbm/test_predictions" \
+      output_dir="$PRETRAINING_DATA/results/$TASK_NAME/gbm/"
+
+        # Check if the second command succeeded
+    if [ $? -ne 0 ]; then
+        echo "Error: Running meds-evaluation failed for gbm task for $TASK_NAME"
+    fi
+
+    echo "Running meds-evaluation for logistic regression for $TASK_NAME..."
+    meds-evaluation-cli predictions_path="$PRETRAINING_DATA/results/$TASK_NAME/logistic/test_predictions" \
+      output_dir="$PRETRAINING_DATA/results/$TASK_NAME/logistic/"
+
+        # Check if the second command succeeded
+    if [ $? -ne 0 ]; then
+        echo "Error: Running meds-evaluation failed for logistic regression for task $TASK_NAME"
+    fi
+
     echo "Completed processing of task: $TASK_NAME"
     echo "----------------------------------------"
 done
