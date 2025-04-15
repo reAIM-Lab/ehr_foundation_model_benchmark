@@ -1,20 +1,16 @@
-# Linear probing for llama model trained in stanford
 import argparse
-from transformers import AutoModelForCausalLM
-from hf_ehr.data.tokenization import CLMBRTokenizer
-import torch
+import time
+import warnings
 from pathlib import Path
-import polars as pl
 
+import polars as pl
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-from pytorch_lightning.loggers import TensorBoardLogger
 import pytorch_lightning as pyl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from utils import LRModelLightning, load_meds, standardize
+from utils import LRModelLightning, load_task_embeddings
 
-import warnings
 warnings.filterwarnings("ignore")
 
 ####################################
@@ -22,75 +18,131 @@ warnings.filterwarnings("ignore")
 def main(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = AutoModelForCausalLM.from_pretrained(f"StanfordShahLab/{args.model}").to(device)
-    tokenizer = CLMBRTokenizer.from_pretrained(f"StanfordShahLab/{args.model}")
+    torch.manual_seed(args.seed)
 
     base_path = Path(args.input_meds)
     task_name = args.task
 
-    # load labels
-    task_path = base_path / f"task_labels/cehrbert_pyspark/{task_name}/train"
-    task_path_test = base_path / f"task_labels/cehrbert_pyspark/{task_name}/test"
+    # Load in outcome cohorts with labels and prediction time
+    if task_name in ["AMI", "Celiac", "CLL", "HTN", "Ischemic_Stroke", "MASLD", "Osteoporosis", "Pancreatic_Cancer", "SLE", "T2DM"]:
+        task_path_train = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years_sample/{task_name}" / "train.parquet"
+        task_path_val = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years_sample/{task_name}" / "tuning.parquet"
+        task_path_test = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years_sample/{task_name}" / "held_out.parquet"
 
-    embedding_train_path = base_path / "context_clues_embeddings" / task_name / "train" 
-    embedding_tune_path = base_path / "context_clues_embeddings" / task_name / "tune" 
-    embedding_test_path = base_path / "context_clues_embeddings" / task_name / "test"  
+        train = pl.read_parquet(task_path_train, columns=["subject_id", "prediction_time", "boolean_value"])
+        tune = pl.read_parquet(task_path_val, columns=["subject_id", "prediction_time", "boolean_value"])
+        test = pl.read_parquet(task_path_test)
+    else:
+        task_path_train = base_path / f"task_labels/cehrbert_pyspark/{task_name}/train" 
+        task_path_val = base_path / f"task_labels/cehrbert_pyspark/{task_name}/train" 
+        task_path_test = base_path / f"task_labels/cehrbert_pyspark/{task_name}/test"
 
-    embedding_train_path.mkdir(parents=True, exist_ok=True)
-    embedding_tune_path.mkdir(parents=True, exist_ok=True)
-    embedding_test_path.mkdir(parents=True, exist_ok=True)
-
-    train = pl.read_parquet(sorted(task_path.glob("*.parquet")), columns=["subject_id", "prediction_time", "boolean_value"])
-    test = pl.read_parquet(sorted(task_path_test.glob("*.parquet")), columns=["subject_id", "prediction_time", "boolean_value"])
-
-    print(len(train))
-    print(len(test))
+        train_labels = sorted(task_path_train.glob("*.parquet"))
+        test_labels = sorted(task_path_test.glob("*.parquet"))
+        train = pl.concat([pl.read_parquet(p, columns=["subject_id", "prediction_time", "boolean_value"]) for p in train_labels])
+        tune = train
+        test = pl.concat([pl.read_parquet(p, columns=["subject_id", "prediction_time", "boolean_value"]) for p in test_labels])
 
     train_path = base_path / "post_transform/data/train"
     tune_path = base_path / "post_transform/data/tuning"
     test_path = base_path / "post_transform/data/held_out"
 
-    train_embeddings, train_labels = load_meds(train, train_path, model, tokenizer, embedding_train_path, device)
-    tune_embeddings, tune_labels = load_meds(train, tune_path, model, tokenizer, embedding_tune_path, device)
-    test_embeddings, test_labels = load_meds(test, test_path, model, tokenizer, embedding_test_path, device)
+    # Load in embeddings and labels for task (model dependent)
+    start_time = time.time()
+
+    train_embeddings, train_labels = load_task_embeddings(args, train, train_path, embedding_train_path, device)
+    tune_embeddings, tune_labels = load_task_embeddings(args, tune, tune_path, embedding_tune_path, device)
+    test_embeddings, test_labels = load_task_embeddings(args, test, test_path, embedding_test_path, device)
+
+    end_time = time.time()
+    print(f"Inference Time taken: {end_time - start_time:.2f} seconds")
 
     train_embeddings, tune_embeddings, test_embeddings = standardize(train_embeddings, tune_embeddings, test_embeddings)
 
-    batch_size = 256
-    train_dataset = TensorDataset(train_embeddings, train_labels) 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_dataset = TensorDataset(tune_embeddings, tune_labels) 
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-    test_dataset = TensorDataset(test_embeddings, test_labels) 
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+    sizes = [1000, 5000, 10000, 50000, 100000]
 
-    # Train the model
-    input_dim = train_embeddings.shape[1]  # This should match the embedding size
-    model = LRModelLightning(input_dim)
+    for size in sizes:
+        indices = torch.randperm(train_embeddings.shape[0])[:size]
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_loss",       # Track validation loss
-        mode="min",               # Save the model with the lowest val_loss
-        save_top_k=1,             # Keep only the best model
-        dirpath="checkpoints/",   # Save directory
-        filename="best_model",    # Model file name
-        verbose=True
-    )
+        x_train = train_embeddings[indices]
+        y_train = train_labels[indices]
 
-    trainer = pyl.Trainer(
-        max_epochs=50, 
-        accelerator='gpu', 
-        devices=1, 
-        logger=TensorBoardLogger("tb_logs"),
-        callbacks=[checkpoint_callback])
-    
-    trainer.fit(model, train_loader, val_loader)
+        batch_size = 256
+        train_dataset = TensorDataset(x_train, y_train) 
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_dataset = TensorDataset(tune_embeddings, tune_labels) 
+        val_loader = DataLoader(val_dataset, batch_size=len(val_dataset), shuffle=False)
+        test_dataset = TensorDataset(test_embeddings, test_labels) 
+        test_loader = DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
 
-    model = LRModelLightning.load_from_checkpoint(checkpoint_callback.best_model_path, input_dim=input_dim)
-    trainer.test(model, test_loader)
+        unique_labels, counts = test_labels.unique(return_counts=True)
+        label_prevalence = counts.float() / len(test_labels)
 
-    # Save the model
-    torch.save(model.state_dict(), f"models/linear_probing_{args.task}.pth")
+        # Display the label prevalences
+        for label, prevalence in zip(unique_labels, label_prevalence):
+            print(f"Label '{label.item()}' prevalence: {prevalence:.4f}")
+
+        # Train the model
+        input_dim = train_embeddings.shape[1]  # This should match the embedding size
+        model = LRModelLightning(input_dim)
+
+        checkpoint_callback = ModelCheckpoint(
+            monitor="val_loss",       # Track validation loss
+            mode="min",               # Save the model with the lowest val_loss
+            save_top_k=1,             # Keep only the best model
+            dirpath="checkpoints/",   # Save directory
+            filename="best_model",    # Model file name
+            verbose=False
+        )
+
+        early_stopping_callback = EarlyStopping(
+            monitor="val_loss",    # Metric to monitor (validation loss)
+            patience=10,            # Number of epochs to wait for improvement
+            verbose=False,          # Print message when stopping
+            mode="min",            # 'min' for loss (lower is better)
+        )
+
+        model_path = Path(f"models/linear_probing_{args.task}_{size}.pth")
+        model_path.mkdir(parents=True, exist_ok=True)
+
+        if not model_path.exists():
+            trainer = pyl.Trainer(
+                max_epochs=100, 
+                accelerator='gpu', 
+                devices=1, 
+                callbacks=[checkpoint_callback, early_stopping_callback])
+            
+            trainer.fit(model, train_loader, val_loader)
+
+            model = LRModelLightning.load_from_checkpoint(checkpoint_callback.best_model_path, input_dim=input_dim)
+            
+            # Save the model
+            torch.save(model.state_dict(), model_path)
+
+        model.load_state_dict(torch.load(model_path))
+        print(f"Loaded model from {model_path}")
+
+        trainer = pyl.Trainer(accelerator='gpu', devices=1)  
+        trainer.test(model, test_loader)
+
+        results = trainer.predict(model, test_loader)
+        preds = results[0][0]
+        probs = results[0][1]
+
+        df_predictions = test[["subject_id", "prediction_time", "boolean_value"]].with_columns(
+            pl.col("subject_id").cast(pl.Int64),
+            pl.col("prediction_time").cast(pl.Datetime("us")),
+        )
+
+        df_predictions = df_predictions.with_columns([
+            pl.Series("boolean_value", test_labels.cpu().numpy()).cast(pl.Boolean),
+            pl.Series("predicted_boolean_value", preds.detach().cpu().numpy()).cast(pl.Boolean),
+            pl.Series("predicted_boolean_probability", probs.detach().cpu().numpy()).cast(pl.Float64),
+        ])
+
+        prediction_save_path = Path(f"predictions/{args.task}/{args.model_type}_{size}.parquet")
+        prediction_save_path.mkdir(parents=True, exist_ok=True)
+        df_predictions.write_parquet(prediction_save_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -100,21 +152,35 @@ if __name__ == "__main__":
         "--input_meds",
         dest="input_meds",
         action="store",
-        default="/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/"
+        default="/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/"
     )
 
     parser.add_argument(
         "--task",
         dest="task",
         action="store",
-        default="hospitalization_mortality_meds",
+        default="AMI",
     )
 
     parser.add_argument(
         "--model",
         dest="model",
         action="store",
-        default="llama-base-2048-clmbr",
+        default="mamba-tiny-4096-clmbr",
+    )
+
+    parser.add_argument(
+        "--model_type",
+        dest="model_type",
+        action="store",
+        default="mamba-ehrshot",
+    )
+
+    parser.add_argument(
+        "--seed",
+        dest="seed",
+        action="store",
+        default=123,
     )
 
     main(

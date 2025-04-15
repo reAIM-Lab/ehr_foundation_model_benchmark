@@ -1,6 +1,10 @@
 import argparse
 from pathlib import Path
 import polars as pl
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from utils import count_events
 
 def sample(df, n_max, min_obs=None, label_col="boolean_value"):
     """
@@ -27,10 +31,16 @@ def sample(df, n_max, min_obs=None, label_col="boolean_value"):
         A new DataFrame of length `n_max`, stratified by label_col.
     """
 
+    # Project timings and come up with 
     df_counts = df.group_by(label_col).len()
+    total_n = df_counts["len"].sum()
+
+    df_counts = df_counts.with_columns(
+        ((df_counts["len"] / df_counts["len"].sum())).alias("prevalence")
+    )
     df_counts = df_counts.with_columns(
         ((df_counts["len"] / df_counts["len"].sum()) * n_max).cast(pl.Int64()).alias("sample_size")
-    ).drop('len')
+    ).drop('len').drop('prevalence')
 
     # Enforce minimum prevalence for the minority class and compute required sample sizes
     if min_obs is not None:
@@ -72,6 +82,8 @@ def sample(df, n_max, min_obs=None, label_col="boolean_value"):
             .alias("sample_size")
         )
 
+    print(df_counts)
+
     # Based on computed sample sizes, sample from original df
     sampled_dfs = []
     for class_label, class_count in df_counts.iter_rows():
@@ -80,7 +92,7 @@ def sample(df, n_max, min_obs=None, label_col="boolean_value"):
         sampled_dfs.append(sampled_df)
 
     df_sampled = pl.concat(sampled_dfs)
-    return df_sampled
+    return df_sampled, total_n
 
 def main(args):
 
@@ -88,29 +100,60 @@ def main(args):
     
     tasks = ['AMI', 'Celiac', 'CLL', 'HTN', 'Ischemic_Stroke', 'MASLD', 'Osteoporosis', 'Pancreatic_Cancer', 'SLE', 'T2DM']
 
-    n_train = 50000
+    n_train = 80000
     n_tune = 20000
-    n_test = 30000
+    n_test = 50000
+
+    total = 0
+
+    total_lengths = []
 
     for task in tasks:
-        train_path = base_path / f"phenotype_cohorts_min_obs_2_years/{task}/train.parquet"
-        tune_path = base_path / f"phenotype_cohorts_min_obs_2_years/{task}/tuning.parquet"
-        test_path = base_path / f"phenotype_cohorts_min_obs_2_years/{task}/held_out.parquet"
+        train_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/train.parquet"
+        tune_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/tuning.parquet"
+        test_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/held_out.parquet"
 
-        new_path = base_path / f"phenotype_cohorts_min_obs_2_years_sample/{task}"
+        new_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years_sample/{task}"
         new_path.mkdir(parents=True, exist_ok=True)
 
-        df_train = pl.read_parquet(train_path)
-        df_train = sample(df_train, n_train)
+        train_path = base_path / "post_transform/data/train"
+        tune_path = base_path / "post_transform/data/tuning"
+        test_path = base_path / "post_transform/data/held_out"
+
+        train_files = sorted(train_path.glob("*.parquet"))
+        tune_files = sorted(tune_path.glob("*.parquet"))
+        test_files = sorted(test_path.glob("*.parquet"))
+
+        df_train = pl.read_parquet(train_labels_path)
+        df_train, train_count = sample(df_train, n_train)
+        duplicates = df_train.filter(df_train.is_duplicated())
         df_train.write_parquet(new_path / "train.parquet")
 
-        df_tune = pl.read_parquet(tune_path)
-        df_tune = sample(df_tune, n_tune)
+        # train_events = count_events(df_train, train_files)
+        # lengths = [len(lst) for lst in train_events]
+        # lengths = [min(x, 5000) for x in lengths]
+
+        # plt.figure(figsize=(6, 4))
+        # plt.hist(lengths, bins=50)
+        # plt.xlabel("Number of Events")
+        # plt.ylabel("Frequency")
+        # plt.title("Distribution of Event Count")
+        # plt.grid(True)
+        # plt.tight_layout()
+
+        # plt.savefig(f"plots/events_per_sample_{task}.pdf")
+
+        df_tune = pl.read_parquet(tune_labels_path)
+        df_tune, val_count = sample(df_tune, n_tune)
         df_tune.write_parquet(new_path / "tuning.parquet")
 
-        df_test = pl.read_parquet(test_path)
-        df_test = sample(df_test, n_test)
+        df_test = pl.read_parquet(test_labels_path)
+        df_test, test_count = sample(df_test, n_test)
         df_test.write_parquet(new_path / "held_out.parquet")
+
+        total += test_count + train_count + val_count
+
+    print(total)
 
 
 if __name__ == "__main__":
@@ -121,7 +164,7 @@ if __name__ == "__main__":
         "--input_meds",
         dest="input_meds",
         action="store",
-        default="/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/in_house_phenotypes"
+        default="/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/"
     )
 
     main(

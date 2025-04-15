@@ -11,3 +11,12 @@ __pycache__/
 *.so
 *.pyo
 *.pyd
+
+lightning_logs/
+meds-evaluation/
+outputs/
+plots/
+predictions/
+
+*.pdf
+*.log
