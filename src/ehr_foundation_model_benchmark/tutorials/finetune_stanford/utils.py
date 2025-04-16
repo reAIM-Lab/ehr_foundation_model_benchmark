@@ -10,10 +10,14 @@ from torch.utils.data import DataLoader, TensorDataset
 import pytorch_lightning as pyl
 from transformers import AutoModelForCausalLM
 from sklearn.metrics import roc_auc_score, precision_recall_curve, auc
+from datetime import timedelta
 
 from hf_ehr.config import Event
 from hf_ehr.data.tokenization import CLMBRTokenizer
 
+# Model-specific parameters
+BATCH_SIZE=16
+CONTEXT_LENGTH=4096
 
 class LRModelLightning(pyl.LightningModule):
     def __init__(self, input_dim):
@@ -29,7 +33,7 @@ class LRModelLightning(pyl.LightningModule):
         outputs = self(embeddings)
         loss = self.criterion(outputs, labels)
 
-        self.log("train_loss", loss, prog_bar=False, logger=True)
+        self.log("train_loss", loss, prog_bar=False, logger=False)
 
         return loss
     
@@ -38,7 +42,7 @@ class LRModelLightning(pyl.LightningModule):
         outputs = self(inputs)
         loss = self.criterion(outputs, labels)
         
-        self.log("val_loss", loss, prog_bar=False, logger=True)
+        self.log("val_loss", loss, prog_bar=True, logger=False)
         return loss
 
     def configure_optimizers(self):
@@ -88,24 +92,27 @@ def last_token_pool(last_hidden_states: torch.Tensor,
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
 
 def load_task_embeddings(args, labels, data_path, device):
-    model = AutoModelForCausalLM.from_pretrained(f"StanfordShahLab/{args.model}").to(device)
-    tokenizer = CLMBRTokenizer.from_pretrained(f"StanfordShahLab/{args.model}")
+    # Load model and tokenizer
+    if args.model_type == 'mamba-ehrshot':
+        model = AutoModelForCausalLM.from_pretrained(f"StanfordShahLab/{args.model}").to(device)
+        tokenizer = CLMBRTokenizer.from_pretrained(f"StanfordShahLab/{args.model}")
+    # elif 
 
+    embeddings, labels, ids, times = load_meds(labels, data_path, model, tokenizer, device, args)
+
+    return embeddings, labels, ids, times
+    
+def load_meds(data, data_path, model, tokenizer, device, args):
     files = sorted(data_path.glob("*.parquet"))
 
-    labels = labels.with_columns(
+    base_path = Path(args.input_meds)
+    save_dir = base_path / args.model_type / args.task / data_path.name
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    data = data.with_columns(
         pl.col("prediction_time").cast(pl.Datetime("us")),
     )
 
-    base_path = Path(args.base_path)
-    save_dir = base_path / "context_clues_embeddings" / args.task / data_path.name
-    save_dir.mkdir(parents=True, exist_ok=True)
-    print(save_dir)
-
-    embeddings, labels = load_meds(labels, files, model, tokenizer, save_dir, device)
-    return embeddings, labels
-    
-def load_meds(data, files, model, tokenizer, save_dir, device):
     subjects = (
         data.group_by("subject_id")
         .agg(pl.max("prediction_time")
@@ -115,6 +122,8 @@ def load_meds(data, files, model, tokenizer, save_dir, device):
     # Load and filter each parquet file in data_path
     batch_embeddings = []
     batch_labels = []
+    batch_ids = []
+    batch_times = []
     for file in files:
         save_path = save_dir / f"{Path(file).stem}.pt"
 
@@ -123,6 +132,8 @@ def load_meds(data, files, model, tokenizer, save_dir, device):
             embeddings_data = torch.load(save_path)
             embeddings = embeddings_data['embeddings']
             labels = embeddings_data['labels']
+            ids = embeddings_data['ids']
+            prediction_times = embeddings_data['prediction_times']
         else:
             df = pl.read_parquet(file)
 
@@ -133,30 +144,39 @@ def load_meds(data, files, model, tokenizer, save_dir, device):
             df_joined = df.join(subjects, on="subject_id", how="inner")
             df_filtered = df_joined.filter(df_joined["time"] < df_joined["prediction_time"])
 
-            # Revert unit concatenation
-            df_filtered = df_filtered.with_columns(
-                pl.col("code").map_elements(
-                    lambda x: x.split('//')[0] if isinstance(x, str) and x.startswith('LOINC') else x,
-                    return_dtype=pl.Utf8  # Ensure the return is a string
-                ).alias("code")
-            )
+            if args.model_type == 'mamba-ehrshot':
+                # Revert unit concatenation for Stanford-trained model
+                df_filtered = df_filtered.with_columns(
+                    pl.col("code").map_elements(
+                        lambda x: x.split('//')[0] if isinstance(x, str) and x.startswith('LOINC') else x,
+                        return_dtype=pl.Utf8  # Ensure the return is a string
+                    ).alias("code")
+                )
 
+            # Convert each row to Event object
             events = convert_to_events(df_filtered)
-            embeddings, labels = get_embeddings(model, tokenizer, events, data, device)
 
+            # Generate embedding from pretrained model
+            embeddings, labels, ids, prediction_times = get_embeddings(model, tokenizer, events, data, device)
+
+            # Save embeddings for linear probing & evaluation
             torch.save({
+                'ids': ids,
+                'prediction_times': prediction_times,
                 'embeddings': embeddings,
                 'labels': labels
             }, save_path)
         
         batch_embeddings.append(embeddings)
         batch_labels.append(labels)
+        batch_ids.extend(ids)
+        batch_times.extend(prediction_times)
     
     # Concatenate all filtered DataFrames into one
     batch_embeddings = torch.cat(batch_embeddings, dim=0)
     batch_labels = torch.cat(batch_labels, dim=0)
 
-    return batch_embeddings, batch_labels
+    return batch_embeddings, batch_labels, batch_ids, batch_times
 
 def convert_to_events(tokens):
     subject_data = defaultdict(list)
@@ -171,8 +191,11 @@ def convert_to_events(tokens):
 def get_embeddings(model, tokenizer, subject_data, labels, device):
     batch_events = []
     batch_embedding = []
+    batch_ids = []
+    batch_times = []
     batch_labels = []
 
+    # Extract events for each prediction sample
     for row in labels.iter_rows(named=True):
         subject_id = row["subject_id"]
         prediction_time = row["prediction_time"]
@@ -183,19 +206,37 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
             events_data = subject_data.get(subject_id, [])  # Get events; default to empty list if not found
 
             if events_data:  # Only process if data exists
+                two_years_ago = prediction_time - timedelta(days=2*365)
+
                 sorted_events = sorted(events_data, key=lambda x: x[1], reverse=True)
-                filtered_events = [event for event, event_time in sorted_events if event_time < prediction_time]
+                filtered_events = [event for event, event_time in sorted_events if two_years_ago <= event_time < prediction_time]
+                filtered_eventtimes = [event_time for event, event_time in sorted_events if two_years_ago <= event_time < prediction_time]
 
                 if filtered_events:
+                    # min_time = min(filtered_eventtimes)
+                    # max_time = max(filtered_eventtimes)
+                    # print(f"Min event_time: {min_time}, Max event_time: {max_time}")
+                    # print(f"Prediction time: {prediction_time} ")
+
+                    batch_ids.append(subject_id)
+                    batch_times.append(prediction_time)
                     batch_events.append(filtered_events)
                     batch_labels.append(label)
 
-    batch_size = 64
-
-    batch_dict = tokenizer(batch_events, max_length=4096, padding=True, truncation=True, return_tensors='pt')
+    # Tokenize all events, and construct input sequence starting from earliest to latest event (with left padding)
+    batch_dict = tokenizer(batch_events, max_length=CONTEXT_LENGTH, padding=True, truncation=True, return_tensors='pt')
     batch_dict['input_ids'] = batch_dict['input_ids'].flip(dims=[1])  # Reverse along sequence dimension
     batch_dict['attention_mask'] = batch_dict['attention_mask'].flip(dims=[1]) 
     batch_dict.pop("token_type_ids", None)
+
+    # print(batch_dict['input_ids'].shape)
+    # print(batch_dict['attention_mask'].shape)
+
+    # pre_token_lens = [len(events) for events in batch_events]
+    # print("Pre-tokenization lengths:", pre_token_lens[0:10])
+
+    # post_token_lens = batch_dict['attention_mask'].sum(dim=1).tolist()
+    # print("Post-tokenization lengths:", post_token_lens[0:10])
 
     padding_token_id = tokenizer.pad_token_id
 
@@ -204,7 +245,7 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
     start_indices = (input_ids != padding_token_id).int().argmax(dim=1)
 
     dataset = TensorDataset(batch_dict['input_ids'], batch_dict['attention_mask'])
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     if batch_events:
         for batch in dataloader:
@@ -224,57 +265,7 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
     batch_embedding = torch.cat(batch_embedding, dim=0)
     batch_labels = torch.tensor(batch_labels, dtype=torch.long)
 
-    return batch_embedding, batch_labels
-
-def count_events(labels, files):
-    subjects = (
-        labels.group_by("subject_id")
-        .agg(pl.max("prediction_time")
-        .alias("prediction_time"))  # Take max prediction_time per subject
-    )
-
-    # Load and filter each parquet file in data_path
-    all_events = []
-    batch_labels = []
-    for file in files[0:10]:
-        df = pl.read_parquet(file)
-        df_joined = df.join(subjects, on="subject_id", how="inner")
-        df_filtered = df_joined.filter(df_joined["time"] < df_joined["prediction_time"])
-
-        # Revert unit concatenation
-        df_filtered = df_filtered.with_columns(
-            pl.col("code").map_elements(
-                lambda x: x.split('//')[0] if isinstance(x, str) and x.startswith('LOINC') else x,
-                return_dtype=pl.Utf8  # Ensure the return is a string
-            ).alias("code")
-        )
-
-        subject_data = convert_to_events(df_filtered)
-
-        batch_events = []
-        batch_embedding = []
-        batch_labels = []
-
-        for row in labels.iter_rows(named=True):
-            subject_id = row["subject_id"]
-            prediction_time = row["prediction_time"]
-            label = row["boolean_value"]
-
-            # Extract events for this subject_id
-            if subject_id in subject_data:
-                events_data = subject_data.get(subject_id, [])  # Get events; default to empty list if not found
-
-                if events_data:  # Only process if data exists
-                    sorted_events = sorted(events_data, key=lambda x: x[1], reverse=True)
-                    filtered_events = [event for event, event_time in sorted_events if event_time.date() < prediction_time]
-
-                    if filtered_events:
-                        batch_events.append(filtered_events)
-                        batch_labels.append(label)
-
-        all_events.extend(batch_events)
-    
-    return all_events
+    return batch_embedding, batch_labels, batch_ids, batch_times
 
 def standardize(train, val, test):
     train_mean = train.mean(dim=0, keepdim=True)
@@ -298,3 +289,54 @@ def create_event(row):
         end=row["end"] if "end" in row else None,
         omop_table=row["omop_table"] if "omop_table" in row else None,
     ), row['time']
+
+
+# def count_events(labels, files):
+#     subjects = (
+#         labels.group_by("subject_id")
+#         .agg(pl.max("prediction_time")
+#         .alias("prediction_time"))  # Take max prediction_time per subject
+#     )
+
+#     # Load and filter each parquet file in data_path
+#     all_events = []
+#     batch_labels = []
+#     for file in files[0:10]:
+#         df = pl.read_parquet(file)
+#         df_joined = df.join(subjects, on="subject_id", how="inner")
+#         df_filtered = df_joined.filter(df_joined["time"] < df_joined["prediction_time"])
+
+#         # Revert unit concatenation
+#         df_filtered = df_filtered.with_columns(
+#             pl.col("code").map_elements(
+#                 lambda x: x.split('//')[0] if isinstance(x, str) and x.startswith('LOINC') else x,
+#                 return_dtype=pl.Utf8  # Ensure the return is a string
+#             ).alias("code")
+#         )
+
+#         subject_data = convert_to_events(df_filtered)
+
+#         batch_events = []
+#         batch_embedding = []
+#         batch_labels = []
+
+#         for row in labels.iter_rows(named=True):
+#             subject_id = row["subject_id"]
+#             prediction_time = row["prediction_time"]
+#             label = row["boolean_value"]
+
+#             # Extract events for this subject_id
+#             if subject_id in subject_data:
+#                 events_data = subject_data.get(subject_id, [])  # Get events; default to empty list if not found
+
+#                 if events_data:  # Only process if data exists
+#                     sorted_events = sorted(events_data, key=lambda x: x[1], reverse=True)
+#                     filtered_events = [event for event, event_time in sorted_events if event_time.date() < prediction_time]
+
+#                     if filtered_events:
+#                         batch_events.append(filtered_events)
+#                         batch_labels.append(label)
+
+#         all_events.extend(batch_events)
+    
+#     return all_events

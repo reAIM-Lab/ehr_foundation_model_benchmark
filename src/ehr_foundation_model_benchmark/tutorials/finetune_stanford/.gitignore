@@ -17,6 +17,8 @@ meds-evaluation/
 outputs/
 plots/
 predictions/
+hf_ehr/
 
 *.pdf
 *.log
+*.yaml

@@ -4,14 +4,17 @@ import warnings
 from pathlib import Path
 
 import polars as pl
+import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 import pytorch_lightning as pyl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from utils import LRModelLightning, load_task_embeddings
+from utils import LRModelLightning, load_task_embeddings, standardize
 
 warnings.filterwarnings("ignore")
+
+TRAIN_SIZES = [1000, 10000, 100000]
 
 ####################################
 # 1. Load model and tokenizer
@@ -34,7 +37,6 @@ def main(args):
         test = pl.read_parquet(task_path_test)
     else:
         task_path_train = base_path / f"task_labels/cehrbert_pyspark/{task_name}/train" 
-        task_path_val = base_path / f"task_labels/cehrbert_pyspark/{task_name}/train" 
         task_path_test = base_path / f"task_labels/cehrbert_pyspark/{task_name}/test"
 
         train_labels = sorted(task_path_train.glob("*.parquet"))
@@ -50,18 +52,22 @@ def main(args):
     # Load in embeddings and labels for task (model dependent)
     start_time = time.time()
 
-    train_embeddings, train_labels = load_task_embeddings(args, train, train_path, embedding_train_path, device)
-    tune_embeddings, tune_labels = load_task_embeddings(args, tune, tune_path, embedding_tune_path, device)
-    test_embeddings, test_labels = load_task_embeddings(args, test, test_path, embedding_test_path, device)
+    train_embeddings, train_labels, _, _ = load_task_embeddings(args, train, train_path, device)
+    tune_embeddings, tune_labels, _, _ = load_task_embeddings(args, tune, tune_path, device)
+    test_embeddings, test_labels, test_ids, test_times = load_task_embeddings(args, test, test_path, device)
 
     end_time = time.time()
     print(f"Inference Time taken: {end_time - start_time:.2f} seconds")
 
     train_embeddings, tune_embeddings, test_embeddings = standardize(train_embeddings, tune_embeddings, test_embeddings)
 
-    sizes = [1000, 5000, 10000, 50000, 100000]
+    model_dir = Path(f"./models/{task_name}")
+    model_dir.mkdir(parents=True, exist_ok=True)
 
-    for size in sizes:
+    pred_dir = Path(f"./predictions/{task_name}")
+    pred_dir.mkdir(parents=True, exist_ok=True)
+
+    for size in TRAIN_SIZES:
         indices = torch.randperm(train_embeddings.shape[0])[:size]
 
         x_train = train_embeddings[indices]
@@ -97,13 +103,12 @@ def main(args):
 
         early_stopping_callback = EarlyStopping(
             monitor="val_loss",    # Metric to monitor (validation loss)
-            patience=10,            # Number of epochs to wait for improvement
+            patience=20,            # Number of epochs to wait for improvement
             verbose=False,          # Print message when stopping
             mode="min",            # 'min' for loss (lower is better)
         )
 
-        model_path = Path(f"models/linear_probing_{args.task}_{size}.pth")
-        model_path.mkdir(parents=True, exist_ok=True)
+        model_path = model_dir / f"linear_probing_{size}.pth"
 
         if not model_path.exists():
             trainer = pyl.Trainer(
@@ -129,19 +134,15 @@ def main(args):
         preds = results[0][0]
         probs = results[0][1]
 
-        df_predictions = test[["subject_id", "prediction_time", "boolean_value"]].with_columns(
-            pl.col("subject_id").cast(pl.Int64),
-            pl.col("prediction_time").cast(pl.Datetime("us")),
-        )
+        df_predictions = pl.DataFrame({
+            "subject_id": np.array(test_ids).astype(int),
+            "prediction_time": test_times,
+            "boolean_value": test_labels.cpu().numpy().astype(bool),
+            "predicted_boolean_value": preds.detach().cpu().numpy().astype(bool),
+            "predicted_boolean_probability": probs.detach().cpu().numpy().astype(float),
+        })
 
-        df_predictions = df_predictions.with_columns([
-            pl.Series("boolean_value", test_labels.cpu().numpy()).cast(pl.Boolean),
-            pl.Series("predicted_boolean_value", preds.detach().cpu().numpy()).cast(pl.Boolean),
-            pl.Series("predicted_boolean_probability", probs.detach().cpu().numpy()).cast(pl.Float64),
-        ])
-
-        prediction_save_path = Path(f"predictions/{args.task}/{args.model_type}_{size}.parquet")
-        prediction_save_path.mkdir(parents=True, exist_ok=True)
+        prediction_save_path = pred_dir / f"{args.model_type}_{size}.parquet"
         df_predictions.write_parquet(prediction_save_path)
 
 if __name__ == "__main__":
@@ -152,7 +153,8 @@ if __name__ == "__main__":
         "--input_meds",
         dest="input_meds",
         action="store",
-        default="/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/"
+        default="/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped",
+        help="Path to input MEDS data"
     )
 
     parser.add_argument(
@@ -160,6 +162,7 @@ if __name__ == "__main__":
         dest="task",
         action="store",
         default="AMI",
+        help="Name of task file"
     )
 
     parser.add_argument(
@@ -167,6 +170,7 @@ if __name__ == "__main__":
         dest="model",
         action="store",
         default="mamba-tiny-4096-clmbr",
+        help="Model name used for downloading off huggingface"
     )
 
     parser.add_argument(
@@ -174,6 +178,7 @@ if __name__ == "__main__":
         dest="model_type",
         action="store",
         default="mamba-ehrshot",
+        help="Model name used for saving embeddings and predictions"
     )
 
     parser.add_argument(
