@@ -1,10 +1,11 @@
 import argparse
 from pathlib import Path
 import polars as pl
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-from utils import count_events
+DEFAULT_TASKS = [
+    'AMI', 'Celiac', 'CLL', 'HTN', 'Ischemic_Stroke', 'MASLD', 'Osteoporosis', 'Pancreatic_Cancer', 'SLE', 'T2DM'
+]
+
 
 def sample(df, n_max, min_obs=None, label_col="boolean_value"):
     """
@@ -94,66 +95,52 @@ def sample(df, n_max, min_obs=None, label_col="boolean_value"):
     df_sampled = pl.concat(sampled_dfs)
     return df_sampled, total_n
 
-def main(args):
 
-    base_path = Path(args.input_meds)
-    
-    tasks = ['AMI', 'Celiac', 'CLL', 'HTN', 'Ischemic_Stroke', 'MASLD', 'Osteoporosis', 'Pancreatic_Cancer', 'SLE', 'T2DM']
+def get_data_split(cohort: pl.DataFrame, subject_splits: pl.DataFrame, split: str) -> pl.DataFrame:
+    assert split in ["train", "tuning", "held_out"]
+    split_data = cohort.join(
+        subject_splits.filter(pl.col("split") == split).select("subject_id"),
+        on='subject_id'
+    )
+    return split_data
+
+
+def main(args):
+    cohort_dir = Path(args.cohort_dir)
+    tasks = [entry.name for entry in cohort_dir.iterdir() if entry.is_dir()]
+    print(f"{len(tasks)} tasks identified in {args.cohort_dir}.")
+    print(f"Tasks: {tasks}")
 
     n_train = 80000
     n_tune = 20000
     n_test = 50000
 
-    total = 0
-
-    total_lengths = []
+    meds_dir = Path(args.meds_dir)
+    subject_splits_path = meds_dir / "metadata" / "subject_splits.parquet"
+    print(f"Loading subject_splits.parquet from {subject_splits_path}")
+    subject_splits = pl.read_parquet(subject_splits_path)
+    output_dir = Path(args.output_dir)
 
     for task in tasks:
-        train_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/train.parquet"
-        tune_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/tuning.parquet"
-        test_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/held_out.parquet"
+        print(f"Start processing: {task}")
+        task_dir = cohort_dir / task
+        output_task_dir = output_dir / task
+        output_task_dir.mkdir(exist_ok=True)
+        cohort_data = pl.read_parquet(list(task_dir.rglob('*.parquet')))
 
-        new_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years_sample/{task}"
-        new_path.mkdir(parents=True, exist_ok=True)
-
-        train_path = base_path / "post_transform/data/train"
-        tune_path = base_path / "post_transform/data/tuning"
-        test_path = base_path / "post_transform/data/held_out"
-
-        train_files = sorted(train_path.glob("*.parquet"))
-        tune_files = sorted(tune_path.glob("*.parquet"))
-        test_files = sorted(test_path.glob("*.parquet"))
-
-        df_train = pl.read_parquet(train_labels_path)
+        df_train = get_data_split(cohort_data, subject_splits, "train")
         df_train, train_count = sample(df_train, n_train)
-        duplicates = df_train.filter(df_train.is_duplicated())
-        df_train.write_parquet(new_path / "train.parquet")
+        df_train.write_parquet(output_task_dir / "train.parquet")
 
-        # train_events = count_events(df_train, train_files)
-        # lengths = [len(lst) for lst in train_events]
-        # lengths = [min(x, 5000) for x in lengths]
-
-        # plt.figure(figsize=(6, 4))
-        # plt.hist(lengths, bins=50)
-        # plt.xlabel("Number of Events")
-        # plt.ylabel("Frequency")
-        # plt.title("Distribution of Event Count")
-        # plt.grid(True)
-        # plt.tight_layout()
-
-        # plt.savefig(f"plots/events_per_sample_{task}.pdf")
-
-        df_tune = pl.read_parquet(tune_labels_path)
+        df_tune = get_data_split(cohort_data, subject_splits, "tuning")
         df_tune, val_count = sample(df_tune, n_tune)
-        df_tune.write_parquet(new_path / "tuning.parquet")
+        df_tune.write_parquet(output_task_dir / "tuning.parquet")
 
-        df_test = pl.read_parquet(test_labels_path)
+        df_test = get_data_split(cohort_data, subject_splits, "held_out")
         df_test, test_count = sample(df_test, n_test)
-        df_test.write_parquet(new_path / "held_out.parquet")
+        df_test.write_parquet(output_dir / "held_out.parquet")
 
-        total += test_count + train_count + val_count
-
-    print(total)
+        print(f"Sampled cohort size for {task}: train - {train_count}, tuning: {val_count}, held_out: {test_count}")
 
 
 if __name__ == "__main__":
@@ -161,12 +148,23 @@ if __name__ == "__main__":
         description="Arguments"
     )
     parser.add_argument(
-        "--input_meds",
-        dest="input_meds",
+        "--cohort_dir",
+        dest="cohort_dir",
         action="store",
-        default="/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/"
+        required=True,
     )
-
+    parser.add_argument(
+        "--meds_dir",
+        dest="meds_dir",
+        action="store",
+        required=True,
+    )
+    parser.add_argument(
+        "--output_dir",
+        dest="output_dir",
+        action="store",
+        required=True,
+    )
     main(
         parser.parse_args()
     )
