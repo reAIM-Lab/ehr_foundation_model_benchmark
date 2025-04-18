@@ -101,7 +101,7 @@ def get_data_split(cohort: pl.DataFrame, subject_splits: pl.DataFrame, split: st
     split_data = cohort.join(
         subject_splits.filter(pl.col("split") == split).select("subject_id"),
         on='subject_id'
-    )
+    ).select("subject_id", "prediction_time", "boolean_value", pl.lit(split).alias("split"))
     return split_data
 
 
@@ -153,7 +153,7 @@ def main(args):
         df_test, test_count = sample(df_test, n_test)
         df_test.write_parquet(output_task_dir / "held_out.parquet")
 
-        print(f"Sampled cohort size for {task}: train - {train_count}, tuning - {val_count}, held_out - {test_count}")
+        print(f"Original cohort size for {task}: train - {train_count}, tuning - {val_count}, held_out - {test_count}")
 
 
 if __name__ == "__main__":
