@@ -125,19 +125,21 @@ def main(args):
     for task in folder_tasks + file_tasks:
         print(f"Start processing: {task}")
         task_path = cohort_dir / task
-        output_task_dir = output_dir / task
-        output_task_dir.mkdir(exist_ok=True)
-
         if task_path.is_file():
             if task_path.suffix != ".parquet":
                 print(f"{task_path} is not a valid parquet file, therefore skip")
                 continue
             cohort_data = pl.read_parquet(task_path)
+            task_name = task_path.stem
         elif task_path.is_dir():
             cohort_data = pl.read_parquet(list(task_path.rglob('*.parquet')))
+            task_name = task
         else:
             print(f"{task_path} is neither a valid parquet file and nor a folder, therefore skip")
             continue
+
+        output_task_dir = output_dir / task_name
+        output_task_dir.mkdir(exist_ok=True)
 
         df_train = get_data_split(cohort_data, subject_splits, "train")
         df_train, train_count = sample(df_train, n_train)
@@ -149,9 +151,9 @@ def main(args):
 
         df_test = get_data_split(cohort_data, subject_splits, "held_out")
         df_test, test_count = sample(df_test, n_test)
-        df_test.write_parquet(output_dir / "held_out.parquet")
+        df_test.write_parquet(output_task_dir / "held_out.parquet")
 
-        print(f"Sampled cohort size for {task}: train - {train_count}, tuning: {val_count}, held_out: {test_count}")
+        print(f"Sampled cohort size for {task}: train - {train_count}, tuning - {val_count}, held_out - {test_count}")
 
 
 if __name__ == "__main__":
