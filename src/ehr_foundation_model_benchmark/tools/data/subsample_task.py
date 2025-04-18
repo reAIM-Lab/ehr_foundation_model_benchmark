@@ -107,9 +107,10 @@ def get_data_split(cohort: pl.DataFrame, subject_splits: pl.DataFrame, split: st
 
 def main(args):
     cohort_dir = Path(args.cohort_dir)
-    tasks = [entry.name for entry in cohort_dir.iterdir() if entry.is_dir()]
-    print(f"{len(tasks)} tasks identified in {args.cohort_dir}.")
-    print(f"Tasks: {tasks}")
+    folder_tasks = [entry.name for entry in cohort_dir.iterdir() if entry.is_dir()]
+    file_tasks = [entry.name for entry in cohort_dir.iterdir() if entry.is_file()]
+    print(f"{len(folder_tasks) + len(file_tasks)} tasks identified in {args.cohort_dir}.")
+    print(f"Tasks: {folder_tasks + file_tasks}")
 
     n_train = 80000
     n_tune = 20000
@@ -121,12 +122,22 @@ def main(args):
     subject_splits = pl.read_parquet(subject_splits_path)
     output_dir = Path(args.output_dir)
 
-    for task in tasks:
+    for task in folder_tasks + file_tasks:
         print(f"Start processing: {task}")
-        task_dir = cohort_dir / task
+        task_path = cohort_dir / task
         output_task_dir = output_dir / task
         output_task_dir.mkdir(exist_ok=True)
-        cohort_data = pl.read_parquet(list(task_dir.rglob('*.parquet')))
+
+        if task_path.is_file():
+            if task_path.suffix != ".parquet":
+                print(f"{task_path} is not a valid parquet file, therefore skip")
+                continue
+            cohort_data = pl.read_parquet(task_path)
+        elif task_path.is_dir():
+            cohort_data = pl.read_parquet(list(task_path.rglob('*.parquet')))
+        else:
+            print(f"{task_path} is neither a valid parquet file and nor a folder, therefore skip")
+            continue
 
         df_train = get_data_split(cohort_data, subject_splits, "train")
         df_train, train_count = sample(df_train, n_train)
