@@ -129,7 +129,11 @@ def main(args):
             cohort_data = pl.read_parquet(task_path)
             task_name = task_path.stem
         elif task_path.is_dir():
-            cohort_data = pl.read_parquet(list(task_path.rglob('*.parquet')))
+            parquet_files = list(task_path.rglob('*.parquet'))
+            if len(parquet_files) == 0:
+                print(f"There are no parquet files in {task_path}, therefore skip")
+                continue
+            cohort_data = pl.read_parquet(parquet_files)
             task_name = task
         else:
             print(f"{task_path} is neither a valid parquet file and nor a folder, therefore skip")
