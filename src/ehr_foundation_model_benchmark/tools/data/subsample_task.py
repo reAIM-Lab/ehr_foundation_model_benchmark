@@ -1,10 +1,7 @@
 import argparse
 from pathlib import Path
 import polars as pl
-
-DEFAULT_TASKS = [
-    'AMI', 'Celiac', 'CLL', 'HTN', 'Ischemic_Stroke', 'MASLD', 'Osteoporosis', 'Pancreatic_Cancer', 'SLE', 'T2DM'
-]
+from meds import train_split, tuning_split, held_out_split
 
 
 def sample(df, n_max, min_obs=None, label_col="boolean_value"):
@@ -141,19 +138,13 @@ def main(args):
         output_task_dir = output_dir / task_name
         output_task_dir.mkdir(exist_ok=True)
 
-        df_train = get_data_split(cohort_data, subject_splits, "train")
-        df_train, train_count = sample(df_train, n_train)
-        df_train.write_parquet(output_task_dir / "train.parquet")
-
-        df_tune = get_data_split(cohort_data, subject_splits, "tuning")
-        df_tune, val_count = sample(df_tune, n_tune)
-        df_tune.write_parquet(output_task_dir / "tuning.parquet")
-
-        df_test = get_data_split(cohort_data, subject_splits, "held_out")
-        df_test, test_count = sample(df_test, n_test)
-        df_test.write_parquet(output_task_dir / "held_out.parquet")
-
-        print(f"Original cohort size for {task}: train - {train_count}, tuning - {val_count}, held_out - {test_count}")
+        print_statement = f"Original cohort size for {task}:"
+        for split, n_samples in zip([train_split, tuning_split, held_out_split], [n_train, n_tune, n_test]):
+            cohort_split = get_data_split(cohort_data, subject_splits, split)
+            cohort_split_sample, split_count = sample(cohort_split, n_samples)
+            cohort_split_sample.write_parquet(output_task_dir / f"{split}.parquet")
+            print_statement += f"{split}({split_count}) "
+        print(print_statement)
 
 
 if __name__ == "__main__":
