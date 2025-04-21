@@ -1,7 +1,7 @@
 from pathlib import Path
 import datetime
 import polars as pl
-from meds import train_split, tuning_split, held_out_split
+from meds import train_split, tuning_split, held_out_split, birth_code
 from .subsample_task import get_data_split
 
 
@@ -35,16 +35,28 @@ def main(args):
 
     meds_dir = Path(args.meds_dir)
     subject_splits_path = meds_dir / "metadata" / "subject_splits.parquet"
-    meds_data_parquet_files = (meds_dir / "data").rglob("*.parquet")
+    meds_data_parquet_files = list((meds_dir / "data").rglob("*.parquet"))
     print(f"Loading subject_splits.parquet from {subject_splits_path}")
     subject_splits = pl.read_parquet(subject_splits_path)
-    print(f"Loading the MEDS data")
+    print(f"Loading the MEDS data for condition and drug events")
     meds_data = pl.read_parquet(
-        list(meds_data_parquet_files),
+        meds_data_parquet_files,
         columns=["subject_id", "time", "table"]
     ).filter(
         pl.col("table").is_in(["condition", "drug_exposure"])
     )
+
+    print(f"Loading the subject birth_datetime data from the MEDS data")
+    cohort_birth_datetime = pl.read_parquet(
+        meds_data_parquet_files,
+        columns=["subject_id", "time", "code"]
+    ).filter(
+        pl.col("code") == birth_code
+    ).select(
+        "subject_id",
+        pl.col("time").alias("birth_datetime")
+    )
+
     output_dir = Path(args.output_dir)
     for task in folder_tasks + file_tasks:
         print(f"\nStart processing: {task}")
@@ -73,6 +85,16 @@ def main(args):
                 meds_data=meds_data,
                 observation_window=args.observation_window
             )
+            if args.minimum_age > 0:
+                filtered_cohort_split = filtered_cohort_split.join(
+                    cohort_birth_datetime, on="subject_id",
+                ).with_columns(
+                    ((pl.col("prediction_time") - pl.col("birth_datetime")).dt.total_days() / 365.25).alias("age_years")
+                ).filter(
+                    pl.col("age_years") >= args.minimum_age
+                ).drop(
+                    ["birth_datetime", "age_years"]
+                )
             print(f"{task_name} {split} after filter: {len(filtered_cohort_split)}")
             filtered_cohort_split.write_parquet(output_task_dir / f"{split}.parquet")
 
@@ -106,6 +128,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--observation_window",
         dest="observation_window",
+        action="store",
+        type=int,
+        default=0,
+        required=False,
+    )
+    parser.add_argument(
+        "--minimum_age",
+        dest="minimum_age",
         action="store",
         type=int,
         default=0,
