@@ -1,10 +1,8 @@
 import argparse
 from pathlib import Path
 import polars as pl
-import matplotlib.pyplot as plt
-import seaborn as sns
+from meds import train_split, tuning_split, held_out_split
 
-from utils import count_events
 
 def sample(df, n_max, min_obs=None, label_col="boolean_value"):
     """
@@ -94,66 +92,63 @@ def sample(df, n_max, min_obs=None, label_col="boolean_value"):
     df_sampled = pl.concat(sampled_dfs)
     return df_sampled, total_n
 
-def main(args):
 
-    base_path = Path(args.input_meds)
-    
-    tasks = ['AMI', 'Celiac', 'CLL', 'HTN', 'Ischemic_Stroke', 'MASLD', 'Osteoporosis', 'Pancreatic_Cancer', 'SLE', 'T2DM']
+def get_data_split(cohort: pl.DataFrame, subject_splits: pl.DataFrame, split: str) -> pl.DataFrame:
+    assert split in ["train", "tuning", "held_out"]
+    split_data = cohort.join(
+        subject_splits.filter(pl.col("split") == split).select("subject_id"),
+        on='subject_id'
+    ).select("subject_id", "prediction_time", "boolean_value", pl.lit(split).alias("split"))
+    return split_data
+
+
+def main(args):
+    cohort_dir = Path(args.cohort_dir)
+    folder_tasks = [entry.name for entry in cohort_dir.iterdir() if entry.is_dir()]
+    file_tasks = [entry.name for entry in cohort_dir.iterdir() if entry.is_file()]
+    print(f"{len(folder_tasks) + len(file_tasks)} tasks identified in {args.cohort_dir}.")
+    print(f"Tasks: {folder_tasks + file_tasks}")
 
     n_train = 80000
     n_tune = 20000
     n_test = 50000
 
-    total = 0
+    meds_dir = Path(args.meds_dir)
+    subject_splits_path = meds_dir / "metadata" / "subject_splits.parquet"
+    print(f"Loading subject_splits.parquet from {subject_splits_path}")
+    subject_splits = pl.read_parquet(subject_splits_path)
+    output_dir = Path(args.output_dir)
 
-    total_lengths = []
+    for task in folder_tasks + file_tasks:
+        print(f"Start processing: {task}")
+        task_path = cohort_dir / task
+        if task_path.is_file():
+            if task_path.suffix != ".parquet":
+                print(f"{task_path} is not a valid parquet file, therefore skip")
+                continue
+            cohort_data = pl.read_parquet(task_path)
+            task_name = task_path.stem
+        elif task_path.is_dir():
+            parquet_files = list(task_path.rglob('*.parquet'))
+            if len(parquet_files) == 0:
+                print(f"There are no parquet files in {task_path}, therefore skip")
+                continue
+            cohort_data = pl.read_parquet(parquet_files)
+            task_name = task
+        else:
+            print(f"{task_path} is neither a valid parquet file and nor a folder, therefore skip")
+            continue
 
-    for task in tasks:
-        train_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/train.parquet"
-        tune_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/tuning.parquet"
-        test_labels_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years/{task}/held_out.parquet"
+        output_task_dir = output_dir / task_name
+        output_task_dir.mkdir(exist_ok=True)
 
-        new_path = base_path / f"task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years_sample/{task}"
-        new_path.mkdir(parents=True, exist_ok=True)
-
-        train_path = base_path / "post_transform/data/train"
-        tune_path = base_path / "post_transform/data/tuning"
-        test_path = base_path / "post_transform/data/held_out"
-
-        train_files = sorted(train_path.glob("*.parquet"))
-        tune_files = sorted(tune_path.glob("*.parquet"))
-        test_files = sorted(test_path.glob("*.parquet"))
-
-        df_train = pl.read_parquet(train_labels_path)
-        df_train, train_count = sample(df_train, n_train)
-        duplicates = df_train.filter(df_train.is_duplicated())
-        df_train.write_parquet(new_path / "train.parquet")
-
-        # train_events = count_events(df_train, train_files)
-        # lengths = [len(lst) for lst in train_events]
-        # lengths = [min(x, 5000) for x in lengths]
-
-        # plt.figure(figsize=(6, 4))
-        # plt.hist(lengths, bins=50)
-        # plt.xlabel("Number of Events")
-        # plt.ylabel("Frequency")
-        # plt.title("Distribution of Event Count")
-        # plt.grid(True)
-        # plt.tight_layout()
-
-        # plt.savefig(f"plots/events_per_sample_{task}.pdf")
-
-        df_tune = pl.read_parquet(tune_labels_path)
-        df_tune, val_count = sample(df_tune, n_tune)
-        df_tune.write_parquet(new_path / "tuning.parquet")
-
-        df_test = pl.read_parquet(test_labels_path)
-        df_test, test_count = sample(df_test, n_test)
-        df_test.write_parquet(new_path / "held_out.parquet")
-
-        total += test_count + train_count + val_count
-
-    print(total)
+        print_statement = f"Original cohort size for {task}:"
+        for split, n_samples in zip([train_split, tuning_split, held_out_split], [n_train, n_tune, n_test]):
+            cohort_split = get_data_split(cohort_data, subject_splits, split)
+            cohort_split_sample, split_count = sample(cohort_split, n_samples)
+            cohort_split_sample.write_parquet(output_task_dir / f"{split}.parquet")
+            print_statement += f"{split}({split_count}) "
+        print(print_statement)
 
 
 if __name__ == "__main__":
@@ -161,12 +156,23 @@ if __name__ == "__main__":
         description="Arguments"
     )
     parser.add_argument(
-        "--input_meds",
-        dest="input_meds",
+        "--cohort_dir",
+        dest="cohort_dir",
         action="store",
-        default="/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/"
+        required=True,
     )
-
+    parser.add_argument(
+        "--meds_dir",
+        dest="meds_dir",
+        action="store",
+        required=True,
+    )
+    parser.add_argument(
+        "--output_dir",
+        dest="output_dir",
+        action="store",
+        required=True,
+    )
     main(
         parser.parse_args()
     )
