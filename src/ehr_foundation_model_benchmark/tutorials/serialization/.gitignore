@@ -1,0 +1,15 @@
+# Checkpoints
+checkpoints/
+lightning_logs/
+tb_logs/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
