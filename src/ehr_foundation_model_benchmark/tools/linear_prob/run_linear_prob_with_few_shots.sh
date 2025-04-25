@@ -2,7 +2,7 @@
 
 # Display help information
 show_help() {
-  echo "Usage: $0 [options]"
+  echo "Usage: src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few_shots.sh [options]"
   echo
   echo "This script runs the EHR foundation model benchmark across multiple cohorts."
   echo
@@ -23,7 +23,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # Process command line arguments
-while [[ $# -gt 0 ]]; do
+while [ $# -gt 0 ]; do
   case $1 in
     --base_dir)
       BASE_DIR="$2"
