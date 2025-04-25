@@ -9,6 +9,7 @@ from meds import train_split, tuning_split, held_out_split
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import auc, precision_recall_curve, roc_auc_score
 
+MINIMUM_NUM_CASES = 10
 TRAIN_SIZES = [100, 1000, 10000, 100000]
 
 
@@ -48,7 +49,33 @@ def main(args):
             )
         else:
             if size < 100000:
+                success = True
                 subset = train_dataset.sample(n=size, shuffle=True, seed=args.seed)
+                n_positive_cases = len(train_dataset.filter(pl.col("boolean_value") == True))
+                while True:
+                    count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
+                    for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
+                        if cls == 1 and count < MINIMUM_NUM_CASES:
+                            success = False
+                            print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
+                            break
+                    if success:
+                        break
+                    else:
+                        sampling_percentage = size / len(train_dataset)
+                        n_positives_to_sample = max(MINIMUM_NUM_CASES, int(n_positive_cases * sampling_percentage))
+                        positives_subset = train_dataset.filter(pl.col("boolean_value") == True).sample(
+                            n=n_positives_to_sample, shuffle=True, seed=args.seed, with_replacement=True
+                        )
+                        negatives_subset = train_dataset.filter(pl.col("boolean_value") == False).sample(
+                            n=(size - n_positives_to_sample), shuffle=True, seed=args.seed
+                        )
+                        print(
+                            f"number of positive cases: {len(positives_subset)}; "
+                            f"number of negative cases: {len(negatives_subset)}"
+                        )
+                        subset = pl.concat([positives_subset, negatives_subset])
+                        break
             else:
                 subset = train_dataset
 
@@ -64,7 +91,7 @@ def main(args):
                 with open(logistic_model_file, "wb") as f:
                     pickle.dump(model, f)
 
-            y_pred = model.predict_proba(test_dataset["features"].to_numpy())[:, 1]
+            y_pred = model.predict_proba(np.asarray(test_dataset["features"].to_list()))[:, 1]
             logistic_predictions = pl.DataFrame(
                 {
                     "subject_id": test_dataset["subject_id"].to_list(),
