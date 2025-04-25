@@ -39,7 +39,7 @@ def main(args):
     )
 
     for size in TRAIN_SIZES:
-        few_show_output_dir = task_output_dir / f"results_{size}"
+        few_show_output_dir = task_output_dir / f"results_{size}" / args.model_name
         few_show_output_dir.mkdir(exist_ok=True, parents=True)
         logistic_model_file = few_show_output_dir / "model.pickle"
         logistic_test_result_file = few_show_output_dir / "metrics.json"
