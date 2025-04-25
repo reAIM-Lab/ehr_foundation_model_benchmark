@@ -17,18 +17,11 @@ def main(args):
     print(f"Loading subject_splits.parquet from {subject_splits_path}")
     subject_splits = pl.read_parquet(subject_splits_path)
     features_label_input_dir = Path(args.features_label_input_dir)
-    task_name = features_label_input_dir.stem
     features_label = pl.read_parquet(features_label_input_dir.rglob('*.parquet'))
 
     output_dir = Path(args.output_dir)
-    task_output_dir = output_dir / task_name
+    task_output_dir = output_dir / args.task_name
     task_output_dir.mkdir(exist_ok=True, parents=True)
-
-    model_dir = Path(f"./models/{task_name}")
-    model_dir.mkdir(parents=True, exist_ok=True)
-
-    pred_dir = Path(f"./predictions/{task_name}")
-    pred_dir.mkdir(parents=True, exist_ok=True)
 
     features_label = features_label.sort("subject_id", "prediction_time")
 
@@ -94,7 +87,7 @@ def main(args):
             )
             pr_auc = auc(recall, precision)
             metrics = {"roc_auc": roc_auc, "pr_auc": pr_auc}
-            print("Logistic:", size, task_name, metrics)
+            print("Logistic:", size, args.task_name, metrics)
             with open(logistic_test_result_file, "w") as f:
                 json.dump(metrics, f, indent=4)
 
@@ -107,26 +100,35 @@ if __name__ == "__main__":
         "--features_label_input_dir",
         dest="features_label_input_dir",
         action="store",
+        required=True,
     )
     parser.add_argument(
         "--meds_dir",
         dest="meds_dir",
         action="store",
+        required=True,
     )
     parser.add_argument(
         "--output_dir",
         dest="output_dir",
         action="store",
+        required=True,
     )
     parser.add_argument(
         "--seed",
         dest="seed",
         action="store",
-        default=123,
+        default=42,
     )
     parser.add_argument(
         "--model_name",
         dest="model_name",
+        action="store",
+        required=True,
+    )
+    parser.add_argument(
+        "--task_name",
+        dest="task_name",
         action="store",
         required=True,
     )
