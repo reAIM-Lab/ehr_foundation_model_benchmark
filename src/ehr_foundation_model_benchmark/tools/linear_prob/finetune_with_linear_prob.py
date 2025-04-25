@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+import numpy as np
 import polars as pl
 import json
 import pickle
@@ -17,7 +18,7 @@ def main(args):
     print(f"Loading subject_splits.parquet from {subject_splits_path}")
     subject_splits = pl.read_parquet(subject_splits_path)
     features_label_input_dir = Path(args.features_label_input_dir)
-    features_label = pl.read_parquet(features_label_input_dir.rglob('*.parquet'))
+    features_label = pl.read_parquet(list(features_label_input_dir.rglob('*.parquet')))
 
     output_dir = Path(args.output_dir)
     task_output_dir = output_dir / args.task_name
@@ -59,18 +60,18 @@ def main(args):
                     model = pickle.load(f)
             else:
                 model = LogisticRegressionCV(scoring="roc_auc")
-                model.fit(subset["features"], subset["boolean_value"])
+                model.fit(np.asarray(subset["features"].to_list()), subset["boolean_value"].to_numpy())
                 with open(logistic_model_file, "wb") as f:
                     pickle.dump(model, f)
 
-            y_pred = model.predict_proba(test_dataset["features"])[:, 1]
+            y_pred = model.predict_proba(test_dataset["features"].to_numpy())[:, 1]
             logistic_predictions = pl.DataFrame(
                 {
-                    "subject_id": test_dataset["subject_id"].tolist(),
-                    "prediction_time": test_dataset["prediction_time"],
-                    "predicted_boolean_probability": y_pred.tolist(),
+                    "subject_id": test_dataset["subject_id"].to_list(),
+                    "prediction_time": test_dataset["prediction_time"].to_list(),
+                    "predicted_boolean_probability": y_pred,
                     "predicted_boolean_value": None,
-                    "boolean_value": test_dataset["boolean_value"].astype(bool).tolist(),
+                    "boolean_value": test_dataset["boolean_value"].cast(pl.Boolean).to_list(),
                 }
             )
             logistic_predictions = logistic_predictions.with_columns(
