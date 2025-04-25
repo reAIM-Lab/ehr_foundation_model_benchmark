@@ -48,77 +48,79 @@ def main(args):
                 f"The results for logistic regression with {size} shots already exist at {logistic_test_result_file}"
             )
         else:
-            if size < 100000:
-                success = True
-                subset = train_dataset.sample(n=size, shuffle=True, seed=args.seed)
-                n_positive_cases = len(train_dataset.filter(pl.col("boolean_value") == True))
-                while True:
-                    count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
-                    for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
-                        if cls == 1 and count < MINIMUM_NUM_CASES:
-                            success = False
-                            print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
+            try:
+                if size < 100000:
+                    success = True
+                    subset = train_dataset.sample(n=size, shuffle=True, seed=args.seed)
+                    n_positive_cases = len(train_dataset.filter(pl.col("boolean_value") == True))
+                    while True:
+                        count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
+                        for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
+                            if cls == 1 and count < MINIMUM_NUM_CASES:
+                                success = False
+                                print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
+                                break
+                        if success:
                             break
-                    if success:
-                        break
-                    else:
-                        sampling_percentage = size / len(train_dataset)
-                        n_positives_to_sample = max(MINIMUM_NUM_CASES, int(n_positive_cases * sampling_percentage))
-                        positives_subset = train_dataset.filter(pl.col("boolean_value") == True).sample(
-                            n=n_positives_to_sample, shuffle=True, seed=args.seed, with_replacement=True
-                        )
-                        negatives_subset = train_dataset.filter(pl.col("boolean_value") == False).sample(
-                            n=(size - n_positives_to_sample), shuffle=True, seed=args.seed
-                        )
-                        print(
-                            f"number of positive cases: {len(positives_subset)}; "
-                            f"number of negative cases: {len(negatives_subset)}"
-                        )
-                        subset = pl.concat([positives_subset, negatives_subset])
-                        break
-            else:
-                subset = train_dataset
+                        else:
+                            sampling_percentage = size / len(train_dataset)
+                            n_positives_to_sample = max(MINIMUM_NUM_CASES, int(n_positive_cases * sampling_percentage))
+                            positives_subset = train_dataset.filter(pl.col("boolean_value") == True).sample(
+                                n=n_positives_to_sample, shuffle=True, seed=args.seed, with_replacement=True
+                            )
+                            negatives_subset = train_dataset.filter(pl.col("boolean_value") == False).sample(
+                                n=(size - n_positives_to_sample), shuffle=True, seed=args.seed
+                            )
+                            print(
+                                f"number of positive cases: {len(positives_subset)}; "
+                                f"number of negative cases: {len(negatives_subset)}"
+                            )
+                            subset = pl.concat([positives_subset, negatives_subset])
+                            break
+                else:
+                    subset = train_dataset
 
-            if logistic_model_file.exists():
-                print(
-                    f"The logistic regression model already exist for {size} shots, loading it from {logistic_model_file}"
+                if logistic_model_file.exists():
+                    print(
+                        f"The logistic regression model already exist for {size} shots, loading it from {logistic_model_file}"
+                    )
+                    with open(logistic_model_file, "rb") as f:
+                        model = pickle.load(f)
+                else:
+                    model = LogisticRegressionCV(scoring="roc_auc")
+                    model.fit(np.asarray(subset["features"].to_list()), subset["boolean_value"].to_numpy())
+                    with open(logistic_model_file, "wb") as f:
+                        pickle.dump(model, f)
+
+                y_pred = model.predict_proba(np.asarray(test_dataset["features"].to_list()))[:, 1]
+                logistic_predictions = pl.DataFrame(
+                    {
+                        "subject_id": test_dataset["subject_id"].to_list(),
+                        "prediction_time": test_dataset["prediction_time"].to_list(),
+                        "predicted_boolean_probability": y_pred,
+                        "predicted_boolean_value": None,
+                        "boolean_value": test_dataset["boolean_value"].cast(pl.Boolean).to_list(),
+                    }
                 )
-                with open(logistic_model_file, "rb") as f:
-                    model = pickle.load(f)
-            else:
-                model = LogisticRegressionCV(scoring="roc_auc")
-                model.fit(np.asarray(subset["features"].to_list()), subset["boolean_value"].to_numpy())
-                with open(logistic_model_file, "wb") as f:
-                    pickle.dump(model, f)
-
-            y_pred = model.predict_proba(np.asarray(test_dataset["features"].to_list()))[:, 1]
-            logistic_predictions = pl.DataFrame(
-                {
-                    "subject_id": test_dataset["subject_id"].to_list(),
-                    "prediction_time": test_dataset["prediction_time"].to_list(),
-                    "predicted_boolean_probability": y_pred,
-                    "predicted_boolean_value": None,
-                    "boolean_value": test_dataset["boolean_value"].cast(pl.Boolean).to_list(),
-                }
-            )
-            logistic_predictions = logistic_predictions.with_columns(
-                pl.col("predicted_boolean_value").cast(pl.Boolean())
-            )
-            logistic_test_predictions = few_show_output_dir / "test_predictions"
-            logistic_test_predictions.mkdir(exist_ok=True, parents=True)
-            logistic_predictions.write_parquet(
-                logistic_test_predictions / "predictions.parquet"
-            )
-            roc_auc = roc_auc_score(test_dataset["boolean_value"], y_pred)
-            precision, recall, _ = precision_recall_curve(
-                test_dataset["boolean_value"], y_pred
-            )
-            pr_auc = auc(recall, precision)
-            metrics = {"roc_auc": roc_auc, "pr_auc": pr_auc}
-            print("Logistic:", size, args.task_name, metrics)
-            with open(logistic_test_result_file, "w") as f:
-                json.dump(metrics, f, indent=4)
-
+                logistic_predictions = logistic_predictions.with_columns(
+                    pl.col("predicted_boolean_value").cast(pl.Boolean())
+                )
+                logistic_test_predictions = few_show_output_dir / "test_predictions"
+                logistic_test_predictions.mkdir(exist_ok=True, parents=True)
+                logistic_predictions.write_parquet(
+                    logistic_test_predictions / "predictions.parquet"
+                )
+                roc_auc = roc_auc_score(test_dataset["boolean_value"], y_pred)
+                precision, recall, _ = precision_recall_curve(
+                    test_dataset["boolean_value"], y_pred
+                )
+                pr_auc = auc(recall, precision)
+                metrics = {"roc_auc": roc_auc, "pr_auc": pr_auc}
+                print("Logistic:", size, args.task_name, metrics)
+                with open(logistic_test_result_file, "w") as f:
+                    json.dump(metrics, f, indent=4)
+            except ValueError as e:
+                print(e)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
