@@ -6,6 +6,8 @@ import polars as pl
 def main(args):
     print("Reading cohort")
     cohort = pl.read_parquet(args.cohort_input)
+    if args.ratio < 1.0:
+        cohort = cohort.sample(fraction=args.ratio, seed=42)  # Sample the cohort if ratio < 1.0
     if args.split == "all":
         splits = ["train", "tuning", "held_out"]
     else:
@@ -50,6 +52,14 @@ if __name__ == "__main__":
         dest="split",
         action="store",
         required=True,
+    )
+    parser.add_argument(
+        "--ratio",
+        dest="ratio",
+        action="store",
+        default=1.0,
+        type=float,
+        help="Ratio of the cohort to use for training. Default is 1.0 (use all data).",
     )
     main(parser.parse_args())
 
