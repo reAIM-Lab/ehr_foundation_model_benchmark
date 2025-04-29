@@ -80,7 +80,9 @@ def main(args):
                             subset = pl.concat([positives_subset, negatives_subset])
                             break
                 else:
-                    subset = train_dataset
+                    subset = train_dataset.sample(
+                        n=len(train_dataset), shuffle=True, seed=args.seed, with_replacement=False
+                    )
 
                 if logistic_model_file.exists():
                     print(
