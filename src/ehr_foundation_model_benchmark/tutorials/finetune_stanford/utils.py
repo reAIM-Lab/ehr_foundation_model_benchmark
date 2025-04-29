@@ -16,8 +16,8 @@ from hf_ehr.config import Event
 from hf_ehr.data.tokenization import CLMBRTokenizer
 
 # Model-specific parameters
-BATCH_SIZE=16
-CONTEXT_LENGTH=4096
+BATCH_SIZE=8
+CONTEXT_LENGTH=8192
 
 class LRModelLightning(pyl.LightningModule):
     def __init__(self, input_dim):
@@ -109,10 +109,6 @@ def load_meds(data, data_path, model, tokenizer, device, args):
     save_dir = base_path / args.model_type / args.task / data_path.name
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    data = data.with_columns(
-        pl.col("prediction_time").cast(pl.Datetime("us")),
-    )
-
     subjects = (
         data.group_by("subject_id")
         .agg(pl.max("prediction_time")
@@ -136,13 +132,9 @@ def load_meds(data, data_path, model, tokenizer, device, args):
             prediction_times = embeddings_data['prediction_times']
         else:
             df = pl.read_parquet(file)
-
-            df = df.with_columns(
-                pl.col("time").cast(pl.Datetime("us")), # Convert to Datetime for consistent comparisons
-            )
             
             df_joined = df.join(subjects, on="subject_id", how="inner")
-            df_filtered = df_joined.filter(df_joined["time"] < df_joined["prediction_time"])
+            df_filtered = df_joined.filter(df_joined["time"] <= df_joined["prediction_time"]) # filter by max prediction time for efficiency
 
             if args.model_type == 'mamba-ehrshot':
                 # Revert unit concatenation for Stanford-trained model
@@ -209,8 +201,8 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
                 two_years_ago = prediction_time - timedelta(days=2*365)
 
                 sorted_events = sorted(events_data, key=lambda x: x[1], reverse=True)
-                filtered_events = [event for event, event_time in sorted_events if two_years_ago <= event_time < prediction_time]
-                filtered_eventtimes = [event_time for event, event_time in sorted_events if two_years_ago <= event_time < prediction_time]
+                filtered_events = [event for event, event_time in sorted_events if two_years_ago <= event_time <= prediction_time]
+                #filtered_eventtimes = [event_time for event, event_time in sorted_events if two_years_ago <= event_time < prediction_time]
 
                 if filtered_events:
                     # min_time = min(filtered_eventtimes)
@@ -229,20 +221,11 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
     batch_dict['attention_mask'] = batch_dict['attention_mask'].flip(dims=[1]) 
     batch_dict.pop("token_type_ids", None)
 
-    # print(batch_dict['input_ids'].shape)
-    # print(batch_dict['attention_mask'].shape)
-
-    # pre_token_lens = [len(events) for events in batch_events]
-    # print("Pre-tokenization lengths:", pre_token_lens[0:10])
-
-    # post_token_lens = batch_dict['attention_mask'].sum(dim=1).tolist()
-    # print("Post-tokenization lengths:", post_token_lens[0:10])
-
-    padding_token_id = tokenizer.pad_token_id
+    # padding_token_id = tokenizer.pad_token_id
 
     input_ids = batch_dict['input_ids']
     # Find the index of the first non-padding token
-    start_indices = (input_ids != padding_token_id).int().argmax(dim=1)
+    # start_indices = (input_ids != padding_token_id).int().argmax(dim=1)
 
     dataset = TensorDataset(batch_dict['input_ids'], batch_dict['attention_mask'])
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
