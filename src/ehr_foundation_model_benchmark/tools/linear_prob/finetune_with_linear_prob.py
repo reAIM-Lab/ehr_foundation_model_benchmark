@@ -39,13 +39,15 @@ def main(args):
     )
 
     for size in TRAIN_SIZES:
-        few_show_output_dir = task_output_dir / f"results_{size}" / args.model_name
+        test_prediction_parquet_file = task_output_dir / f"{args.model_name}_{size}.parquet"
+        few_show_output_dir = task_output_dir / f"{args.model_name}_{size}"
         few_show_output_dir.mkdir(exist_ok=True, parents=True)
         logistic_model_file = few_show_output_dir / "model.pickle"
-        logistic_test_result_file = few_show_output_dir / "metrics.json"
-        if logistic_test_result_file.exists():
+        logistic_test_metrics_file = few_show_output_dir / "metrics.json"
+
+        if logistic_test_metrics_file.exists():
             print(
-                f"The results for logistic regression with {size} shots already exist at {logistic_test_result_file}"
+                f"The results for logistic regression with {size} shots already exist at {logistic_test_metrics_file}"
             )
         else:
             try:
@@ -110,6 +112,9 @@ def main(args):
                 logistic_predictions.write_parquet(
                     logistic_test_predictions / "predictions.parquet"
                 )
+                logistic_predictions.write_parquet(
+                    test_prediction_parquet_file
+                )
                 roc_auc = roc_auc_score(test_dataset["boolean_value"], y_pred)
                 precision, recall, _ = precision_recall_curve(
                     test_dataset["boolean_value"], y_pred
@@ -117,7 +122,7 @@ def main(args):
                 pr_auc = auc(recall, precision)
                 metrics = {"roc_auc": roc_auc, "pr_auc": pr_auc}
                 print("Logistic:", size, args.task_name, metrics)
-                with open(logistic_test_result_file, "w") as f:
+                with open(logistic_test_metrics_file, "w") as f:
                     json.dump(metrics, f, indent=4)
             except ValueError as e:
                 print(e)
