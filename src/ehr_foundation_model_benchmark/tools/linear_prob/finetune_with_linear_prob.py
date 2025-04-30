@@ -101,8 +101,8 @@ def main(args):
                             )
                             break
                 else:
-                    # In case the model drops samples! Although it should not occur
-                    if len(train_dataset) < size - 1000:
+                    # We have cohorts that have less than 10000 cases, in which case, we need to update the size
+                    if len(train_dataset) < size:
                         size = len(train_dataset)
 
                     subset = train_dataset.sample(
