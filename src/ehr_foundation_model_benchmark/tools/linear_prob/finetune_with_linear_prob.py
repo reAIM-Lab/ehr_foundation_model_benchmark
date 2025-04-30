@@ -52,6 +52,8 @@ def main(args):
         else:
             try:
                 if size < 100000:
+                    if len(train_dataset) < size:
+                        continue
                     success = True
                     subset = train_dataset.sample(n=size, shuffle=True, seed=args.seed)
                     n_positive_cases = len(train_dataset.filter(pl.col("boolean_value") == True))
