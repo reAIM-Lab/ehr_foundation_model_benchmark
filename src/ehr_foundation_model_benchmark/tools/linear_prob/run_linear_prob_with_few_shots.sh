@@ -111,4 +111,51 @@ for cohort_dir in "$BASE_DIR"*/; do
   echo "---------------------------------"
 done
 
-echo "All tasks completed!"
+# Find all folders matching the pattern $OUTPUT_DIR/$TASK_NAME/$MODEL_NAME_*
+echo "Looking for model output folders to run evaluation..."
+total_evals=0
+
+# Use find to get all task directories
+for task_dir in "$OUTPUT_DIR"*/; do
+  task_name=$(basename "$task_dir")
+
+  # Skip if not a directory
+  if [ ! -d "$task_dir" ]; then
+    continue
+  fi
+
+  echo "Checking task: $task_name"
+
+  # Find all model directories matching the pattern
+  for model_dir in "$task_dir"/"$MODEL_NAME"_*/; do
+    # Skip if not a directory
+    if [ ! -d "$model_dir" ]; then
+      continue
+    fi
+
+    model_folder=$(basename "$model_dir")
+    echo "Found model folder: $model_folder"
+
+    # Check if test_predictions directory exists
+    if [ -d "$model_dir/test_predictions" ]; then
+      echo "Running meds-evaluation-cli for $task_name/$model_folder"
+
+      # Run the meds-evaluation-cli command
+      meds-evaluation-cli predictions_path="$model_dir/test_predictions" output_dir="$model_dir"
+
+      # Check if command succeeded
+      if [ $? -eq 0 ]; then
+        echo "Evaluation completed successfully"
+        ((total_evals++))
+      else
+        echo "Warning: Evaluation failed for $task_name/$model_folder"
+      fi
+    else
+      echo "Warning: No test_predictions directory found in $model_dir. Skipping..."
+    fi
+
+    echo "---------------------------------"
+  done
+done
+
+echo "All tasks completed! Ran evaluation on $total_evals model folders."
