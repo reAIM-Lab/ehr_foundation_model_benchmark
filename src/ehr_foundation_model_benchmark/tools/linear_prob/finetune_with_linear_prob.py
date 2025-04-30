@@ -82,8 +82,11 @@ def main(args):
                             subset = pl.concat([positives_subset, negatives_subset])
                             break
                 else:
+                    # In case the model drops samples! Although it should not occur
+                    if len(train_dataset) < size - 1000:
+                        size = len(train_dataset)
                     subset = train_dataset.sample(
-                        n=len(train_dataset), shuffle=True, seed=args.seed, with_replacement=False
+                        n=size, shuffle=True, seed=args.seed, with_replacement=False
                     )
 
                 if logistic_model_file.exists():
