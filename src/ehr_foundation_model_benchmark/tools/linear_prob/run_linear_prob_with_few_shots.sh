@@ -98,7 +98,7 @@ for cohort_dir in "$BASE_DIR"*/; do
 
   echo "Found features directory: $features_dir"
 
-  # Run the command
+  # Run the fine-tuning command
   echo "Running benchmark for $task_name..."
   python -u -m ehr_foundation_model_benchmark.tools.linear_prob.finetune_with_linear_prob \
     --features_label_input_dir "$features_dir" \
@@ -107,27 +107,15 @@ for cohort_dir in "$BASE_DIR"*/; do
     --output_dir "$OUTPUT_DIR" \
     --meds_dir "$MEDS_DIR"
 
-  echo "Completed $task_name"
-  echo "---------------------------------"
-done
-
-# Find all folders matching the pattern $OUTPUT_DIR/$TASK_NAME/$MODEL_NAME_*
-echo "Looking for model output folders to run evaluation..."
-total_evals=0
-
-# Use find to get all task directories
-for task_dir in "$OUTPUT_DIR"*/; do
-  task_name=$(basename "$task_dir")
-
-  # Skip if not a directory
-  if [ ! -d "$task_dir" ]; then
+  # Check if finetune command succeeded
+  if [ $? -ne 0 ]; then
+    echo "Warning: Benchmark failed for $task_name"
+    echo "---------------------------------"
     continue
   fi
 
-  echo "Checking task: $task_name"
-
-  # Find all model directories matching the pattern
-  for model_dir in "$task_dir"/"$MODEL_NAME"_*/; do
+  # Find all model directories created by the finetune process
+  for model_dir in "$OUTPUT_DIR/$task_name/$MODEL_NAME"_*/; do
     # Skip if not a directory
     if [ ! -d "$model_dir" ]; then
       continue
@@ -136,8 +124,11 @@ for task_dir in "$OUTPUT_DIR"*/; do
     model_folder=$(basename "$model_dir")
     echo "Found model folder: $model_folder"
 
+    # Check if results.json already exists
+    if [ -f "$model_dir/results.json" ]; then
+      echo "Skipping evaluation for $task_name/$model_folder - results.json already exists"
     # Check if test_predictions directory exists
-    if [ -d "$model_dir/test_predictions" ]; then
+    elif [ -d "$model_dir/test_predictions" ]; then
       echo "Running meds-evaluation-cli for $task_name/$model_folder"
 
       # Run the meds-evaluation-cli command
@@ -146,16 +137,16 @@ for task_dir in "$OUTPUT_DIR"*/; do
       # Check if command succeeded
       if [ $? -eq 0 ]; then
         echo "Evaluation completed successfully"
-        ((total_evals++))
       else
         echo "Warning: Evaluation failed for $task_name/$model_folder"
       fi
     else
       echo "Warning: No test_predictions directory found in $model_dir. Skipping..."
     fi
-
-    echo "---------------------------------"
   done
+
+  echo "Completed $task_name"
+  echo "---------------------------------"
 done
 
-echo "All tasks completed! Ran evaluation on $total_evals model folders."
+echo "All tasks completed!"
