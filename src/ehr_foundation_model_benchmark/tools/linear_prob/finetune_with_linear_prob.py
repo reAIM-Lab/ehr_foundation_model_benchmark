@@ -64,9 +64,13 @@ def main(args):
                     size_required = size - len(existing_samples)
                     success = True
                     subset = pl.concat([
-                        remaining_train_set.sample(n=size_required, shuffle=True, seed=args.seed),
+                        remaining_train_set.sample(n=size_required, seed=args.seed),
                         existing_samples
-                    ])
+                    ]).sample(
+                        fraction=1.0,
+                        shuffle=True,
+                        seed=args.seed
+                    )
                     n_positive_cases = len(subset.filter(pl.col("boolean_value") == True))
                     while True:
                         count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
@@ -90,7 +94,11 @@ def main(args):
                                 f"number of positive cases: {len(positives_subset)}; "
                                 f"number of negative cases: {len(negatives_subset)}"
                             )
-                            subset = pl.concat([positives_subset, negatives_subset])
+                            subset = pl.concat([positives_subset, negatives_subset]).sample(
+                                fraction=1.0,
+                                shuffle=True,
+                                seed=args.seed
+                            )
                             break
                 else:
                     # In case the model drops samples! Although it should not occur
@@ -98,7 +106,7 @@ def main(args):
                         size = len(train_dataset)
 
                     subset = train_dataset.sample(
-                        n=len(train_dataset), shuffle=True, seed=args.seed, with_replacement=False
+                        fraction=1.0, shuffle=True, seed=args.seed
                     )
 
                 existing_sample_ids.update(subset["sample_id"].to_list())
