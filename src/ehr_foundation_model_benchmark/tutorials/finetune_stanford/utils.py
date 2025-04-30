@@ -16,7 +16,7 @@ from hf_ehr.config import Event
 from hf_ehr.data.tokenization import CLMBRTokenizer
 
 # Model-specific parameters
-BATCH_SIZE=8
+BATCH_SIZE=12
 CONTEXT_LENGTH=8192
 
 class LRModelLightning(pyl.LightningModule):
@@ -215,40 +215,50 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
                     batch_events.append(filtered_events)
                     batch_labels.append(label)
 
-    # Tokenize all events, and construct input sequence starting from earliest to latest event (with left padding)
-    batch_dict = tokenizer(batch_events, max_length=CONTEXT_LENGTH, padding=True, truncation=True, return_tensors='pt')
-    batch_dict['input_ids'] = batch_dict['input_ids'].flip(dims=[1])  # Reverse along sequence dimension
-    batch_dict['attention_mask'] = batch_dict['attention_mask'].flip(dims=[1]) 
-    batch_dict.pop("token_type_ids", None)
+    tokenized = [tokenizer(e, truncation=True, max_length=CONTEXT_LENGTH) for e in batch_events]
+    lengths = [len(t['input_ids'][0]) for t in tokenized]
 
-    # padding_token_id = tokenizer.pad_token_id
+    # Step 2: Sort by length
+    sorted_data = sorted(zip(batch_events, tokenized, lengths, batch_ids, batch_times, batch_labels), key=lambda x: x[2], reverse=True)
 
-    input_ids = batch_dict['input_ids']
-    # Find the index of the first non-padding token
-    # start_indices = (input_ids != padding_token_id).int().argmax(dim=1)
+    # Step 3: Bucket into mini-batches with similar lengths
+    batches = [
+        sorted_data[i:i+BATCH_SIZE] for i in range(0, len(sorted_data), BATCH_SIZE)
+    ]
 
-    dataset = TensorDataset(batch_dict['input_ids'], batch_dict['attention_mask'])
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
+    sorted_ids = []
+    sorted_times = []
+    sorted_labels = []
 
-    if batch_events:
-        for batch in dataloader:
-            input_ids, attention_mask = batch
-            input_ids = input_ids.to(device)
-            attention_mask = attention_mask.to(device)
+    for batch in batches:
+        batch_events_, _, lengths_, batch_ids_, batch_times_, batch_labels_ = zip(*batch)
+        batch_max_len = max(lengths_)
+        batch_dict = tokenizer(batch_events_, padding=True, truncation=True, max_length=batch_max_len, return_tensors='pt')
 
-            with torch.no_grad():
-                representations = model(input_ids=input_ids, attention_mask=attention_mask).logits[:, -1, :]
+        sorted_ids.extend(batch_ids_)
+        sorted_times.extend(batch_times_)
+        sorted_labels.extend(batch_labels_)
 
-            # Store data
+        batch_dict['input_ids'] = batch_dict['input_ids'].flip(dims=[1])
+        batch_dict['attention_mask'] = batch_dict['attention_mask'].flip(dims=[1])
+        batch_dict.pop("token_type_ids", None)
+
+        input_ids = batch_dict['input_ids'].to(device)
+        attention_mask = batch_dict['attention_mask'].to(device)
+
+        with torch.no_grad():
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+            representations = outputs.logits[:, -1, :]
+
             if representations.dim() == 3:  # (batch_size, sequence_len, embedding_dim)
                 batch_embedding.append(representations.squeeze(1).cpu())  # Squeeze sequence_len dimension if batch size is 1
             else:
                 batch_embedding.append(representations.cpu())
 
     batch_embedding = torch.cat(batch_embedding, dim=0)
-    batch_labels = torch.tensor(batch_labels, dtype=torch.long)
+    sorted_labels = torch.tensor(sorted_labels, dtype=torch.long)
 
-    return batch_embedding, batch_labels, batch_ids, batch_times
+    return batch_embedding, sorted_labels, sorted_ids, sorted_times
 
 def standardize(train, val, test):
     train_mean = train.mean(dim=0, keepdim=True)
