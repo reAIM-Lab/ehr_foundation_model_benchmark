@@ -31,6 +31,9 @@ def main(args):
         subject_splits.select("subject_id", "split"), "subject_id"
     ).filter(
         pl.col("split").is_in([train_split, tuning_split])
+    ).with_row_index(
+        name = "sample_id",
+        offset=1
     )
     test_dataset = features_label.join(
         subject_splits.select("subject_id", "split"), "subject_id"
@@ -38,6 +41,8 @@ def main(args):
         pl.col("split") == held_out_split
     )
 
+    # We keep track of the sample ids that have been picked from the previous few-shots experiments.
+    existing_sample_ids = set()
     for size in TRAIN_SIZES:
         test_prediction_parquet_file = task_output_dir / f"{args.model_name}_{size}.parquet"
         few_show_output_dir = task_output_dir / f"{args.model_name}_{size}"
@@ -50,13 +55,19 @@ def main(args):
                 f"The results for logistic regression with {size} shots already exist at {logistic_test_metrics_file}"
             )
         else:
+            remaining_train_set = train_dataset.filter(~pl.col("sample_id").is_in(existing_sample_ids))
+            existing_samples = train_dataset.filter(pl.col("sample_id").is_in(existing_sample_ids))
             try:
                 if size < 100000:
                     if len(train_dataset) < size:
                         continue
+                    size_required = size - len(existing_samples)
                     success = True
-                    subset = train_dataset.sample(n=size, shuffle=True, seed=args.seed)
-                    n_positive_cases = len(train_dataset.filter(pl.col("boolean_value") == True))
+                    subset = pl.concat([
+                        remaining_train_set.sample(n=size_required, shuffle=True, seed=args.seed),
+                        existing_samples
+                    ])
+                    n_positive_cases = len(subset.filter(pl.col("boolean_value") == True))
                     while True:
                         count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
                         for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
@@ -67,13 +78,13 @@ def main(args):
                         if success:
                             break
                         else:
-                            sampling_percentage = size / len(train_dataset)
+                            sampling_percentage = size_required / len(remaining_train_set)
                             n_positives_to_sample = max(MINIMUM_NUM_CASES, int(n_positive_cases * sampling_percentage))
-                            positives_subset = train_dataset.filter(pl.col("boolean_value") == True).sample(
+                            positives_subset = remaining_train_set.filter(pl.col("boolean_value") == True).sample(
                                 n=n_positives_to_sample, shuffle=True, seed=args.seed, with_replacement=True
                             )
-                            negatives_subset = train_dataset.filter(pl.col("boolean_value") == False).sample(
-                                n=(size - n_positives_to_sample), shuffle=True, seed=args.seed
+                            negatives_subset = remaining_train_set.filter(pl.col("boolean_value") == False).sample(
+                                n=(size_required - n_positives_to_sample), shuffle=True, seed=args.seed
                             )
                             print(
                                 f"number of positive cases: {len(positives_subset)}; "
@@ -85,10 +96,12 @@ def main(args):
                     # In case the model drops samples! Although it should not occur
                     if len(train_dataset) < size - 1000:
                         size = len(train_dataset)
+
                     subset = train_dataset.sample(
-                        n=size, shuffle=True, seed=args.seed, with_replacement=False
+                        n=len(train_dataset), shuffle=True, seed=args.seed, with_replacement=False
                     )
 
+                existing_sample_ids.update(subset["sample_id"].to_list())
                 if logistic_model_file.exists():
                     print(
                         f"The logistic regression model already exist for {size} shots, loading it from {logistic_model_file}"
