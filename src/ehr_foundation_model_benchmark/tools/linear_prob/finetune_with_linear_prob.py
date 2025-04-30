@@ -109,7 +109,7 @@ def main(args):
                     with open(logistic_model_file, "rb") as f:
                         model = pickle.load(f)
                 else:
-                    model = LogisticRegressionCV(scoring="roc_auc")
+                    model = LogisticRegressionCV(scoring="roc_auc", random_state=args.seed)
                     model.fit(np.asarray(subset["features"].to_list()), subset["boolean_value"].to_numpy())
                     with open(logistic_model_file, "wb") as f:
                         pickle.dump(model, f)
