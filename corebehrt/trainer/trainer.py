@@ -1,12 +1,15 @@
 import os
 import yaml
 import torch
+import numpy as np
 from collections import namedtuple
+import gc
+import sys
 
 from torch.utils.data import DataLoader, Dataset
-from corebehrt.common.config import Config, instantiate
-from corebehrt.dataloader.collate_fn import dynamic_padding
-from corebehrt.trainer.utils import (compute_avg_metrics,
+from common.config import Config, instantiate
+from dataloader.collate_fn import dynamic_padding
+from trainer.utils import (compute_avg_metrics,
                                    get_tqdm)
 
 yaml.add_representer(Config, lambda dumper, data: data.yaml_repr(dumper))
@@ -31,14 +34,14 @@ class EHRTrainer:
         run_folder: str = None,
         last_epoch: int = None,
     ):
-        
+        print(metrics)
         self._initialize_basic_attributes(model, train_dataset, test_dataset, val_dataset, optimizer, scheduler, metrics, sampler, cfg, run, accumulate_logits, last_epoch)
         self._set_default_args(args)
         self.logger = logger
         self.run_folder = run_folder or os.path.join(self.cfg.paths.output_path, self.cfg.paths.run_name)        
         self.log("Initialize metrics")
         self.metrics = {k: instantiate(v) for k, v in metrics.items()} if metrics else {}
-        
+        self.log('Initialize early stopping')
         self._initialize_early_stopping()
         
     def _initialize_basic_attributes(self, model, train_dataset, test_dataset, val_dataset, optimizer, scheduler, metrics, sampler, cfg, run, accumulate_logits, last_epoch):
@@ -55,6 +58,7 @@ class EHRTrainer:
         self.run = run
         self.accumulate_logits = accumulate_logits
         self.continue_epoch = last_epoch + 1 if last_epoch is not None else 0
+
     
     def _set_default_args(self, args):
         default_args = {
@@ -66,13 +70,14 @@ class EHRTrainer:
 
     def _initialize_early_stopping(self):
         self.best_val_loss = float('inf') # Best observed validation loss
-        early_stopping = self.cfg.trainer_args.get('early_stopping', False)
-        self.early_stopping = True if early_stopping else False
-        self.early_stopping_patience = early_stopping if early_stopping else 1000 # Set patience parameter, for example, to 10 epochs.
+        self.best_metric_value = float('inf')
+        early_stopping = True 
+        self.early_stopping = True 
+        self.early_stopping_patience = 1 
         self.early_stopping_counter = 0  # Counter to keep track of epochs since last best val loss
         self.stop_training = False
         # Get the metric to use for early stopping from the config
-        self.stopping_metric = self.cfg.trainer_args.get('stopping_metric', 'val_loss')
+        self.stopping_metric = 'val_loss'
         self.log(f"Early stopping: {self.early_stopping} with patience {self.early_stopping_patience} and metric {self.stopping_metric}")
 
     def train(self, **kwargs):
@@ -83,7 +88,10 @@ class EHRTrainer:
         dataloader = self.setup_training()
         self.log(f'Test validation before starting training')
         self.validate_and_log(0, [0], dataloader)
+        self.log(f'Starting proper training')
+        print('Starting proper training')
         for epoch in range(self.continue_epoch, self.args['epochs']):
+            print('epoch', epoch)
             self._train_epoch(epoch, dataloader)
             if self.stop_training:
                 break
@@ -94,7 +102,11 @@ class EHRTrainer:
         epoch_loss = []
         step_loss = 0
         for i, batch in enumerate(train_loop):
-            step_loss += self._train_step(batch).item()
+            # if i <= 10: # JUST FOR NOW; make sure to un-indent
+            print('train_loop', i)
+            print_gpu_memory('Before call _train_step')
+            step_loss += self._train_step(batch)
+            print_gpu_memory('After call _train_step')
             if (i+1) % self.accumulation_steps == 0:
                 self._clip_gradients()
                 self._update_and_log(step_loss, train_loop, epoch_loss)
@@ -103,6 +115,7 @@ class EHRTrainer:
         torch.cuda.empty_cache()
         del train_loop
         del epoch_loss
+        gc.collect()
 
     def _clip_gradients(self):
         # Then clip them if needed
@@ -110,19 +123,34 @@ class EHRTrainer:
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=self.cfg.trainer_args.gradient_clip.get('max_norm', 1.0))
 
     def _train_step(self, batch: dict):
+        print('Size of batch', sys.getsizeof(batch)/1024**2)
+        print('Size of model', sys.getsizeof(self.model)/1024**2)
+        torch.cuda.empty_cache()
         self.optimizer.zero_grad()
         self.batch_to_device(batch)
-
+        print_gpu_memory('Post-batch')
+        # with torch.autocast(device_type='cuda', dtype=torch.float16):
         outputs = self.model(batch)
+        print_gpu_memory('Post-model')
         unscaled_loss = outputs.loss
+        print_gpu_memory('Post-output loss')
+        
         unscaled_loss.backward()
-
+        print_gpu_memory('Post-backwards loss')
+        self.optimizer.step()
+        print_gpu_memory('Post-optimizer')
+        del outputs
+        del batch
+        unscaled_loss = unscaled_loss.detach().cpu().item()
+        torch.cuda.empty_cache()
+        gc.collect()
+        
+        print_gpu_memory('Post-outputs deletion')
+        print('check unscaled loss type', type(unscaled_loss))
         return unscaled_loss
 
     def _update_and_log(self, step_loss, train_loop, epoch_loss):
         """Updates the model and logs the loss"""
-        self.optimizer.step()
-
         if self.scheduler is not None:
             self.scheduler.step()
         train_loop.set_postfix(loss=step_loss / self.accumulation_steps)
@@ -137,7 +165,8 @@ class EHRTrainer:
 
     def validate_and_log(self, epoch: int, epoch_loss: float, train_loop: DataLoader)-> None:
         val_loss, val_metrics = self._evaluate(epoch, mode='val')
-        _, test_metrics = self._evaluate(epoch, mode='test')
+        # _, test_metrics = self._evaluate(epoch, mode='test')
+        test_metrics = {} # CHANGE: we don't really want to be looking at this rn
         if epoch==1: # for testing purposes/if first epoch is best
             self._save_checkpoint(epoch, train_loss=epoch_loss, val_loss=val_loss, val_metrics=val_metrics, test_metrics=test_metrics, final_step_loss=epoch_loss[-1], best_model=True)
         if self._should_stop_early(epoch, val_loss, epoch_loss, val_metrics, test_metrics):
@@ -158,23 +187,35 @@ class EHRTrainer:
         self.log(f'Epoch {epoch} val loss: {val_loss}')
         self.log(f'Epoch {epoch} metrics: {val_metrics}\n')
 
+        # CHANGE APARA ADD
+        epoch_data = {'epoch': epoch, 'loss': val_loss, 'metrics': val_metrics}
+        print(type(epoch_data))
+        epoch_path = '/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_corebehrt/pretraining/epoch_loss.npy'
+        if not os.path.exists(epoch_path):
+            print([epoch_data])
+            np.save(epoch_path, [epoch_data])
+        else:
+            epoch_metrics = np.load(epoch_path, allow_pickle=True).tolist()
+            print(epoch_metrics)
+            epoch_metrics.append(epoch_data)
+            np.save(epoch_path, epoch_metrics)
+
     def _should_stop_early(self, epoch, val_loss: float, epoch_loss: float, val_metrics: dict, test_metrics:dict={}) -> bool:
         if not self.early_stopping:
             return False
         # Get the current value of the metric
         current_metric_value = val_metrics.get(self.stopping_metric, val_loss)
+        # check current vs. best: 0.1%
+        if abs(current_metric_value - self.best_metric_value) / self.best_metric_value < 0.01: # early stop
+            self.log("Early stopping triggered!")
+            self.stop_training = True
+            return True
+        
         self._initialize_best_metric_value(current_metric_value)
         if self._is_improvement(current_metric_value):
             self.best_metric_value = current_metric_value
-            self.early_stopping_counter = 0
             self._save_checkpoint(epoch, train_loss=epoch_loss, val_loss=val_loss, val_metrics=val_metrics, test_metrics=test_metrics, final_step_loss=epoch_loss[-1], best_model=True)
             return False
-        else:
-            self.early_stopping_counter += 1
-            if self.early_stopping_counter >= self.early_stopping_patience:
-                self.log("Early stopping triggered!")
-                self.stop_training = True
-                return True
         return False
 
     def _is_improvement(self, current_metric_value):
@@ -192,11 +233,10 @@ class EHRTrainer:
         """Sets up the training dataloader and returns it"""
         self.model.train()
         self.save_setup()
-        dataloader = DataLoader(self.train_dataset, batch_size=self.args['batch_size'], sampler=self.sampler,
-                                shuffle=self.args.get('shuffle', True), collate_fn=self.args['collate_fn'])
+        dataloader = DataLoader(self.train_dataset, batch_size=self.args['batch_size'], sampler=self.sampler, shuffle=self.args.get('shuffle', True), collate_fn=self.args['collate_fn'], pin_memory = False)
         return dataloader
 
-    def _evaluate(self, mode='val')->tuple:
+    def _evaluate(self, epoch,  mode='val')->tuple:
         """Returns the validation/test loss and metrics"""
         if mode == 'val':
             if self.val_dataset is None:
@@ -219,17 +259,18 @@ class EHRTrainer:
         targets_list = [] if self.accumulate_logits else None
 
         with torch.no_grad():
-            for batch in loop:
-                self.batch_to_device(batch)
-                outputs = self.model(batch)
-                loss += outputs.loss.item()
+            for i, batch in enumerate(loop):
+                if i <= 10: # JUST FOR NOW; make sure to un-indent
+                    self.batch_to_device(batch)
+                    outputs = self.model(batch)
+                    loss += outputs.loss.item()
 
-                if self.accumulate_logits:
-                    logits_list.append(outputs.logits.cpu())
-                    targets_list.append(batch['target'].cpu())
-                else:
-                    for name, func in self.metrics.items():
-                        metric_values[name].append(func(outputs, batch))
+                    if self.accumulate_logits:
+                        logits_list.append(outputs.logits.cpu())
+                        targets_list.append(batch['target'].cpu())
+                    else:
+                        for name, func in self.metrics.items():
+                            metric_values[name].append(func(outputs, batch))
 
         if self.accumulate_logits:
             metric_values = self.process_binary_classification_results(logits_list, targets_list)
@@ -303,3 +344,8 @@ class EHRTrainer:
                 self.args = {**self.args, **value}
             else:
                 setattr(self, key, value)
+def print_gpu_memory(stage=""):
+    if torch.cuda.is_available():
+        mem_allocated = torch.cuda.memory_allocated() / (1024 ** 2)  # in MB
+        mem_reserved = torch.cuda.memory_reserved() / (1024 ** 2)    # in MB
+        print(f"[GPU Memory] {stage} -- Allocated: {mem_allocated:.1f} MB | Reserved: {mem_reserved:.1f} MB")

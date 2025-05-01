@@ -7,16 +7,25 @@ import pyarrow.parquet as pq
 from datetime import datetime
 from typing import Iterator, Tuple
 
-CONCEPT_FORMAT = 'concept.*'
-PATIENTS_INFO_FORMAT = 'patients_info.*'
+CONCEPT_FORMAT = ['condition_occurrence/','drug_exposure/']
+PATIENTS_INFO_FORMAT = 'patient_format.*'
 
 class ConceptLoader:
     """Load concepts and patient data"""
-    def __init__(self, concepts=['diagnose', 'medication'], data_dir: str = 'formatted_data'):
+    def __init__(self, concepts=['condition_occurrence', 'drug_exposure'], data_dir: str = 'formatted_data'):
         # Create paths to relevant files
-        concepts_paths = glob.glob(os.path.join(data_dir, CONCEPT_FORMAT))
-        self.concepts_paths = [path for path in concepts_paths if os.path.basename(path).split('.')[1] in concepts]
+        concept_folders = []
+        for i in CONCEPT_FORMAT:
+            concept_folders.append(glob.glob(os.path.join(data_dir, i))[0])
 
+        # Now get full file paths for each file in each folder
+        concepts_paths = []
+        for folder in concept_folders:
+            files = os.listdir(folder)
+            full_paths = [os.path.join(folder, f) for f in files]
+            concepts_paths.extend(full_paths)
+
+        self.concepts_paths = concepts_paths
         self.patients_info_path = glob.glob(os.path.join(data_dir, PATIENTS_INFO_FORMAT))
 
     def __call__(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -65,8 +74,10 @@ class ConceptLoader:
 
 class ConceptLoaderLarge(ConceptLoader):
     """Load concepts and patient data in chunks"""
-    def __init__(self, concepts: list = ['diagnosis', 'medication'], data_dir: str = 'formatted_data', chunksize=10000, batchsize=100000):
+    def __init__(self, concepts: list = ['condition_occurrence', 'drug_exposure'], data_dir: str = 'formatted_data', chunksize=10000, batch_size=100000):
         super().__init__(concepts, data_dir)
+        self.batch_size = batch_size
+        self.chunksize = chunksize
 
     def __call__(self) -> Iterator[Tuple[pd.DataFrame, pd.DataFrame]]:
         return self.process()
@@ -97,7 +108,7 @@ class ConceptLoaderLarge(ConceptLoader):
         _, file_ext = os.path.splitext(file_path)
         if file_ext == '.csv':
             return pd.read_csv(file_path, chunksize=chunksize)
-        elif file_ext == 'parquet':
+        elif file_ext == '.parquet':
             return ParquetIterator(file_path, chunksize)
     
     @staticmethod

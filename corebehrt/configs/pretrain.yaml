@@ -1,10 +1,10 @@
-env: local
+env: ../../environment.yml
 paths:
   # data_path: 'pretrain_datasets/diagnosis_medication/070623/outputs/data' # inside mounted datastore
-  data_path: ../outputs/features
-  output_path: ../outputs/pretraining
+  data_path: /data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_corebehrt/corebehrt_data/
+  output_path: /data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_corebehrt/pretraining/
   type: diag
-  run_name: test
+  run_name: pretrain
   tokenized_dir: tokenized
   # predefined_splits: outputs/pretraining/behrt_base
   
@@ -14,42 +14,46 @@ data:
     masking_ratio: .8
     replace_ratio: .1
     ignore_special_tokens: true
-  truncation_len: 20
-  num_train_patients: 100
-  num_val_patients: 20
+  truncation_len: 2048
+  num_train_patients: 2281517
+  num_val_patients: 402477
   val_ratio: 0.2
   min_len: 2
 
 trainer_args:
-  batch_size: 32
-  effective_batch_size: 64
-  epochs: 5
+  per_device_train_batch_size: 32
+  per_device_eval_batch_size: 32 
+  # above should be batch_size on other trainer
+  epochs: 20
   info: true
   sampler: null
   gradient_clip: 
     clip_value: 1.0
   shuffle: true
-  early_stopping: null # num_epochs or null/false
+  early_stopping: true # num_epochs or null/false
 
 model:
   # type_vocab_size should be > truncation_len//2 if sep token else >truncation len
   # !!! If you want to feed longer sequences during finetuning adjust type_vocab_size accordingly
   linear: true
-  hidden_size: 96
-  num_hidden_layers: 3
-  num_attention_heads: 3
-  intermediate_size: 64
-  type_vocab_size: 240 #  if discrete_abspos_embeddings: true, give the range of abspos in months
+  hidden_size: 768
+  num_hidden_layers: 14
+  num_attention_heads: 6
+  intermediate_size: 512
+  dropout: 0.1
+  type_vocab_size: 1024 #  if discrete_abspos_embeddings: true, give the range of abspos in months
   plusplus: true
   abspos_embeddings: false
 optimizer:
-  lr: 5e-4
-  eps: 1e-6
+  lr: 0.001
+  eps: 0.000001
+  weight_decay: 0.01
+  
 
 scheduler:
   _target_: transformers.get_linear_schedule_with_warmup
-  num_warmup_epochs: 2
-  num_training_epochs: 3
+  num_warmup_epochs: 5
+  num_training_epochs: 15
 
 
 metrics:

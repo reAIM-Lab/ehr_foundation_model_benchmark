@@ -4,10 +4,10 @@ import pandas as pd
 from os.path import join
 from typing import List, Tuple
 
-from corebehrt.data.utils import Utilities
-from corebehrt.data_fixes.exclude import Excluder
-from corebehrt.common.utils import Data, iter_patients
-from corebehrt.common.config import Config
+from data.utils import Utilities
+from data_fixes.exclude import Excluder
+from common.utils import Data, iter_patients
+from common.config import Config
 
 
 SPECIAL_CODES = ['[', 'BG_']

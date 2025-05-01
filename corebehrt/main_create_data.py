@@ -12,17 +12,17 @@ import shutil
 from os.path import join
 
 import torch
-from corebehrt.common.azure import AzurePathContext, save_to_blobstore
-from corebehrt.common.config import load_config
-from corebehrt.common.logger import TqdmToLogger
-from corebehrt.common.setup import DirectoryPreparer, get_args
-from corebehrt.common.utils import check_directory_for_features
-from corebehrt.data.batch import Batches, BatchTokenize
-from corebehrt.data.concept_loader import ConceptLoaderLarge
-from corebehrt.data.featuremaker import FeatureMaker
-from corebehrt.data.tokenizer import EHRTokenizer
-from corebehrt.data_fixes.exclude import Excluder
-from corebehrt.data_fixes.handle import Handler
+from common.azure import AzurePathContext, save_to_blobstore
+from common.config import load_config
+from common.logger import TqdmToLogger
+from common.setup import DirectoryPreparer, get_args
+from common.utils import check_directory_for_features
+from data.batch import Batches, BatchTokenize
+from data.concept_loader import ConceptLoaderLarge
+from data.featuremaker import FeatureMaker
+from data.tokenizer import EHRTokenizer
+from data_fixes.exclude import Excluder
+from data_fixes.handle import Handler
 from tqdm import tqdm
 
 CONFIG_NAME = 'create_data.yaml'

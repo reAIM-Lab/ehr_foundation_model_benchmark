@@ -3,28 +3,35 @@ import yaml
 
 
 class Config(dict):
-    """Config class that allows for dot notation."""
+    """Config class that allows dot notation access to nested dictionaries."""
+    
     def __init__(self, dictionary=None):
         super().__init__()
         if dictionary:
             for key, value in dictionary.items():
-                self.set_value(key, value)
-
-    def set_value(self, key, value):
-        if isinstance(value, dict):
-            value = Config(value)
-        elif isinstance(value, str):
-            value = self.str_to_num(value)
-        self[key] = value
-        setattr(self, key, value)
+                setattr(self, key, value)  # Directly use setattr instead of set_value
 
     def __setattr__(self, key, value):
-        self.set_value(key, value)
+        """Set both attribute and dictionary key at the same time."""
+        if isinstance(value, dict):
+            value = Config(value)  # Recursively convert nested dicts
+        elif isinstance(value, str):
+            value = self.str_to_num(value)
+
+        super().__setitem__(key, value)  # Store in dictionary
+        super().__setattr__(key, value)  # Store as attribute
+
+    def __getattr__(self, key):
+        """Enable dot notation access."""
+        try:
+            return self[key]
+        except KeyError as e:
+            raise AttributeError(f"Attribute {key} not found") from e
 
     def str_to_num(self, s):
         """Converts a string to a float or int if possible."""
         try:
-            return float(s)
+            return float(s) if '.' in s else int(s)
         except ValueError:
             return s
 

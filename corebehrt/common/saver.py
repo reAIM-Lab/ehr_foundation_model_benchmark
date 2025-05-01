@@ -5,7 +5,7 @@ import pandas as pd
 import torch
 
 from typing import Dict
-from corebehrt.common.utils import Data
+from common.utils import Data
 
 VOCABULARY_FILE = 'vocabulary.pt'
 

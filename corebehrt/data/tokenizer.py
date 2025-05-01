@@ -1,7 +1,7 @@
 import torch
 from transformers import BatchEncoding
 
-from corebehrt.common.utils import iter_patients
+from common.utils import iter_patients
 
 
 class EHRTokenizer:

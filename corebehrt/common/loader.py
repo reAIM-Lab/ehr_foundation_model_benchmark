@@ -6,9 +6,9 @@ from typing import Dict, List, Tuple, Union
 import torch
 from transformers import BertConfig
 
-from corebehrt.common.config import Config, load_config
-from corebehrt.common.utils import Data
-from corebehrt.data.utils import Utilities
+from common.config import Config, load_config
+from common.utils import Data
+from data.utils import Utilities
 
 logger = logging.getLogger(__name__)  # Get the logger for this module
 

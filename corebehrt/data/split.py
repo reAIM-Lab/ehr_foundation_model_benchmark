@@ -1,6 +1,6 @@
 from typing import Iterator, Tuple, List
 
-from corebehrt.common.utils import Data
+from common.utils import Data
 from sklearn.model_selection import KFold
 
 

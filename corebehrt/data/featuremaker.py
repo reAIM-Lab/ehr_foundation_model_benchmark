@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import Tuple
-from corebehrt.data.creators import BaseCreator
+from data.creators import BaseCreator
 
 
 class FeatureMaker:

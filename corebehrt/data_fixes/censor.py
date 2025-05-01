@@ -2,7 +2,7 @@ import random
 import pandas as pd
 from typing import List, Union
 
-from corebehrt.common.utils import iter_patients
+from common.utils import iter_patients
 
 
 class Censorer:

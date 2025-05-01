@@ -8,11 +8,11 @@ from typing import Dict, List, Tuple
 import torch
 from tqdm import tqdm
 
-from corebehrt.common.config import Config
-from corebehrt.common.loader import load_assigned_pids, load_exclude_pids
-from corebehrt.common.logger import TqdmToLogger
-from corebehrt.common.utils import check_directory_for_features
-from corebehrt.data.utils import Utilities
+from common.config import Config
+from common.loader import load_assigned_pids, load_exclude_pids
+from common.logger import TqdmToLogger
+from common.utils import check_directory_for_features
+from data.utils import Utilities
 
 logger = logging.getLogger(__name__)  # Get the logger for this module
 PRETRAIN = 'pretrain'
@@ -80,7 +80,7 @@ class Batches:
         splits = {}
         all_predefined_pids_set = set()
         for mode, file in split_files.items():
-            pids = torch.load(join(self.predefined_splits_dir, file))
+            pids = torch.load(join(self.predefined_splits_dir, file), weights_only = False)
             if not set(pids).issubset(set(self.flattened_pids)):
                 diff = len(set(pids).difference(set(self.flattened_pids)))
                 logger.warning(f"Predefined pids in mode {mode} contain pids that are not in the dataset. {diff}")

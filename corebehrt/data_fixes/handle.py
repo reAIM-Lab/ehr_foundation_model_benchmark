@@ -1,5 +1,5 @@
 import pandas as pd
-from corebehrt.common.utils import iter_patients
+from common.utils import iter_patients
 
 class Handler:
     def __init__(self, min_age: int = -1, max_age: int = 120):

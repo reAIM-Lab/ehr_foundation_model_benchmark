@@ -7,16 +7,16 @@ from typing import Dict, List, Tuple, Union
 import pandas as pd
 import torch
 
-from corebehrt.common.config import Config, instantiate, load_config
-from corebehrt.common.loader import (FeaturesLoader, get_pids_file,
+from common.config import Config, instantiate, load_config
+from common.loader import (FeaturesLoader, get_pids_file,
                                    load_and_select_splits, load_exclude_pids)
-from corebehrt.common.saver import Saver
-from corebehrt.common.utils import Data
-from corebehrt.data.dataset import MLMDataset
-from corebehrt.data.filter import CodeTypeFilter, PatientFilter
-from corebehrt.data.utils import Utilities
-from corebehrt.data_fixes.handle import Handler
-from corebehrt.data_fixes.truncate import Truncator
+from common.saver import Saver
+from common.utils import Data
+from data.dataset import MLMDataset
+from data.filter import CodeTypeFilter, PatientFilter
+from data.utils import Utilities
+from data_fixes.handle import Handler
+from data_fixes.truncate import Truncator
 
 logger = logging.getLogger(__name__)  # Get the logger for this module
 

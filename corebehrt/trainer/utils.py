@@ -10,7 +10,8 @@ def compute_avg_metrics(metric_values: dict):
     """Computes the average of the metric values when metric is not zero and not NaN"""
     averages = {}
     for name, values in metric_values.items():
-        values_array = np.array(values)
+        print(name, values)
+        values_array = np.asarray(values)
         select_mask = (values_array == 0) | (np.isnan(values_array))
         non_zero_values = values_array[~select_mask]
         

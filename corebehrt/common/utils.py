@@ -10,7 +10,7 @@ from typing import Dict, Generator, List, Optional, Tuple
 import pandas as pd
 import torch
 
-from corebehrt.common.config import Config
+from common.config import Config
 
 logger = logging.getLogger(__name__)  # Get the logger for this module
 
@@ -67,14 +67,19 @@ def convert_epochs_to_steps(cfg: Config, key: str, num_patients: int, batch_size
     num_epochs = cfg.scheduler[key]
     num_steps = int(num_patients / batch_size * num_epochs)
     logger.info(f"Number of steps for {key}: {num_steps}")
-    cfg.scheduler[key.replace('_epochs', '_steps')] = num_steps
+    if key.endswith('_epochs'):
+        steps_key = key.replace('_epochs', '_steps')
+        cfg.scheduler.update({steps_key: num_steps})
     del cfg.scheduler[key]
+    print('Convert epochs to steps', [key for key in cfg.scheduler])
     
 def compute_number_of_warmup_steps(cfg: Config, num_patients:int)->None:
     """Compute number of warmup steps based on number of patients and batch size"""
-    batch_size = cfg.trainer_args.batch_size
+    batch_size = cfg.trainer_args.per_device_train_batch_size
     epochs_keys = [key for key in cfg.scheduler if key.endswith('_epochs')]
+    print(epochs_keys, num_patients, batch_size)
     for key in epochs_keys:
+        print('compute warmup steps', [key for key in cfg.scheduler])
         convert_epochs_to_steps(cfg, key, num_patients, batch_size)
 
 @dataclass

@@ -1,6 +1,6 @@
 import itertools
 import pandas as pd
-from corebehrt.data.utils import Utilities
+from data.utils import Utilities
 
 
 class BaseCreator:

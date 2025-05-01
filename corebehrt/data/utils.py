@@ -6,8 +6,8 @@ import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
-from corebehrt.common.config import Config
-from corebehrt.common.utils import Data
+from common.config import Config
+from common.utils import Data
 
 logger = logging.getLogger(__name__)  # Get the logger for this module
 

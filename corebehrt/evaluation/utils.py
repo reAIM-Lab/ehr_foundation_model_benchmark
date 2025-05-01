@@ -8,7 +8,7 @@ from datetime import datetime
 
 from torch.utils.data import WeightedRandomSampler
 
-from corebehrt.common.utils import Data
+from common.utils import Data
 
 def get_sampler(cfg, train_dataset, outcomes):
     """Get sampler for training data.

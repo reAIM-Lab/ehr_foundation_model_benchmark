@@ -6,7 +6,7 @@ from os.path import join, split
 from shutil import copyfile
 from typing import Tuple
 
-from corebehrt.common.config import Config
+from common.config import Config
 
 logger = logging.getLogger(__name__)  # Get the logger for this module
 

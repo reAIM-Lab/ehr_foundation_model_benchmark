@@ -6,15 +6,15 @@ from typing import Optional, Tuple
 import torch
 from torch.optim import AdamW
 from torch.utils.data import Sampler
-from transformers import BertConfig
+from transformers import BertConfig, get_linear_schedule_with_warmup
 
-from corebehrt.common.azure import AzurePathContext
-from corebehrt.common.config import Config, instantiate, load_config
-from corebehrt.common.loader import ModelLoader, load_model_cfg_from_checkpoint
-from corebehrt.common.setup import DirectoryPreparer
-from corebehrt.data.utils import Utilities
-from corebehrt.evaluation.utils import get_sampler
-from corebehrt.model.model import BertEHRModel, BertForFineTuning
+from common.azure import AzurePathContext
+from common.config import Config, instantiate, load_config
+from common.loader import ModelLoader, load_model_cfg_from_checkpoint
+from common.setup import DirectoryPreparer
+from data.utils import Utilities
+from evaluation.utils import get_sampler
+from model.model import BertEHRModel, BertForFineTuning
 
 logger = logging.getLogger(__name__)  # Get the logger for this module
 CHECKPOINTS_DIR = "checkpoints"
@@ -37,7 +37,8 @@ class Initializer:
         else:
             logger.info('Initializing new model')
             vocab_size = len(train_dataset.vocabulary)
-            model = BertEHRModel(BertConfig( **self.cfg.model, vocab_size=vocab_size,))
+            model = BertEHRModel(BertConfig( **self.cfg.model, vocab_size=vocab_size, attn_implementation="flash_attention_2"))
+        print('Checking flash attention', model.config.attn_implementation)
         return model
         
     def initialize_finetune_model(self, train_dataset):
@@ -64,10 +65,7 @@ class Initializer:
             return optimizer
         else:
             logger.info('Initializing new AdamW optimizer')
-            return AdamW(
-                model.parameters(),
-                **self.cfg.optimizer
-            )
+            return AdamW(model.parameters(), lr=0.001, eps=1e-06, weight_decay=0.01)
 
     def initialize_scheduler(self, optimizer):
         """Initialize scheduler from checkpoint or from scratch."""
