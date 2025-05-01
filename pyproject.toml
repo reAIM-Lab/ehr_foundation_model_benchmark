@@ -22,6 +22,7 @@ classifiers = [
 dependencies = [
     "cehrbert",
     "polars",
+    "meds-evaluation @ git+https://github.com/Jeanselme/meds-evaluation.git@bootstrapping",
 ]
 
 [tool.setuptools_scm]

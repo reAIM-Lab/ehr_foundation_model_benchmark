@@ -98,7 +98,7 @@ for cohort_dir in "$BASE_DIR"*/; do
 
   echo "Found features directory: $features_dir"
 
-  # Run the command
+  # Run the fine-tuning command
   echo "Running benchmark for $task_name..."
   python -u -m ehr_foundation_model_benchmark.tools.linear_prob.finetune_with_linear_prob \
     --features_label_input_dir "$features_dir" \
@@ -106,6 +106,44 @@ for cohort_dir in "$BASE_DIR"*/; do
     --task_name "$task_name" \
     --output_dir "$OUTPUT_DIR" \
     --meds_dir "$MEDS_DIR"
+
+  # Check if finetune command succeeded
+  if [ $? -ne 0 ]; then
+    echo "Warning: Benchmark failed for $task_name"
+    echo "---------------------------------"
+    continue
+  fi
+
+  # Find all model directories created by the finetune process
+  for model_dir in "$OUTPUT_DIR/$task_name/$MODEL_NAME"_*/; do
+    # Skip if not a directory
+    if [ ! -d "$model_dir" ]; then
+      continue
+    fi
+
+    model_folder=$(basename "$model_dir")
+    echo "Found model folder: $model_folder"
+
+    # Check if results.json already exists
+    if [ -f "$model_dir/results.json" ]; then
+      echo "Skipping evaluation for $task_name/$model_folder - results.json already exists"
+    # Check if test_predictions directory exists
+    elif [ -d "$model_dir/test_predictions" ]; then
+      echo "Running meds-evaluation-cli for $task_name/$model_folder"
+
+      # Run the meds-evaluation-cli command
+      meds-evaluation-cli predictions_path="$model_dir/test_predictions" output_dir="$model_dir"
+
+      # Check if command succeeded
+      if [ $? -eq 0 ]; then
+        echo "Evaluation completed successfully"
+      else
+        echo "Warning: Evaluation failed for $task_name/$model_folder"
+      fi
+    else
+      echo "Warning: No test_predictions directory found in $model_dir. Skipping..."
+    fi
+  done
 
   echo "Completed $task_name"
   echo "---------------------------------"

@@ -31,6 +31,9 @@ def main(args):
         subject_splits.select("subject_id", "split"), "subject_id"
     ).filter(
         pl.col("split").is_in([train_split, tuning_split])
+    ).with_row_index(
+        name="sample_id",
+        offset=1
     )
     test_dataset = features_label.join(
         subject_splits.select("subject_id", "split"), "subject_id"
@@ -38,48 +41,73 @@ def main(args):
         pl.col("split") == held_out_split
     )
 
+    should_terminate = False
+    # We keep track of the sample ids that have been picked from the previous few-shots experiments.
+    existing_sample_ids = set()
     for size in TRAIN_SIZES:
-        few_show_output_dir = task_output_dir / f"results_{size}" / args.model_name
+        # This indicates the data set has reached its maximum size, and we should terminate
+        if should_terminate:
+            break
+
+        if len(train_dataset) < size:
+            size = len(train_dataset)
+            should_terminate = True
+
+        test_prediction_parquet_file = task_output_dir / f"{args.model_name}_{size}.parquet"
+        few_show_output_dir = task_output_dir / f"{args.model_name}_{size}"
         few_show_output_dir.mkdir(exist_ok=True, parents=True)
         logistic_model_file = few_show_output_dir / "model.pickle"
-        logistic_test_result_file = few_show_output_dir / "metrics.json"
-        if logistic_test_result_file.exists():
+        logistic_test_metrics_file = few_show_output_dir / "metrics.json"
+
+        if logistic_test_metrics_file.exists():
             print(
-                f"The results for logistic regression with {size} shots already exist at {logistic_test_result_file}"
+                f"The results for logistic regression with {size} shots already exist at {logistic_test_metrics_file}"
             )
         else:
+            remaining_train_set = train_dataset.filter(~pl.col("sample_id").is_in(existing_sample_ids))
+            existing_samples = train_dataset.filter(pl.col("sample_id").is_in(existing_sample_ids))
             try:
-                if size < 100000:
-                    success = True
-                    subset = train_dataset.sample(n=size, shuffle=True, seed=args.seed)
-                    n_positive_cases = len(train_dataset.filter(pl.col("boolean_value") == True))
-                    while True:
-                        count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
-                        for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
-                            if cls == 1 and count < MINIMUM_NUM_CASES:
-                                success = False
-                                print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
-                                break
-                        if success:
+                size_required = size - len(existing_samples)
+                success = True
+                subset = pl.concat([
+                    remaining_train_set.sample(n=size_required, seed=args.seed),
+                    existing_samples
+                ]).sample(
+                    fraction=1.0,
+                    shuffle=True,
+                    seed=args.seed
+                )
+                while True:
+                    count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
+                    for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
+                        if cls == 1 and count < MINIMUM_NUM_CASES:
+                            success = False
+                            print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
                             break
-                        else:
-                            sampling_percentage = size / len(train_dataset)
-                            n_positives_to_sample = max(MINIMUM_NUM_CASES, int(n_positive_cases * sampling_percentage))
-                            positives_subset = train_dataset.filter(pl.col("boolean_value") == True).sample(
-                                n=n_positives_to_sample, shuffle=True, seed=args.seed, with_replacement=True
-                            )
-                            negatives_subset = train_dataset.filter(pl.col("boolean_value") == False).sample(
-                                n=(size - n_positives_to_sample), shuffle=True, seed=args.seed
-                            )
-                            print(
-                                f"number of positive cases: {len(positives_subset)}; "
-                                f"number of negative cases: {len(negatives_subset)}"
-                            )
-                            subset = pl.concat([positives_subset, negatives_subset])
-                            break
-                else:
-                    subset = train_dataset
+                    if success:
+                        break
+                    else:
+                        n_positive_cases = len(subset.filter(pl.col("boolean_value") == True))
+                        sampling_percentage = size_required / len(remaining_train_set)
+                        n_positives_to_sample = max(MINIMUM_NUM_CASES, int(n_positive_cases * sampling_percentage))
+                        positives_subset = remaining_train_set.filter(pl.col("boolean_value") == True).sample(
+                            n=n_positives_to_sample, shuffle=True, seed=args.seed, with_replacement=True
+                        )
+                        negatives_subset = remaining_train_set.filter(pl.col("boolean_value") == False).sample(
+                            n=(size_required - n_positives_to_sample), shuffle=True, seed=args.seed
+                        )
+                        print(
+                            f"number of positive cases: {len(positives_subset)}; "
+                            f"number of negative cases: {len(negatives_subset)}"
+                        )
+                        subset = pl.concat([positives_subset, negatives_subset]).sample(
+                            fraction=1.0,
+                            shuffle=True,
+                            seed=args.seed
+                        )
+                        break
 
+                existing_sample_ids.update(subset["sample_id"].to_list())
                 if logistic_model_file.exists():
                     print(
                         f"The logistic regression model already exist for {size} shots, loading it from {logistic_model_file}"
@@ -87,7 +115,7 @@ def main(args):
                     with open(logistic_model_file, "rb") as f:
                         model = pickle.load(f)
                 else:
-                    model = LogisticRegressionCV(scoring="roc_auc")
+                    model = LogisticRegressionCV(scoring="roc_auc", random_state=args.seed, max_iter=500)
                     model.fit(np.asarray(subset["features"].to_list()), subset["boolean_value"].to_numpy())
                     with open(logistic_model_file, "wb") as f:
                         pickle.dump(model, f)
@@ -110,6 +138,9 @@ def main(args):
                 logistic_predictions.write_parquet(
                     logistic_test_predictions / "predictions.parquet"
                 )
+                logistic_predictions.write_parquet(
+                    test_prediction_parquet_file
+                )
                 roc_auc = roc_auc_score(test_dataset["boolean_value"], y_pred)
                 precision, recall, _ = precision_recall_curve(
                     test_dataset["boolean_value"], y_pred
@@ -117,10 +148,11 @@ def main(args):
                 pr_auc = auc(recall, precision)
                 metrics = {"roc_auc": roc_auc, "pr_auc": pr_auc}
                 print("Logistic:", size, args.task_name, metrics)
-                with open(logistic_test_result_file, "w") as f:
+                with open(logistic_test_metrics_file, "w") as f:
                     json.dump(metrics, f, indent=4)
             except ValueError as e:
                 print(e)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
