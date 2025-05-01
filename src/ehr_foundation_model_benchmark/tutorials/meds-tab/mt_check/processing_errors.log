@@ -1,0 +1,126 @@
+
+[2025-04-30 14:08:57.550757] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 196, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_task_tiny_0.1_10/long_los_output', 'do_overwrite=False', 'input_label_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-04-30 14:10:12.507983] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 200, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_task_tiny_0.1_10/long_los_output', 'do_overwrite=False', 'input_label_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-04-30 14:13:26.116715] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 200, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_task_tiny_0.1_10/long_los_output', 'do_overwrite=False', 'input_label_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-04-30 14:28:58.496710] ERROR in Task: long_los | Step: meds-tab-cache-task
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 144, in <module>
+    subprocess.run(label_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/old_meds/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-cache-task', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'input_label_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_general_tiny_0.0.5_10/long_los_output', 'task_name=long_los', 'do_overwrite=False', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-04-30 14:34:44.764582] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 200, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/meds-0.0.9/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_task_tiny_0.0.9_10/long_los_output', 'do_overwrite=False', 'input_label_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 14:37:00.075133] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 128, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_100/long_los_output-test', 'do_overwrite=False', 'tabularization.min_code_inclusion_count=1', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 15:09:05.855104] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 130, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_100/long_los_output-test', 'do_overwrite=False', 'tabularization.min_code_inclusion_count=1', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 15:09:53.733769] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 130, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_100/long_los_output-test', 'do_overwrite=False', 'tabularization.min_code_inclusion_count=1', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 15:10:21.033625] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 130, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_100/long_los_output-test', 'do_overwrite=False', 'tabularization.min_code_inclusion_count=1', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 15:10:49.275750] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 130, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_100/long_los_output-test', 'do_overwrite=False', 'tabularization.min_code_inclusion_count=1', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 15:31:42.079123] ERROR in Task: long_los | Step: meds-tab-xgboost
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 251, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,4)', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los_output-test', 'output_model_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los', 'task_name=long_los', 'do_overwrite=False', 'hydra.sweeper.n_trials=10', 'hydra.sweeper.n_jobs=4', 'tabularization.min_code_inclusion_count=1', 'input_tabularized_cache_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los_output-test/tabularize', 'input_label_cache_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 15:33:58.069720] ERROR in Task: long_los | Step: meds-tab-xgboost
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 251, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', 'worker=range(0,4)', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los_output-test', 'output_model_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los', 'task_name=long_los', 'do_overwrite=False', 'hydra.sweeper.n_trials=10', 'hydra.sweeper.n_jobs=4', 'tabularization.min_code_inclusion_count=1', 'input_tabularized_cache_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los_output-test/tabularize', 'input_label_cache_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 15:34:31.923190] ERROR in Task: long_los | Step: meds-tab-xgboost
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 251, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los_output-test', 'output_model_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los', 'task_name=long_los', 'do_overwrite=False', 'hydra.sweeper.n_trials=10', 'hydra.sweeper.n_jobs=4', 'tabularization.min_code_inclusion_count=1', 'input_tabularized_cache_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_10/long_los_output-test/tabularize', 'input_label_cache_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 15:44:48.567155] ERROR in Task: long_los | Step: meds-tab-xgboost
+Traceback (most recent call last):
+  File "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/mt_check/run_medstab_patient.py", line 188, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/mchome/ffp2106/.conda/envs/ehr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,4)', 'input_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/data', 'output_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_10/long_los_output-test', 'output_model_dir=/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_10/long_los', 'task_name=long_los', 'do_overwrite=False', 'hydra.sweeper.n_trials=10', 'hydra.sweeper.n_jobs=4', 'tabularization.min_code_inclusion_count=1', 'tabularization.aggs=[code/count]', 'tabularization.window_sizes=[full]']' returned non-zero exit status 1.
+

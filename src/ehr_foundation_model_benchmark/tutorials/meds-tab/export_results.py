@@ -1,0 +1,74 @@
+import os
+import subprocess
+
+# Root path where all 'xxx' folders are located
+root_dir = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-new"
+
+# Base command to call
+base_script = "/data/mchome/ffp2106/meds-evaluation/src/meds_evaluation/__main__.py"
+
+# Output base directory for results
+results_base = "/data/mchome/ffp2106//meds-evaluation/src/meds_evaluation/results_final"
+
+export_path = '/data2/results/foundation_benchmarking/'
+
+# Loop over all folders in root_dir
+for sampling in [0.001, 0.01, 0.1, 1.0]:
+    for model_name in os.listdir(root_dir):
+        if "_final" in model_name:
+            continue  # Skip folders with '_final'
+        if sampling < 1.0 and not str(sampling) in model_name:
+            continue
+        if sampling == 1.0 and "-" in model_name:
+            continue
+
+        model_path = os.path.join(root_dir, model_name)
+        if not os.path.isdir(model_path):
+            continue  # Just to be safe, skip non-directories
+
+        # There should be exactly one subfolder (date-time folder)
+        subfolders = [f for f in os.listdir(model_path) if os.path.isdir(os.path.join(model_path, f))]
+
+        # if len(subfolders) != 1:
+        #     print(f"[Warning] Skipping {model_path}: expected exactly one subfolder, found {len(subfolders)}.")
+        #     continue
+
+        # if several subfolders, take the last one, ordered by name
+        if len(subfolders) == 0:
+            print(f"[Warning] No subfolders found in {model_path}. Skipping.")
+            continue
+        subfolders.sort()
+
+        # datetime_folder = subfolders[0]
+        datetime_folder = subfolders[-1]
+        
+        # Build full predictions_path
+        predictions_path = os.path.join(model_path, datetime_folder, "best_trial", "held_out_predictions.parquet")
+
+        if not os.path.exists(os.path.expanduser(predictions_path)):
+            print(f"[Warning] Predictions file not found at {predictions_path}. Skipping.")
+            continue
+
+        # Output folder for results (use model name)
+        output_path = os.path.join(results_base, model_name)
+
+        task_name = model_name.split("-")[0]
+        if task_name == "death":
+            task_name = "mortality"
+        export_path_task = os.path.join(export_path, task_name)
+        os.makedirs(export_path_task, exist_ok=True)
+        export_path_name = f"medstab_{sampling*100}.parquet"
+
+        # Build the full command
+        # command = f"python {base_script} predictions_path=\"{predictions_path}\" output_dir=\"{output_path}\""
+        # copy file
+        command = f"cp {predictions_path} {os.path.join(export_path_task, export_path_name)}"
+        
+
+        print(f"[Running] {command}")
+        # exit()
+
+        # Execute the command
+        subprocess.run(command, shell=True, check=True)
+
+print("\nAll evaluations done!")
