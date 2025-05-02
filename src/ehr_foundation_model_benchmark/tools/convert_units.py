@@ -50,8 +50,6 @@ def process_file(file):
     data["harmonized_value_as_number"] = None
     data["harmonized_unit_concept_id"] = None
 
-    # most_common_units = compute_most_common_units()
-
     # EQUIVALENT UNITS
     print("Simplifying units")
     s1 = pc()
@@ -98,20 +96,6 @@ def process_file(file):
     report_harmonized(data, "after single unit labs")
     report_data.append(("Single unit labs", n_rows_sul, n_rows_sul / len(data) * 100, s2 - s1))
 
-    # ONE UNIT AND MISSING LABS
-    # for measurement_id in tqdm(
-    #     get_one_unit_and_missing_lab(), desc="Single unit + missing labs"
-    # ):
-    #     cdt = data["measurement_concept_id"] == measurement_id
-
-    #     data.loc[cdt, "harmonized_value_as_number"] = data.loc[cdt, "value_as_number"]
-    #     data.loc[cdt, "harmonized_unit_concept_id"] = most_common_units[measurement_id]
-
-    #     if demo:
-    #         break
-
-    # report_harmonized(data, "after single unit and missing labs")
-
     # MULTI-UNIT LABS - CONVERSION
     s1 = pc()
     to_convert = get_conversions()
@@ -157,8 +141,8 @@ def process_file(file):
     report_harmonized(data, "after conversion")
     report_data.append(("Converted rows", n_rows_converted, n_rows_converted / len(data) * 100, s2 - s1))
 
-     # MULTI-UNIT LABS - COPY MAJORITY UNITS
-     # it is modelled as a conversion from target_unit to target_unit
+    # MULTI-UNIT LABS - COPY MAJORITY UNITS
+    # it is modelled as a conversion from target_unit to target_unit
     # already_done = []
     s1 = pc()
     to_copy = get_copy_majority_units()
@@ -191,58 +175,10 @@ def process_file(file):
     report_harmonized(data, "after majority units copy")
     report_data.append(("Copied rows", n_rows_copied, n_rows_copied / len(data) * 100, s2 - s1))
 
-    # RARE UNITS
-    # for rare units, convert to nan (0) in the unit_concept_id
-    # rare_units = get_rare_units_labs()
-    # n_rows_rare = 0
-    # for measurement_id, unit_id in tqdm(rare_units, desc="Rare units"):
-    #     cdt = (
-    #         (data["unit_concept_id"] == unit_id)
-    #         & (data["measurement_concept_id"] == measurement_id)
-    #         & (data["harmonized_value_as_number"].isnull())
-    #     )  # not already converted
-    #     n_rows_rare += np.count_nonzero(cdt)
-
-    #     data.loc[cdt, "unit_concept_id"] = 0
-        
-    #     # column does not exist in data in fact, no need
-    #     data.loc[cdt, "unit_concept_name"] = "No matching concept"
-
-    #     if demo:
-    #         break
-
-    # report_data.append(("Rare units", n_rows_rare, n_rows_rare / len(data) * 100))
-
-    # print(
-    #     f"Rare units",
-    #     n_rows_rare * 100 / len(data),
-    #     "%",
-    # ) 
-
     print(report_data)
     with open(file.replace(".snappy.parquet", "-processed_stats.csv"), 'w') as f:
         json.dump(report_data, f, cls=NumpyEncoder)
 
-    ###########################################
-    # FURTHER PROCESSING NEEDED TO RESOLVE NANS
-    ###########################################
-    # TODO
-    ###########################################
-
-    # print('Getting majority/minority and value type counts')
-    # with open('most_common_units.json', 'r') as f:
-    #     most_common_units = json.load(f)
-        
-    # most_common_units_df = pd.Series(most_common_units).reset_index()
-    # most_common_units_df['index'] = most_common_units_df['index'].astype(int)
-    # most_common_units_df.set_index('index', inplace=True)
-    # most_common_units = most_common_units_df.to_dict()[0]
-    
-    # #get majority unit
-    # data['majority_unit_id'] = pd.DataFrame(data['measurement_concept_id']).replace(to_replace=most_common_units)['measurement_concept_id']
-    
-    
-    # print('Finished filling in majority units')
     # # fill in unit match type: majority, minority, nan (acceptable, unacceptable)
     # data['unit_match_type'] = 'to_fill'
     # data['harmonized_unit_concept_id'].fillna(0, inplace=True)
