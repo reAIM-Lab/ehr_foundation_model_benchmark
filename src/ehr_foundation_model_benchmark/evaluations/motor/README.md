@@ -5,10 +5,12 @@ MOTOR is implemented in the FEMR library, which the [meds_reader](https://github
 ```bash
 conda create -n femr python=3.10
 ```
-Install MEDS_READER and FEMR
+Install MEDS_READER, FEMR and evaluation packages
 ```bash
+conda activate femr
 pip install meds_reader==0.0.6
 pip install git+https://github.com/ChaoPang/femr.git@omop_meds_v3_tutorial
+pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
 ```
 Set the environment variables
 ```bash

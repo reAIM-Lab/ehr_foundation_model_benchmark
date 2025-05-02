@@ -42,12 +42,14 @@ and the same patient split was used for both OMOP and MEDS datasets.
 ```
 ###  Convert OMOP to MEDS
 ```shell
-export OMOP_FOLDER=""
-export MEDS_MEDS=""
+export OMOP_DIR=""
+export OMOP_MEDS=""
+export EVALUATION_DIR=""
+
 conda create -n meds_etl python=3.10
 conda activate meds_etl
 pip install meds_etl==0.3.9
-meds_etl_omop $OMOP_FOLDER $MEDS_MEDS --num_proc 16
+meds_etl_omop $OMOP_DIR $OMOP_MEDS --num_proc 16
 ```
  ### Model Summary and Input Data Formats
 
@@ -67,7 +69,6 @@ meds_etl_omop $OMOP_FOLDER $MEDS_MEDS --num_proc 16
 ### Phenotypes
 ### Patient Outcomes
 
-
 ## Model Evaluation
 The EHR foundation models are pre-trained prior to evaluation, while the baseline models are evaluated directly without pretraining. 
 Following the evaluation protocols established in MOTOR [citation] and Contexts Clues [citation], we limit our assessments to linear probing, 
@@ -82,11 +83,12 @@ Set up the environment
 ```bash
 conda create -n femr python=3.10
 ```
-Install MEDS_READER and FEMR
+Install MEDS_READER, FEMR and evaluation packages
 ```bash
 conda activate femr
 pip install meds_reader==0.0.6
 pip install git+https://github.com/ChaoPang/femr.git@omop_meds_v3_tutorial
+pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
 ```
 #### Step 1. Pretrain MOTOR
 Follow the [Pretrain MOTOR instructions](src/ehr_foundation_model_benchmark/evaluations/motor/README.md)
@@ -97,17 +99,28 @@ Set the environment variables
 # CUIMC MEDS READER folder
 export OMOP_MEDS_READER = ""
 # this should point to where the MOTOR data and model artifacts will be generated
-export PRETRAINING_DATA = ""
+export MOTOR_DIR = ""
 # the folder that contains all the phenotype labels
 export PHENOTYPE_COHORT_DIR = ""
 # the folder that contains all the patient outcome labels
 export PATIENT_OUTCOME_DIR = ""
 ```
-We extract patient representations for all the phenotypes using a feature extraction window of 2 years prior to the prediction time
+For patient phenotype tasks, we extract patient representations a feature extraction window of 730 days (2 years) prior to the prediction time:
 ```bash
-sh src/femr/omop_meds_tutorial/run_motor.sh $PHENOTYPE_COHORT_DIR --observation_window 730
+sh src/ehr_foundation_model_benchmark/evaluations/motor/run_motor.sh $PHENOTYPE_COHORT_DIR \
+  --observation_window 730
 ```
-We extract patient representations for all the patient outcomes using the entire patient history prior to the prediction time
+For patient outcome prediction tasks, we extract representations using the entire patient history up to the prediction time:
 ```bash
-sh src/femr/omop_meds_tutorial/run_motor.sh PATIENT_OUTCOME_DIR
+sh src/ehr_foundation_model_benchmark/evaluations/motor/run_motor.sh $PATIENT_OUTCOME_DIR
+```
+#### Step 3. Evaluate using MOTOR features
+To evaluate model performance, we use the following script to train logistic regression classifiers with 5-fold cross-validation using scikit-learn. 
+This includes few-shot experiments with varying training set sizes: 100, 1,000, 10,000, and the full training set, evaluated on a fixed test set: 
+```bash
+sh src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few_shots.sh \
+  --base_dir $MOTOR_DIR/results/ \
+  --output_dir $EVALUATION_DIR \
+  --meds_dir $OMOP_MEDS \
+  --model_name motor
 ```
