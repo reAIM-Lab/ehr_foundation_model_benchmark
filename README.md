@@ -26,7 +26,9 @@ Irving Medical Center–NewYork-Presbyterian Hospital (CUIMC-NYP), encompassing 
 with information on diagnoses, medications, procedures, and laboratory tests. We exported the OMOP domain and vocabulary 
 tables from an on-premises SQL Server as Parquet files, harmonized units for all laboratory measurements, and 
 mapped ICD-9 codes to ICD-10 using General Equivalence Mappings. After data cleaning, we converted the CUIMC-NYP OMOP data to 
-the Medical Event Data Standard (MEDS) format to support models that require MEDS as input.  
+the Medical Event Data Standard (MEDS) format to support models that require MEDS as input. 
+Finally, the dataset was split into training and held-out sets using a 70:30 ratio, 
+and the same patient split was used for both OMOP and MEDS datasets.
 [Add more description and statistics to this section].
 
 
@@ -60,3 +62,18 @@ meds_etl_omop $OMOP_FOLDER $MEDS_MEDS --num_proc 16
 | MEDS-TAB            | MEDS                 | |
 | Logistic Regression | MEDS ||
 | GBM                 | MEDS ||
+
+## Evaluation Tasks
+### Phenotypes
+### Patient Outcomes
+
+
+## Model Evaluation
+The EHR foundation models are pre-trained prior to evaluation, while the baseline models are evaluated directly without pretraining. 
+Following the evaluation protocols established in MOTOR [citation] and Contexts Clues [citation], we limit our assessments to linear probing, 
+as further fine-tuning of foundation models can be computationally expensive and time-consuming. For each task, 
+we extract patient representations at the prediction time, train a logistic regression model using 5-fold cross-validation 
+on the extracted features and corresponding labels, and report the AUROC on the held-out test. To ensure consistency, 
+we use a fixed random seed for shuffling samples and fitting the logistic regression model.
+
+### MOTOR
