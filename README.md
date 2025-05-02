@@ -77,3 +77,37 @@ on the extracted features and corresponding labels, and report the AUROC on the 
 we use a fixed random seed for shuffling samples and fitting the logistic regression model.
 
 ### MOTOR
+MOTOR is implemented in the FEMR library, which the [meds_reader](https://github.com/EthanSteinberg/meds_reader) utility for processing MEDS data. 
+Set up the environment
+```bash
+conda create -n femr python=3.10
+```
+Install MEDS_READER and FEMR
+```bash
+conda activate femr
+pip install meds_reader==0.0.6
+pip install git+https://github.com/ChaoPang/femr.git@omop_meds_v3_tutorial
+```
+#### Step 1. Pretrain MOTOR
+Follow the [Pretrain MOTOR instructions](src/ehr_foundation_model_benchmark/evaluations/motor/README.md)
+
+#### Step 2. Extract patient representations using MOTOR
+Set the environment variables
+```bash
+# CUIMC MEDS READER folder
+export OMOP_MEDS_READER = ""
+# this should point to where the MOTOR data and model artifacts will be generated
+export PRETRAINING_DATA = ""
+# the folder that contains all the phenotype labels
+export PHENOTYPE_COHORT_DIR = ""
+# the folder that contains all the patient outcome labels
+export PATIENT_OUTCOME_DIR = ""
+```
+We extract patient representations for all the phenotypes using a feature extraction window of 2 years prior to the prediction time
+```bash
+sh src/femr/omop_meds_tutorial/run_motor.sh $PHENOTYPE_COHORT_DIR --observation_window 730
+```
+We extract patient representations for all the patient outcomes using the entire patient history prior to the prediction time
+```bash
+sh src/femr/omop_meds_tutorial/run_motor.sh PATIENT_OUTCOME_DIR
+```
