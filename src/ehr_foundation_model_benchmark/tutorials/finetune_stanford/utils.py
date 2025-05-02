@@ -247,8 +247,8 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
         attention_mask = batch_dict['attention_mask'].to(device)
 
         with torch.no_grad():
-            outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-            representations = outputs.logits[:, -1, :]
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True)
+            representations = outputs.hidden_states[-1][:, -1, :]
 
             if representations.dim() == 3:  # (batch_size, sequence_len, embedding_dim)
                 batch_embedding.append(representations.squeeze(1).cpu())  # Squeeze sequence_len dimension if batch size is 1
