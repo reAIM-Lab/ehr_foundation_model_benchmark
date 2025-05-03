@@ -12,9 +12,9 @@ BASE_PATH = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohd
 PHENOTYPE_PATH = '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/'
 # PHENOTYPE_PATH = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/femr/motor/labels"
 REDSHARD_DIR = os.path.join(BASE_PATH, "post_transform")
-OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, "models/meds_tab/output-fix")
-TASKS_DIR = os.path.join(BASE_PATH, "models/meds_tab/labels-fix")
-N_PARALLEL_WORKERS = 4
+OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, "models/meds_tab/output-fix2-large")
+TASKS_DIR = os.path.join(BASE_PATH, "models/meds_tab/labels-fix2-large")
+N_PARALLEL_WORKERS = 64 #32 #4
 SPLITS = ["train", "tuning", "held_out"]
 LOG_FILE = "processing_errors.log"
 TIME_LOG_FILE = "task_training_times.log"  # File to save training times
@@ -35,15 +35,19 @@ phenotype_tasks = list(sorted([
     if os.path.isdir(os.path.join(PHENOTYPE_PATH, name))
 ]))
 
+# print(phenotype_tasks)
+# exit()
+
 # phenotype_tasks = list(sorted(glob.glob(os.path.join(PHENOTYPE_PATH, "*.parquet"))))
 # print(phenotype_tasks)
 # exit()
 
-for i, task in (pbar := tqdm(enumerate(phenotype_tasks))):
+for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tasks))):
     if "logs" in task:
         continue
     # only long los tasks
-    if "long_los" not in task:
+    if "long_los" in task or "Schizophrenia" in task:
+        print(f"Skipping task {task}.")
         continue
 
     task = os.path.basename(task)
@@ -112,10 +116,10 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks))):
         f"output_dir={os.path.join(OUTPUT_MODEL_DIR, task + '_final')}",
         "do_overwrite=False",
         f"input_label_dir={os.path.join(TASKS_DIR, task)}",
-        # "tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]",
-        # "tabularization.window_sizes=[1d,7d,30d,60d,365d,full]"
-        "tabularization.aggs=[code/count]",
-        "tabularization.window_sizes=[full]"
+        "tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]",
+        "tabularization.window_sizes=[1d,7d,30d,60d,365d,full]"
+        # "tabularization.aggs=[code/count]",
+        # "tabularization.window_sizes=[full]"
     ]
     start_time = time.time()  # Start timing
     try:
@@ -134,20 +138,24 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks))):
             "meds-tab-xgboost",
             "--multirun",
             f"worker=range(0,{N_PARALLEL_WORKERS})",
+            # f"worker=range(0,{100})",
             f"input_dir={os.path.join(REDSHARD_DIR, 'data')}",
             f"output_dir={os.path.join(OUTPUT_MODEL_DIR, task + '_final')}",
             f"output_model_dir={os.path.join(OUTPUT_MODEL_DIR, task + f'-{ratio}')}",
             f"task_name={task}",
             "do_overwrite=False",
-            "hydra.sweeper.n_trials=10",
-            f"hydra.sweeper.n_jobs={N_PARALLEL_WORKERS}",
+            "hydra.sweeper.n_trials=100",
+            f"hydra.sweeper.n_jobs={N_PARALLEL_WORKERS}", # different from workers
             f"input_tabularized_cache_dir={os.path.join(OUTPUT_MODEL_DIR, task + '_final', 'tabularize')}",
             # "tabularization.min_code_inclusion_count=10",
             f"input_label_cache_dir={os.path.join(TASKS_DIR, task)}",
-            # "tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]",
-            # "tabularization.window_sizes=[1d,7d,30d,60d,365d,full]",
-            "tabularization.aggs=[code/count]",
-            "tabularization.window_sizes=[full]",
+            "tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]",
+            "tabularization.window_sizes=[1d,7d,30d,60d,365d,full]",
+            # "tabularization.aggs=[code/count,value/count,value/min,value/max]",
+            # "tabularization.window_sizes=[60d,365d,full]",
+            
+            # "tabularization.aggs=[code/count]",
+            # "tabularization.window_sizes=[full]",
             f"+model_launcher.model.stratify={ratio}"
         ]
         start_time = time.time()  # Start timing

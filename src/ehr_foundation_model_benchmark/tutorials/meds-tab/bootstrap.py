@@ -2,20 +2,24 @@ import os
 import subprocess
 
 # Root path where all 'xxx' folders are located
-root_dir = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-new"
+# root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix-large"
+root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large"
 
 # Base command to call
-base_script = "/data/mchome/ffp2106/meds-evaluation/src/meds_evaluation/__main__.py"
+base_script = "/home/ffp2106@mc.cumc.columbia.edu/meds-evaluation/src/meds_evaluation/__main__.py"
 
 # Output base directory for results
-results_base = "/data/mchome/ffp2106//meds-evaluation/src/meds_evaluation/results_final"
+results_base = "/home/ffp2106@mc.cumc.columbia.edu/src/meds_evaluation/results_final"
 
 # Loop over all folders in root_dir
-for sampling in [0.001, 0.01, 0.1]:
+# for sampling in [0.001, 0.01, 0.1]:
+for sampling in [1.0]:
     for model_name in os.listdir(root_dir):
         if "_final" in model_name:
             continue  # Skip folders with '_final'
         if not str(sampling) in model_name:
+            continue
+        if not "long_los" in model_name:
             continue
 
         model_path = os.path.join(root_dir, model_name)
