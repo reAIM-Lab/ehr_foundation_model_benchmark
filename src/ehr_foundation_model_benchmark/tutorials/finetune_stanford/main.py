@@ -6,20 +6,17 @@ from pathlib import Path
 import polars as pl
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, TensorDataset
-import pytorch_lightning as pyl
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from utils import LRModelLightning, load_task_embeddings, standardize
+from utils import load_task_embeddings
 
 warnings.filterwarnings("ignore")
 
 TRAIN_SIZES = [1000, 10000, 100000]
 
 ####################################
-# 1. Load model and tokenizer
+# Generating embeddings from pretrained model
 def main(args):
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     torch.manual_seed(args.seed)
 
@@ -48,109 +45,41 @@ def main(args):
     tune_path = base_path / "post_transform/data/tuning"
     test_path = base_path / "post_transform/data/held_out"
 
-    print(len(train))
-    print(len(tune))
-    print(len(test))
-
     # Load in embeddings and labels for task (model dependent)
     start_time = time.time()
 
-    train_embeddings, train_labels, _, _ = load_task_embeddings(args, train, train_path, device)
-    tune_embeddings, tune_labels, _, _ = load_task_embeddings(args, tune, tune_path, device)
+    train_embeddings, train_labels, train_ids, train_times = load_task_embeddings(args, train, train_path, device)
+    tune_embeddings, tune_labels, tune_ids, tune_times = load_task_embeddings(args, tune, tune_path, device)
     test_embeddings, test_labels, test_ids, test_times = load_task_embeddings(args, test, test_path, device)
-    
-    print(len(train_labels))
-    print(len(tune_labels))
-    print(len(test_labels))
 
     end_time = time.time()
     print(f"Inference Time taken: {end_time - start_time:.2f} seconds")
 
-    # train_embeddings, tune_embeddings, test_embeddings = standardize(train_embeddings, tune_embeddings, test_embeddings)
+    train_features = pl.DataFrame({
+            "subject_id": np.array(train_ids).astype(int),
+            "prediction_time": train_times,
+            "boolean_value": train_labels.cpu().numpy().astype(bool),
+            "features": np.array(train_embeddings.detach().cpu())
+        })
 
-    # model_dir = Path(f"./models/{task_name}")
-    # model_dir.mkdir(parents=True, exist_ok=True)
+    tune_features = pl.DataFrame({
+            "subject_id": np.array(tune_ids).astype(int),
+            "prediction_time": tune_times,
+            "boolean_value": tune_labels.cpu().numpy().astype(bool),
+            "features": np.array(tune_embeddings.detach().cpu())
+        })
 
-    # pred_dir = Path(f"./predictions/{task_name}")
-    # pred_dir.mkdir(parents=True, exist_ok=True)
+    test_features = pl.DataFrame({
+            "subject_id": np.array(test_ids).astype(int),
+            "prediction_time": test_times,
+            "boolean_value": test_labels.cpu().numpy().astype(bool),
+            "features": np.array(test_embeddings.detach().cpu())
+        })
+    all_features = pl.concat([train_features, tune_features, test_features])
 
-    # for size in TRAIN_SIZES:
-    #     indices = torch.randperm(train_embeddings.shape[0])[:size]
-
-    #     x_train = train_embeddings[indices]
-    #     y_train = train_labels[indices]
-
-    #     batch_size = 256
-    #     train_dataset = TensorDataset(x_train, y_train) 
-    #     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    #     val_dataset = TensorDataset(tune_embeddings, tune_labels) 
-    #     val_loader = DataLoader(val_dataset, batch_size=len(val_dataset), shuffle=False)
-    #     test_dataset = TensorDataset(test_embeddings, test_labels) 
-    #     test_loader = DataLoader(test_dataset, batch_size=len(test_dataset), shuffle=False)
-
-    #     unique_labels, counts = test_labels.unique(return_counts=True)
-    #     label_prevalence = counts.float() / len(test_labels)
-
-    #     # Display the label prevalences
-    #     for label, prevalence in zip(unique_labels, label_prevalence):
-    #         print(f"Label '{label.item()}' prevalence: {prevalence:.4f}")
-
-    #     # Train the model
-    #     input_dim = train_embeddings.shape[1]  # This should match the embedding size
-    #     model = LRModelLightning(input_dim)
-
-    #     checkpoint_callback = ModelCheckpoint(
-    #         monitor="val_loss",       # Track validation loss
-    #         mode="min",               # Save the model with the lowest val_loss
-    #         save_top_k=1,             # Keep only the best model
-    #         dirpath="checkpoints/",   # Save directory
-    #         filename="best_model",    # Model file name
-    #         verbose=False
-    #     )
-
-    #     early_stopping_callback = EarlyStopping(
-    #         monitor="val_loss",    # Metric to monitor (validation loss)
-    #         patience=20,            # Number of epochs to wait for improvement
-    #         verbose=False,          # Print message when stopping
-    #         mode="min",            # 'min' for loss (lower is better)
-    #     )
-
-    #     model_path = model_dir / f"linear_probing_{size}.pth"
-
-    #     if not model_path.exists():
-    #         trainer = pyl.Trainer(
-    #             max_epochs=100, 
-    #             accelerator='gpu', 
-    #             devices=1, 
-    #             callbacks=[checkpoint_callback, early_stopping_callback])
-            
-    #         trainer.fit(model, train_loader, val_loader)
-
-    #         model = LRModelLightning.load_from_checkpoint(checkpoint_callback.best_model_path, input_dim=input_dim)
-            
-    #         # Save the model
-    #         torch.save(model.state_dict(), model_path)
-
-    #     model.load_state_dict(torch.load(model_path))
-    #     print(f"Loaded model from {model_path}")
-
-    #     trainer = pyl.Trainer(accelerator='gpu', devices=1)  
-    #     trainer.test(model, test_loader)
-
-    #     results = trainer.predict(model, test_loader)
-    #     preds = results[0][0]
-    #     probs = results[0][1]
-
-    #     df_predictions = pl.DataFrame({
-    #         "subject_id": np.array(test_ids).astype(int),
-    #         "prediction_time": test_times,
-    #         "boolean_value": test_labels.cpu().numpy().astype(bool),
-    #         "predicted_boolean_value": preds.detach().cpu().numpy().astype(bool),
-    #         "predicted_boolean_probability": probs.detach().cpu().numpy().astype(float),
-    #     })
-
-    #     prediction_save_path = pred_dir / f"{args.model_type}_{size}.parquet"
-    #     df_predictions.write_parquet(prediction_save_path)
+    output_path = Path(f"outputs/{args.task}/features_with_label")
+    output_path.mkdir(parents=True, exist_ok=True)
+    all_features.write_parquet(output_path / f"{args.task}.parquet")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
