@@ -40,6 +40,11 @@ def load_tab(path):
     data, row, col = array
     return sp.csc_matrix((data, (row, col)), shape=shape)
 
+import numpy as np
+from scipy.sparse import csr_matrix, hstack, coo_matrix
+
+
+
 def checks():
     for gen_path, task_path, ext in matches:
 
@@ -110,8 +115,43 @@ def checks():
 
                 print(gen_data)
                 print(task_data)
+                print(gen_data.shape)
+                print(task_data.shape)
 
-                equal = (gen_data != task_data).nnz == 0
+                try:
+                    equal = (gen_data != task_data).nnz == 0
+                except:
+                    equal = (gen_data == task_data)
+                    print((gen_data.nnz), (task_data.nnz))
+                    exit()
+                    # for i in range(task_data.nnz):
+                    #     row, col = task_data.nonzero()[0][i], task_data.nonzero()[1][i]
+                    #     print(f"Row {row}, Col {col}: gen={gen_data[row, col]}, task={task_data[row, col]}")
+                    #     val_gen = gen_data.data[i]
+                    #     val_task = task_data.data[i]
+                    #     print(val_gen, val_task)
+                    #     input()
+
+
+                # resize task_data to match gen_data if necessary
+                
+                # if task_data.shape != gen_data.shape:
+                #     print(f"Resizing task_data from {task_data.shape} to {gen_data.shape}")
+                #     # add additional columns with zeros
+                #     # task_data = sp.csc_matrix(
+                #     #     (task_data.data, task_data.indices, task_data.indptr),
+                #     #     shape=(task_data.shape[0], gen_data.shape[1])
+                #     # )
+                #     task_data, gen_data = align_sparse_matrices(task_data, gen_data)
+                #     print(gen_data.shape, task_data.shape)
+                #     print(gen_data)
+                #     print(task_data)
+                #     equal = (gen_data != task_data).nnz == 0
+                #                     # Check if the data matches
+                #     print(equal)
+                #     exit()
+
+                # print(gen_data.shape, task_data.shape)ßßß÷
                 if not equal:
                     print(f"Data mismatch in file: {file}")
                     print(f"Generated data shape: {gen_data.shape}")
