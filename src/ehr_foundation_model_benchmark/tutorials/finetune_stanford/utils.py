@@ -4,82 +4,15 @@ from typing import Dict
 
 import polars as pl
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
-import pytorch_lightning as pyl
 from transformers import AutoModelForCausalLM
-from sklearn.metrics import roc_auc_score, precision_recall_curve, auc
 from datetime import timedelta
 
 from hf_ehr.config import Event
 from hf_ehr.data.tokenization import CLMBRTokenizer
 
 # Model-specific parameters
-BATCH_SIZE=12
+BATCH_SIZE=8
 CONTEXT_LENGTH=8192
-
-class LRModelLightning(pyl.LightningModule):
-    def __init__(self, input_dim):
-        super(LRModelLightning, self).__init__()
-        self.fc = nn.Linear(input_dim, 2)  # Assuming binary classification
-        self.criterion = nn.CrossEntropyLoss()
-
-    def forward(self, x):
-        return self.fc(x)
-
-    def training_step(self, batch, batch_idx):
-        embeddings, labels = batch
-        outputs = self(embeddings)
-        loss = self.criterion(outputs, labels)
-
-        self.log("train_loss", loss, prog_bar=False, logger=False)
-
-        return loss
-    
-    def validation_step(self, batch, batch_idx):
-        inputs, labels = batch
-        outputs = self(inputs)
-        loss = self.criterion(outputs, labels)
-        
-        self.log("val_loss", loss, prog_bar=True, logger=False)
-        return loss
-
-    def configure_optimizers(self):
-        optimizer = optim.AdamW(self.parameters(), lr=3e-4)
-        return optimizer
-
-    def predict_step(self, batch, batch_idx):
-        embeddings, labels = batch
-        outputs = self(embeddings)
-
-        preds = torch.argmax(outputs, dim=1)
-        probs = torch.softmax(outputs, dim=1)[:, 1]
-
-        return preds, probs
-
-    def test_step(self, batch, batch_idx):
-        embeddings, labels = batch
-        outputs = self(embeddings)
-        loss = self.criterion(outputs, labels)
-
-        # Compute accuracy
-        preds = torch.argmax(outputs, dim=1)
-        acc = (preds == labels).float().mean()
-
-        probs = torch.softmax(outputs, dim=1)[:, 1]
-        auroc = roc_auc_score(labels.cpu(), probs.cpu())
-
-        precision, recall, _ = precision_recall_curve(labels.cpu(), probs.cpu())
-        pr_auc = auc(recall, precision)
-
-        # Log test loss and accuracy
-        self.log("test_loss", loss, prog_bar=False, logger=True)
-        self.log("test_acc", acc, prog_bar=False, logger=True)
-        self.log("test_auroc", auroc, prog_bar=False, logger=True)
-        self.log("test_pr_auc", pr_auc, prog_bar=False, logger=True)
-
-        return {"test_loss": loss, "test_acc": acc, "test_auroc": auroc, "test_pr_auc": pr_auc}
     
 def last_token_pool(last_hidden_states: torch.Tensor,
                     attention_mask: torch.Tensor) -> torch.Tensor:
@@ -202,14 +135,8 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
 
                 sorted_events = sorted(events_data, key=lambda x: x[1], reverse=True)
                 filtered_events = [event for event, event_time in sorted_events if two_years_ago <= event_time <= prediction_time]
-                #filtered_eventtimes = [event_time for event, event_time in sorted_events if two_years_ago <= event_time < prediction_time]
 
                 if filtered_events:
-                    # min_time = min(filtered_eventtimes)
-                    # max_time = max(filtered_eventtimes)
-                    # print(f"Min event_time: {min_time}, Max event_time: {max_time}")
-                    # print(f"Prediction time: {prediction_time} ")
-
                     batch_ids.append(subject_id)
                     batch_times.append(prediction_time)
                     batch_events.append(filtered_events)
@@ -260,19 +187,6 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
 
     return batch_embedding, sorted_labels, sorted_ids, sorted_times
 
-def standardize(train, val, test):
-    train_mean = train.mean(dim=0, keepdim=True)
-    train_std = train.std(dim=0, keepdim=True)
-
-    # Avoid division by zero
-    train_std[train_std == 0] = 1.0
-
-    train = (train - train_mean) / train_std
-    val = (val - train_mean) / train_std
-    test = (test - train_mean) / train_std
-
-    return train, val, test
-
 def create_event(row):
     return Event(
         code=row["code"],
@@ -282,54 +196,3 @@ def create_event(row):
         end=row["end"] if "end" in row else None,
         omop_table=row["omop_table"] if "omop_table" in row else None,
     ), row['time']
-
-
-# def count_events(labels, files):
-#     subjects = (
-#         labels.group_by("subject_id")
-#         .agg(pl.max("prediction_time")
-#         .alias("prediction_time"))  # Take max prediction_time per subject
-#     )
-
-#     # Load and filter each parquet file in data_path
-#     all_events = []
-#     batch_labels = []
-#     for file in files[0:10]:
-#         df = pl.read_parquet(file)
-#         df_joined = df.join(subjects, on="subject_id", how="inner")
-#         df_filtered = df_joined.filter(df_joined["time"] < df_joined["prediction_time"])
-
-#         # Revert unit concatenation
-#         df_filtered = df_filtered.with_columns(
-#             pl.col("code").map_elements(
-#                 lambda x: x.split('//')[0] if isinstance(x, str) and x.startswith('LOINC') else x,
-#                 return_dtype=pl.Utf8  # Ensure the return is a string
-#             ).alias("code")
-#         )
-
-#         subject_data = convert_to_events(df_filtered)
-
-#         batch_events = []
-#         batch_embedding = []
-#         batch_labels = []
-
-#         for row in labels.iter_rows(named=True):
-#             subject_id = row["subject_id"]
-#             prediction_time = row["prediction_time"]
-#             label = row["boolean_value"]
-
-#             # Extract events for this subject_id
-#             if subject_id in subject_data:
-#                 events_data = subject_data.get(subject_id, [])  # Get events; default to empty list if not found
-
-#                 if events_data:  # Only process if data exists
-#                     sorted_events = sorted(events_data, key=lambda x: x[1], reverse=True)
-#                     filtered_events = [event for event, event_time in sorted_events if event_time.date() < prediction_time]
-
-#                     if filtered_events:
-#                         batch_events.append(filtered_events)
-#                         batch_labels.append(label)
-
-#         all_events.extend(batch_events)
-    
-#     return all_events
