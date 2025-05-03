@@ -1,4 +1,4 @@
-# Columbia MEDS benchmark Pipeline
+# Columbia MOTOR benchmark Pipeline
 MOTOR is implemented in the FEMR library, which the [meds_reader](https://github.com/EthanSteinberg/meds_reader) utility for processing MEDS data. 
 
 ## Set up the environment

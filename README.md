@@ -124,3 +124,18 @@ sh src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few
   --meds_dir $OMOP_MEDS \
   --model_name motor
 ```
+
+### CEHR-BERT 
+Set up the environment
+```bash
+conda create -n cehrbert python=3.10
+```
+Install cehrbert_data, cehrbert and the evaluation packages
+```bash
+conda activate cehrbert
+pip install cehrbert_data==0.0.9
+pip install cehrbert==1.4.3
+pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
+```
+#### Step 1. Pre-train CEHR-BERT
+Follow the [Pretrain CEHR-BERT instructions](src/ehr_foundation_model_benchmark/evaluations/cehrbert/README.md)
