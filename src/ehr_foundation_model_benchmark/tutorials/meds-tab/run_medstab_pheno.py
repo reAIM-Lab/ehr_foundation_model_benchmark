@@ -8,15 +8,15 @@ import glob
 
 # ratio = 0.1
 # Constants
-BASE_PATH = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped"
+BASE_PATH = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped"
 # PHENOTYPE_PATH = os.path.join(BASE_PATH, "task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years")
-PHENOTYPE_PATH = '/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/phenotype_sample/'
+PHENOTYPE_PATH = '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/phenotype_sample/'
 # PHENOTYPE_PATH = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/femr/motor/labels"
 REDSHARD_DIR = os.path.join(BASE_PATH, "post_transform")
-OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, "models/meds_tab/output-new")
+OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, "models/meds_tab/output-fix-large")
 # OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, f"models/meds_tab/output-new-{ratio}")
 
-TASKS_DIR = os.path.join(BASE_PATH, "models/meds_tab/labels-new")
+TASKS_DIR = os.path.join(BASE_PATH, "models/meds_tab/labels-fix-large")
 # TASKS_DIR = os.path.join(BASE_PATH, f"models/meds_tab/labels-new-{ratio}")
 
 N_PARALLEL_WORKERS = 4
@@ -69,7 +69,7 @@ for task in (pbar := tqdm(phenotype_tasks)):
 
         cmd_reshard = [
             "python",
-            "/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/reshard.py",
+            "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/reshard.py",
             # "/data/mchome/ffp2106/femr/src/femr/omop_meds_tutorial/reshard.py",
             "--cohort_input", cohort_input,
             "--meds_data", os.path.join(REDSHARD_DIR, "data"),
@@ -81,7 +81,7 @@ for task in (pbar := tqdm(phenotype_tasks)):
         start_time = time.time()  # Start timing
         try:
             print("Running:", " ".join(cmd_reshard))
-            # subprocess.run(cmd_reshard, check=True)
+            subprocess.run(cmd_reshard, check=True)
         except Exception as e:
             log_error(task, f"reshard.py ({split})", e)
         finally:
@@ -97,7 +97,7 @@ for task in (pbar := tqdm(phenotype_tasks)):
     start_time = time.time()  # Start timing
     try:
         print("Running:", " ".join(describe_cmd))
-        # subprocess.run(describe_cmd, check=True)
+        subprocess.run(describe_cmd, check=True)
     except Exception as e:
         log_error(task, "meds-tab-describe", e)
     finally:
@@ -120,7 +120,7 @@ for task in (pbar := tqdm(phenotype_tasks)):
     start_time = time.time()  # Start timing
     try:
         print("Running:", " ".join(tabularize_cmd))
-        # subprocess.run(tabularize_cmd, check=True)
+        subprocess.run(tabularize_cmd, check=True)
     except Exception as e:
         log_error(task, "meds-tab-tabularize-time-series", e)
     finally:
@@ -128,7 +128,8 @@ for task in (pbar := tqdm(phenotype_tasks)):
         log_training_time(task, "meds-tab-tabularize-time-series", duration)
 
     # Step 4: Run meds-tab-xgboost
-    for ratio in [0.001, 0.01, 0.1]:
+    # for ratio in [0.001, 0.01, 0.1]:
+    for ratio in [1.0]:
         xgboost_cmd = [
             "meds-tab-xgboost",
             "--multirun",
@@ -156,5 +157,8 @@ for task in (pbar := tqdm(phenotype_tasks)):
         finally:
             duration = time.time() - start_time  # Calculate duration
             log_training_time(task, f"meds-tab-xgboost-{ratio}", duration)
+
+    # only AMI
+    break
 
 print("Done")
