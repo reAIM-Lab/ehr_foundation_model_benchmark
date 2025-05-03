@@ -33,28 +33,26 @@ def main(args):
 
     source_to_target_mappings = map_stochastically(gem_mapping, prevalence).collect()
     source_to_target_mappings.write_parquet(mapping_path / "data.parquet")
-
-    #print(gem_mapping.collect())
-    #print(prevalence.collect())
-    #print(source_to_target_mappings)
     
     # Perform mapping on individual parquet files
     for parquet_file_path in data_path.glob("*.parquet"):
         source_data = pl.read_parquet(parquet_file_path)
-        
-        #icd_codes = [code for code in source_data['code'].to_list() if code.startswith('ICD')]
-        #icd10_pcs = [code for code in source_data['code'].to_list() if code.startswith('ICD10PCS')]
-        #icd9_pcs = [code for code in source_data['code'].to_list() if code.startswith('ICD9Proc')]
 
         if args.source_vocabulary == 'ICD9':
             # Format source ICD9 data zero padding to be consistent with mapping 
             source_data = source_data.with_columns(
-                pl.col("code")
-                .map_elements(lambda code: (
-                    code if "ICD9" not in code else
-                    # Add a dot after "/" if it's missing
-                    code if "." in code.split("/")[1] else f"{code.split('/')[0]}/{code.split('/')[1][:3]}."
-                ), return_dtype=pl.Utf8,)
+                pl.col("code").map_elements(
+                    lambda code: (
+                        code if "ICD9" not in code else (
+                            code if "." in code.split("/")[1] else (
+                                f"{code.split('/')[0]}/"
+                                + (code.split('/')[1][:4] + "." + code.split('/')[1][4:] if code.split('/')[1].startswith("E")
+                                else code.split('/')[1][:3] + "." + code.split('/')[1][3:])
+                            )
+                        )
+                    ),
+                    return_dtype=pl.Utf8
+                )
                 .map_elements(lambda code: (
                     code if "ICD9CM/" not in code else
                     # Ensure the character length after "/" is 6 for diagnosis
@@ -79,7 +77,6 @@ def main(args):
                 .alias("code")
             )
             .select(source_data.columns)
-            .filter(~pl.col("code").str.starts_with(args.source_vocabulary)) # Drop any codes that were not mapped
         )
 
         output_file_path = translated_path / parquet_file_path.name
