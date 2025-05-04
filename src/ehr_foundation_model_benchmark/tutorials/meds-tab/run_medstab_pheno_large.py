@@ -1,15 +1,16 @@
-import os
+# import os
 import subprocess
 import traceback
 import time  # Add this import
 from datetime import datetime
 from tqdm import tqdm
 import glob
+import os
 
 # Constants
 BASE_PATH = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped"
-# PHENOTYPE_PATH = os.path.join(BASE_PATH, "task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years")
-PHENOTYPE_PATH = '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/'
+PHENOTYPE_PATH = os.path.join(BASE_PATH, "task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years")
+# PHENOTYPE_PATH = '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/'
 # PHENOTYPE_PATH = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/femr/motor/labels"
 REDSHARD_DIR = os.path.join(BASE_PATH, "post_transform")
 OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, "models/meds_tab/output-fix2-large")
@@ -46,13 +47,14 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     if "logs" in task:
         continue
     # only long los tasks
-    if "long_los" in task or "Schizophrenia" in task or "death" in task:
-        print(f"Skipping task {task}.")
-        continue
+    # if "long_los" in task or "Schizophrenia" in task or "death" in task:
+        # print(f"Skipping task {task}.")
+        # continue
 
     task = os.path.basename(task)
     task_path = os.path.join(PHENOTYPE_PATH, task)
     pbar.set_description(task)
+
 
     # Step 1: Run reshard.py for each split
     for split in SPLITS:
@@ -83,6 +85,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         start_time = time.time()  # Start timing
         try:
             print("Running:", " ".join(cmd_reshard))
+            # exit()
             subprocess.run(cmd_reshard, check=True)
         except Exception as e:
             log_error(task, f"reshard.py ({split})", e)

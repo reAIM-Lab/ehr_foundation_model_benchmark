@@ -19,8 +19,8 @@ for sampling in [1.0]:
             continue  # Skip folders with '_final'
         if not str(sampling) in model_name:
             continue
-        if not "long_los" in model_name:
-            continue
+        # if not "long_los" in model_name:
+            # continue
 
         model_path = os.path.join(root_dir, model_name)
         if not os.path.isdir(model_path):

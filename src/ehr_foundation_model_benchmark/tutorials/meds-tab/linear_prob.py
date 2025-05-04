@@ -145,9 +145,9 @@ def main(args):
                     with open(logistic_model_file, "rb") as f:
                         model = pickle.load(f)
                 else:
-                    # model = LogisticRegressionCV(scoring="roc_auc", random_state=args.seed, max_iter=500)
+                    model = LogisticRegressionCV(scoring="roc_auc", random_state=args.seed, max_iter=500, n_jobs=64)
                     # model = LogisticRegressionCV(scoring="roc_auc", random_state=args.seed, max_iter=5000, cv=2, verbose=2, solver='saga', Cs=1)
-                    model = LogisticRegressionCV(scoring="roc_auc", random_state=args.seed, max_iter=5000, verbose=0, solver='saga', n_jobs=64)
+                    # model = LogisticRegressionCV(scoring="roc_auc", random_state=args.seed, max_iter=5000, verbose=0, solver='saga', n_jobs=64)
 
                     X_train = feature_matrix[subset["sample_id"].to_numpy()]
 
@@ -240,5 +240,12 @@ if __name__ == "__main__":
         --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_probing \
         --model_name medstab \
         --task_name long_los
+
+ python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_prob.py \
+     --features_label_input_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/death_final/tabularize_export \
+        --meds_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform \
+        --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/death_probing_std \
+        --model_name medstab \
+        --task_name death
 
 """

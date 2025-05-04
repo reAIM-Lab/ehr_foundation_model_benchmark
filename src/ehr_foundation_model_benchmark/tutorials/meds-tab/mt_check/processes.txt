@@ -1,0 +1,103 @@
+3235381 python3.11            50:36  202  2.1 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235329 python3.11            50:36  189  2.3 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235390 python3.11            50:36  184  2.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235325 python3.11            50:36  183  1.6 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235386 python3.11            50:36  182  2.1 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235351 python3.11            50:36  181  2.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235324 python3.11            50:36  181  1.4 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235343 python3.11            50:36  181  2.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235361 python3.11            50:36  179  2.1 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235380 python3.11            50:36  179  1.7 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235366 python3.11            50:36  178  1.6 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235368 python3.11            50:36  176  1.9 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235389 python3.11            50:36  176  2.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235373 python3.11            50:36  175  1.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235335 python3.11            50:36  174  1.6 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235359 python3.11            50:36  173  1.6 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235365 python3.11            50:36  173  1.5 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235357 python3.11            50:36  172  1.5 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235379 python3.11            50:36  172  2.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235338 python3.11            50:36  165  1.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235323 python3.11            50:36  165  1.1 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235342 python3.11            50:36  165  1.8 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235371 python3.11            50:36  164  1.5 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235346 python3.11            50:36  162  2.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235352 python3.11            50:36  162  1.9 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235337 python3.11            50:36  162  1.7 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235375 python3.11            50:36  161  1.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235336 python3.11            50:36  160  1.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235376 python3.11            50:36  160  1.6 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235382 python3.11            50:36  158  1.4 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235383 python3.11            50:36  156  1.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235369 python3.11            50:36  156  0.9 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235350 python3.11            50:36  155  1.6 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235334 python3.11            50:36  155  1.1 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235355 python3.11            50:36  155  1.3 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235354 python3.11            50:36  154  1.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235364 python3.11            50:36  154  1.1 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235377 python3.11            50:36  153  1.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235353 python3.11            50:36  153  1.7 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235328 python3.11            50:36  153  1.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235362 python3.11            50:36  152  1.5 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235360 python3.11            50:36  152  1.4 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235370 python3.11            50:36  151  1.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235340 python3.11            50:36  150  1.5 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235387 python3.11            50:36  150  1.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235356 python3.11            50:36  149  1.4 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235339 python3.11            50:36  148  1.5 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235326 python3.11            50:36  147  1.6 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235349 python3.11            50:36  147  1.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235367 python3.11            50:36  145  0.9 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235372 python3.11            50:36  144  0.5 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235363 python3.11            50:36  144  1.1 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235378 python3.11            50:36  143  1.4 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235345 python3.11            50:36  141  1.3 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235358 python3.11            50:36  140  0.8 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235348 python3.11            50:36  137  0.8 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235344 python3.11            50:36  136  0.9 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235347 python3.11            50:36  135  1.2 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235384 python3.11            50:36  134  0.8 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235327 python3.11            50:36  132  0.8 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235374 python3.11            50:36  131  0.7 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235388 python3.11            50:36  130  0.6 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3235341 python3.11            50:36  125  0.7 /data/anaconda3/envs/ehr_flo/bin/python3.11 -m joblib.externals.loky.backend.popen_loky_posix --process-name Lok
+3257990 htop                  32:51 28.3  0.0 htop
+2955539 node               10:02:36  1.3  0.0 /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f217ca7c570c76ee87b957/se
+2820596 node               13:01:19  0.6  0.0 /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f217ca7c570c76ee87b957/se
+2820559 node               13:01:20  0.2  0.0 /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f217ca7c570c76ee87b957/se
+2955377 code-17baf84113    10:02:37  0.2  0.0 /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/code-17baf841131aa23349f217ca7c570c76ee87b957 command-shell --
+2955351 sshd               10:02:37  0.1  0.0 sshd: ffp2106@notty
+2955533 node               10:02:36  0.1  0.0 /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f217ca7c570c76ee87b957/se
+2955559 node               10:02:36  0.1  0.0 /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f217ca7c570c76ee87b957/se
+3258066 python                32:39  0.1  0.0 python progress.py
+2027821 systemd          2-06:01:31  0.0  0.0 /lib/systemd/systemd --user
+2027822 (sd-pam)         2-06:01:31  0.0  0.0 (sd-pam)
+2030788 screen           2-05:49:18  0.0  0.0 SCREEN -S llos
+2030789 bash             2-05:49:18  0.0  0.0 /bin/bash
+2113004 screen           2-01:19:56  0.0  0.0 SCREEN -S ami
+2113005 bash             2-01:19:56  0.0  0.0 /bin/bash
+2309203 screen           1-13:17:29  0.0  0.0 SCREEN -S timing
+2309204 bash             1-13:17:28  0.0  0.0 /bin/bash
+2820555 sh                 13:01:20  0.0  0.0 sh /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f217ca7c570c76ee87b957
+2933362 screen             10:58:57  0.0  0.0 SCREEN -S training
+2933363 bash               10:58:57  0.0  0.0 /bin/bash
+2955353 bash               10:02:37  0.0  0.0 -bash
+2955358 sh                 10:02:37  0.0  0.0 sh
+2955621 sh                 10:02:32  0.0  0.0 /bin/sh
+2955662 bash               10:02:30  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2955665 bash               10:02:30  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2955668 bash               10:02:30  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2955671 bash               10:02:30  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2955673 bash               10:02:30  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2955946 sh                 10:02:26  0.0  0.0 /bin/sh
+2955953 bash               10:02:25  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2956886 bash               09:39:51  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2957016 bash               09:39:22  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2957390 node               09:37:06  0.0  0.0 /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f217ca7c570c76ee87b957/se
+2958740 bash               09:25:12  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2963566 bash               09:07:40  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+2999314 screen             05:30:42  0.0  0.0 SCREEN -S probing
+2999315 bash               05:30:42  0.0  0.0 /bin/bash
+3006732 bash               05:20:12  0.0  0.0 /bin/bash --init-file /home/ffp2106@mc.cumc.columbia.edu/.vscode-server/cli/servers/Stable-17baf841131aa23349f21
+3235321 python3.11            50:36  0.0  0.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -c from joblib.externals.loky.backend.resource_tracker import main; 
+3235322 python3.11            50:36  0.0  0.0 /data/anaconda3/envs/ehr_flo/bin/python3.11 -c from multiprocessing.resource_tracker import main;main(10)

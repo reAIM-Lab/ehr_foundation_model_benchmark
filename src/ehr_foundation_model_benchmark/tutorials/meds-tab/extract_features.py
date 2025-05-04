@@ -1,8 +1,11 @@
 
-features_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_final/tabularize"
-codes_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_final/metadata"
-labels_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/long_los"
-output_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_final/tabularize_export"
+# task = "long_los"
+task = "death"
+
+features_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/tabularize"
+codes_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/metadata"
+labels_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/{task}"
+output_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/tabularize_export"
 
 
 import os
@@ -179,7 +182,7 @@ indices_df = pd.DataFrame({
 })
 indices_df.to_parquet(os.path.join(output_path, "indices.parquet"), index=False)
 print(f"Indices saved to {os.path.join(output_path, 'indices.parquet')}")
-exit()
+# exit()
 print("Combining all features...")
 
 features_all = sp.vstack(features_all, format="csc")

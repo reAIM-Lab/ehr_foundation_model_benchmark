@@ -1,0 +1,148 @@
+[2025-05-01 17:36:17.286068] Task: long_los | Step: reshard.py (train) | Duration: 0.02 seconds
+[2025-05-01 17:36:17.302824] Task: long_los | Step: reshard.py (tuning) | Duration: 0.02 seconds
+[2025-05-01 17:36:17.322239] Task: long_los | Step: reshard.py (held_out) | Duration: 0.02 seconds
+[2025-05-01 17:36:34.589822] Task: long_los | Step: meds-tab-describe | Duration: 17.27 seconds
+[2025-05-01 17:37:59.598506] Task: long_los | Step: reshard.py (train) | Duration: 27.70 seconds
+[2025-05-01 17:38:05.340483] Task: long_los | Step: reshard.py (tuning) | Duration: 5.74 seconds
+[2025-05-01 17:38:19.980345] Task: long_los | Step: reshard.py (held_out) | Duration: 14.64 seconds
+[2025-05-01 17:44:33.117418] Task: long_los | Step: meds-tab-describe | Duration: 373.14 seconds
+[2025-05-01 19:19:09.846471] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 5676.73 seconds
+[2025-05-01 19:23:42.170388] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 272.32 seconds
+[2025-05-01 19:59:22.197469] Task: long_los | Step: reshard.py (train) | Duration: 29.50 seconds
+[2025-05-01 19:59:28.207944] Task: long_los | Step: reshard.py (tuning) | Duration: 6.01 seconds
+[2025-05-01 19:59:43.841927] Task: long_los | Step: reshard.py (held_out) | Duration: 15.63 seconds
+[2025-05-01 20:09:36.202961] Task: long_los | Step: meds-tab-describe | Duration: 592.36 seconds
+[2025-05-01 22:07:19.751965] Task: AMI | Step: reshard.py (train) | Duration: 63.87 seconds
+[2025-05-01 22:07:30.921650] Task: AMI | Step: reshard.py (tuning) | Duration: 11.17 seconds
+[2025-05-01 22:07:58.796303] Task: AMI | Step: reshard.py (held_out) | Duration: 27.87 seconds
+[2025-05-01 22:22:13.842234] Task: AMI | Step: meds-tab-describe | Duration: 855.05 seconds
+[2025-05-01 23:16:37.914230] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 3264.07 seconds
+[2025-05-01 23:16:56.339797] Task: AMI | Step: meds-tab-xgboost-1.0 | Duration: 18.43 seconds
+[2025-05-01 23:17:36.963125] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 11280.76 seconds
+[2025-05-01 23:17:56.653724] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 19.69 seconds
+[2025-05-02 07:37:25.943760] Task: long_los | Step: reshard.py (train) | Duration: 36.79 seconds
+[2025-05-02 07:37:32.830904] Task: long_los | Step: reshard.py (tuning) | Duration: 6.89 seconds
+[2025-05-02 07:37:38.128468] Task: AMI | Step: reshard.py (train) | Duration: 35.20 seconds
+[2025-05-02 07:37:44.282833] Task: AMI | Step: reshard.py (tuning) | Duration: 6.15 seconds
+[2025-05-02 07:37:49.682281] Task: long_los | Step: reshard.py (held_out) | Duration: 16.85 seconds
+[2025-05-02 07:37:50.736491] Task: long_los | Step: meds-tab-describe | Duration: 1.05 seconds
+[2025-05-02 07:38:01.624209] Task: AMI | Step: reshard.py (held_out) | Duration: 17.34 seconds
+[2025-05-02 07:38:02.800082] Task: AMI | Step: meds-tab-describe | Duration: 1.18 seconds
+[2025-05-02 07:39:18.291696] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 75.49 seconds
+[2025-05-02 21:17:25.136755] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 49174.40 seconds
+[2025-05-02 21:17:45.843989] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 20.71 seconds
+[2025-05-02 23:48:10.948314] Task: long_los | Step: reshard.py (train) | Duration: 36.49 seconds
+[2025-05-02 23:48:17.619411] Task: long_los | Step: reshard.py (tuning) | Duration: 6.67 seconds
+[2025-05-02 23:48:35.673716] Task: long_los | Step: reshard.py (held_out) | Duration: 18.05 seconds
+[2025-05-02 23:48:36.622866] Task: long_los | Step: meds-tab-describe | Duration: 0.95 seconds
+[2025-05-02 23:48:44.162521] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 7.54 seconds
+[2025-05-02 23:49:05.233461] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 21.07 seconds
+[2025-05-02 23:52:59.344331] Task: long_los | Step: reshard.py (train) | Duration: 30.53 seconds
+[2025-05-02 23:53:06.177242] Task: long_los | Step: reshard.py (tuning) | Duration: 6.83 seconds
+[2025-05-02 23:53:23.096656] Task: long_los | Step: reshard.py (held_out) | Duration: 16.92 seconds
+[2025-05-02 23:53:24.030274] Task: long_los | Step: meds-tab-describe | Duration: 0.93 seconds
+[2025-05-02 23:53:31.416047] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 7.39 seconds
+[2025-05-02 23:53:50.759782] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 19.34 seconds
+[2025-05-02 23:54:49.534996] Task: long_los | Step: reshard.py (train) | Duration: 27.75 seconds
+[2025-05-02 23:54:57.023327] Task: long_los | Step: reshard.py (tuning) | Duration: 7.49 seconds
+[2025-05-02 23:55:12.252884] Task: long_los | Step: reshard.py (held_out) | Duration: 15.23 seconds
+[2025-05-02 23:55:13.145635] Task: long_los | Step: meds-tab-describe | Duration: 0.89 seconds
+[2025-05-02 23:56:57.492752] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 104.35 seconds
+[2025-05-02 23:57:18.003207] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 20.51 seconds
+[2025-05-02 23:58:17.099757] Task: long_los | Step: reshard.py (train) | Duration: 29.89 seconds
+[2025-05-02 23:58:24.110529] Task: long_los | Step: reshard.py (tuning) | Duration: 7.01 seconds
+[2025-05-02 23:58:39.563645] Task: long_los | Step: reshard.py (held_out) | Duration: 15.45 seconds
+[2025-05-02 23:58:40.500625] Task: long_los | Step: meds-tab-describe | Duration: 0.94 seconds
+[2025-05-02 23:59:42.980289] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 62.48 seconds
+[2025-05-03 00:00:03.201226] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 20.22 seconds
+[2025-05-03 00:01:15.368010] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 00:01:15.368093] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 00:01:15.368136] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 00:01:16.257425] Task: long_los | Step: meds-tab-describe | Duration: 0.89 seconds
+[2025-05-03 00:02:32.905749] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 76.65 seconds
+[2025-05-03 00:03:07.517153] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 34.61 seconds
+[2025-05-03 00:04:09.875283] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 00:04:09.875404] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 00:04:09.875451] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 00:04:10.991526] Task: long_los | Step: meds-tab-describe | Duration: 1.12 seconds
+[2025-05-03 00:06:05.107823] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 114.12 seconds
+[2025-05-03 00:14:36.095733] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 510.99 seconds
+[2025-05-03 00:14:40.624988] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 00:14:40.625074] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 00:14:40.625116] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 00:14:41.527349] Task: long_los | Step: meds-tab-describe | Duration: 0.90 seconds
+[2025-05-03 00:14:49.009775] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 7.48 seconds
+[2025-05-03 00:24:02.870961] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 553.86 seconds
+[2025-05-03 00:24:47.587102] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 00:24:47.587184] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 00:24:47.587225] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 00:24:48.483665] Task: long_los | Step: meds-tab-describe | Duration: 0.90 seconds
+[2025-05-03 00:24:55.445491] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 6.96 seconds
+[2025-05-03 00:25:05.744237] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 10.30 seconds
+[2025-05-03 00:25:20.886955] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 00:25:20.887037] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 00:25:20.887087] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 00:25:21.787160] Task: long_los | Step: meds-tab-describe | Duration: 0.90 seconds
+[2025-05-03 00:25:29.049874] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 7.26 seconds
+[2025-05-03 00:41:08.490347] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 939.44 seconds
+[2025-05-03 01:08:18.285424] Task: long_los | Step: reshard.py (train) | Duration: 28.17 seconds
+[2025-05-03 01:08:24.452351] Task: long_los | Step: reshard.py (tuning) | Duration: 6.17 seconds
+[2025-05-03 01:08:39.727078] Task: long_los | Step: reshard.py (held_out) | Duration: 15.27 seconds
+[2025-05-03 01:15:24.438049] Task: long_los | Step: meds-tab-describe | Duration: 404.71 seconds
+[2025-05-03 01:29:13.256238] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 828.82 seconds
+[2025-05-03 01:34:28.172258] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 01:34:28.172939] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 01:34:28.172989] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 01:34:29.057186] Task: long_los | Step: meds-tab-describe | Duration: 0.88 seconds
+[2025-05-03 01:41:04.215826] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 395.16 seconds
+[2025-05-03 01:42:02.504436] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 01:42:02.504535] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 01:42:02.504578] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 01:42:03.444816] Task: long_los | Step: meds-tab-describe | Duration: 0.94 seconds
+[2025-05-03 09:59:17.492525] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 29834.05 seconds
+[2025-05-03 10:02:18.971399] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 181.48 seconds
+[2025-05-03 10:27:36.616405] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 10:27:36.616484] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 10:27:36.616528] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 10:27:37.555258] Task: long_los | Step: meds-tab-describe | Duration: 0.94 seconds
+[2025-05-03 10:28:42.044713] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 64.49 seconds
+[2025-05-03 11:06:41.261043] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 2279.22 seconds
+[2025-05-03 11:07:12.921462] Task: long_los | Step: reshard.py (train) | Duration: 31.55 seconds
+[2025-05-03 11:07:21.178205] Task: long_los | Step: reshard.py (tuning) | Duration: 8.26 seconds
+[2025-05-03 11:07:36.760643] Task: long_los | Step: reshard.py (held_out) | Duration: 15.58 seconds
+[2025-05-03 11:07:37.734197] Task: long_los | Step: meds-tab-describe | Duration: 0.97 seconds
+[2025-05-03 11:07:46.800877] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 9.07 seconds
+[2025-05-03 11:12:18.640818] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 271.84 seconds
+[2025-05-03 11:45:41.872969] Task: Schizophrenia | Step: reshard.py (train) | Duration: 40.98 seconds
+[2025-05-03 11:45:50.585842] Task: Schizophrenia | Step: reshard.py (tuning) | Duration: 8.71 seconds
+[2025-05-03 11:46:09.724637] Task: Schizophrenia | Step: reshard.py (held_out) | Duration: 19.14 seconds
+[2025-05-03 11:48:45.783078] Task: Schizophrenia | Step: meds-tab-describe | Duration: 156.06 seconds
+[2025-05-03 11:50:47.258869] Task: death | Step: reshard.py (train) | Duration: 31.37 seconds
+[2025-05-03 11:50:54.922023] Task: death | Step: reshard.py (tuning) | Duration: 7.66 seconds
+[2025-05-03 11:51:14.631574] Task: death | Step: reshard.py (held_out) | Duration: 19.71 seconds
+[2025-05-03 12:00:14.506102] Task: death | Step: meds-tab-describe | Duration: 539.87 seconds
+[2025-05-03 20:18:59.008405] Task: death | Step: meds-tab-tabularize-time-series | Duration: 29924.50 seconds
+[2025-05-03 20:27:12.422367] Task: death | Step: meds-tab-xgboost-1.0 | Duration: 493.41 seconds
+[2025-05-03 20:27:41.383780] Task: readmission | Step: reshard.py (train) | Duration: 28.96 seconds
+[2025-05-03 20:27:47.477220] Task: readmission | Step: reshard.py (tuning) | Duration: 6.09 seconds
+[2025-05-03 20:28:02.961869] Task: readmission | Step: reshard.py (held_out) | Duration: 15.48 seconds
+[2025-05-03 20:35:54.458151] Task: readmission | Step: meds-tab-describe | Duration: 471.50 seconds
+[2025-05-03 22:24:02.145901] Task: readmission | Step: meds-tab-tabularize-time-series | Duration: 6487.69 seconds
+[2025-05-03 22:34:16.461204] Task: readmission | Step: reshard.py (train) | Duration: 2.94 seconds
+[2025-05-03 22:34:21.717694] Task: readmission | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 22:34:21.719835] Task: readmission | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 22:34:21.719905] Task: readmission | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 22:34:22.690547] Task: readmission | Step: meds-tab-describe | Duration: 0.97 seconds
+[2025-05-03 23:24:48.462971] Task: readmission | Step: meds-tab-tabularize-time-series | Duration: 3025.77 seconds
+[2025-05-03 23:30:31.864663] Task: readmission | Step: reshard.py (train) | Duration: 1.84 seconds
+[2025-05-03 23:30:41.913582] Task: readmission | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-03 23:30:41.913672] Task: readmission | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-03 23:30:41.913715] Task: readmission | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-03 23:30:42.819263] Task: readmission | Step: meds-tab-describe | Duration: 0.91 seconds
+[2025-05-04 05:28:44.643839] Task: readmission | Step: meds-tab-tabularize-time-series | Duration: 21481.82 seconds
+[2025-05-04 06:20:33.597693] Task: readmission | Step: meds-tab-xgboost-1.0 | Duration: 3108.95 seconds
+[2025-05-04 10:05:47.010653] Task: AMI | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-04 10:07:30.285040] Task: AMI | Step: reshard.py (train) | Duration: 32.11 seconds
+[2025-05-04 10:07:36.759364] Task: AMI | Step: reshard.py (tuning) | Duration: 6.47 seconds
+[2025-05-04 10:07:53.307401] Task: AMI | Step: reshard.py (held_out) | Duration: 16.55 seconds
+[2025-05-04 10:14:42.915327] Task: AMI | Step: meds-tab-describe | Duration: 409.61 seconds

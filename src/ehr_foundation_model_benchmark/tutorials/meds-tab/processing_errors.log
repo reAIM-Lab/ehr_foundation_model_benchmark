@@ -1,0 +1,45 @@
+
+[2025-05-01 17:36:17.285195] ERROR in Task: long_los | Step: reshard.py (train)
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_patient_tiny.py", line 82, in <module>
+    subprocess.run(cmd_reshard, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python', '/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/reshard.py', '--cohort_input', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/long_los/train.parquet', '--meds_data', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', '--cohort_output', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix/long_los', '--split', 'train']' returned non-zero exit status 2.
+
+
+[2025-05-01 17:36:17.302484] ERROR in Task: long_los | Step: reshard.py (tuning)
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_patient_tiny.py", line 82, in <module>
+    subprocess.run(cmd_reshard, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python', '/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/reshard.py', '--cohort_input', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/long_los/tuning.parquet', '--meds_data', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', '--cohort_output', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix/long_los', '--split', 'tuning']' returned non-zero exit status 2.
+
+
+[2025-05-01 17:36:17.321934] ERROR in Task: long_los | Step: reshard.py (held_out)
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_patient_tiny.py", line 82, in <module>
+    subprocess.run(cmd_reshard, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python', '/data/mchome/ffp2106/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/reshard.py', '--cohort_input', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/long_los/held_out.parquet', '--meds_data', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', '--cohort_output', '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix/long_los', '--split', 'held_out']' returned non-zero exit status 2.
+
+
+[2025-05-01 23:16:37.911017] ERROR in Task: AMI | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno.py", line 123, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix-large/AMI_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-01 23:17:36.959505] ERROR in Task: long_los | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_patient_large.py", line 123, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix-large/long_los_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix-large/long_los', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
