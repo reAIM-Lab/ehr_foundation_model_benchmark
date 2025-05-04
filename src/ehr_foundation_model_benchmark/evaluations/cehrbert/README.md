@@ -18,6 +18,10 @@ export OMOP_DIR=""
 export CEHR_BERT_DATA_DIR=""
 export CEHR_BERT_MODEL_DIR=""
 ```
+Create the dataset_prepared folder to cache the tokenized dataset
+```shell
+mkdir $CEHR_BERT_DATA_DIR/dataset_prepared
+```
 
 Step 1. Generate CEHR-BERT pre-training data using cehrbert_data
 ------------------------
@@ -31,7 +35,7 @@ export SPARK_EXECUTOR_CORES="2"
 export SPARK_DRIVER_MEMORY="12g"
 export SPARK_EXECUTOR_MEMORY="12g"
 ```
-We generate the pretraining data using the following command
+We generate the pretraining data using the following command, you should see a folder `patient_sequence` generated under `$CEHR_BERT_DATA_DIR`
 ```bash
 sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/create_cehrbert_pretraining_data.sh \
   --input_folder $OMOP_DIR \
@@ -39,3 +43,22 @@ sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/create_cehrbert_pretr
   --start_date "1985-01-01"
 ```
 
+Step 2. Pre-train CEHR-BERT
+------------------------
+Pretrain cehr-bert using the data generated from the previous step
+```bash
+python -u -m cehrbert.runners.hf_cehrbert_pretrain_runner \
+  --model_name_or_path $CEHR_BERT_MODEL_DIR \
+  --tokenizer_name_or_path $CEHR_BERT_MODEL_DIR \
+  --output_dir $CEHR_BERT_MODEL_DIR \
+  --data_folder "$CEHR_BERT_DATA_DIR/patient_sequence/train" \
+  --dataset_prepared_path "$CEHR_BERT_DATA_DIR/dataset_prepared" \
+  --do_train true --seed 42 \
+  --dataloader_num_workers 16 --dataloader_prefetch_factor 8 \
+  --hidden_size 768 --num_hidden_layers 17 --max_position_embeddings 2048 \
+  --evaluation_strategy epoch --save_strategy epoch \
+  --sample_packing --max_tokens_per_batch 32768 \
+  --warmup_steps 500 --weight_decay 0.01 \
+  --num_train_epochs 50 --learning_rate 0.002 \
+  --use_early_stopping --early_stopping_threshold 0.001
+```
