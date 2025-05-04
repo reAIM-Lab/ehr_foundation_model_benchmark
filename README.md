@@ -90,10 +90,12 @@ pip install meds_reader==0.0.6
 pip install git+https://github.com/ChaoPang/femr.git@omop_meds_v3_tutorial
 pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
 ```
-#### Step 1. Pretrain MOTOR
+Step 1. Pretrain MOTOR
+------------------------
 Follow the [Pretrain MOTOR instructions](src/ehr_foundation_model_benchmark/evaluations/motor/README.md)
 
-#### Step 2. Extract patient representations using MOTOR
+Step 2. Extract patient representations using MOTOR
+------------------------
 Set the environment variables
 ```bash
 # CUIMC MEDS READER folder
@@ -114,7 +116,8 @@ For patient outcome prediction tasks, we extract representations using the entir
 ```bash
 sh src/ehr_foundation_model_benchmark/evaluations/motor/run_motor.sh $PATIENT_OUTCOME_DIR
 ```
-#### Step 3. Evaluate using MOTOR features
+Step 3. Evaluate using MOTOR features
+------------------------
 To evaluate model performance, we use the following script to train logistic regression classifiers with 5-fold cross-validation using scikit-learn. 
 This includes few-shot experiments with varying training set sizes: 100, 1,000, 10,000, and the full training set, evaluated on a fixed test set: 
 ```bash
@@ -137,5 +140,72 @@ pip install cehrbert_data==0.0.9
 pip install cehrbert==1.4.3
 pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
 ```
-#### Step 1. Pre-train CEHR-BERT
+Let's set up some environment variables for CEHR-BERT
+```bash
+export OMOP_DIR=""
+export CEHR_BERT_DATA_DIR=""
+export CEHR_BERT_MODEL_DIR=""
+```
+
+Step 1. Pre-train CEHR-BERT
+------------------------
 Follow the [Pretrain CEHR-BERT instructions](src/ehr_foundation_model_benchmark/evaluations/cehrbert/README.md)
+
+Step 2. Extract patient representations using CEHR-BERT
+------------------------
+For CEHR-BERT, we need to construct the patient sequences from the OMOP dataset given the task labels and prediction times,
+then we use the pre-trained cehr-bert to extract the patient representation at the prediction time. 
+
+Set the environment variables
+```bash
+# the folder that will store the cehr-bert sequences for patient outcome and phenotype tasks
+export CEHR_BERT_DATA_DIR=""
+# this should point to where the cehr-bert model artifacts will be generated
+export CEHR_BERT_MODEL_DIR=""
+# the folder that contains all the phenotype labels
+export PHENOTYPE_COHORT_DIR = ""
+# the folder that contains all the patient outcome labels
+export PATIENT_OUTCOME_DIR = ""
+```
+
+### Phenotype tasks
+For patient phenotype tasks, we need to extract the patient sequences using a feature extraction window of 730 days (2 years) prior to the prediction time:
+```bash
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/extract_features_bert.sh \
+  --cohort-folder $PHENOTYPE_COHORT_DIR \
+  --input-dir $OMOP_DIR \
+  --output-dir  "$CEHR_BERT_DATA_DIR/phenotype_cehrbert_sequences" \
+  --patient-splits-folder "$OMOP_DIR/patient_splits" \
+  --ehr-tables "condition_occurrence procedure_occurrence" \
+  --observation-window 730
+```
+We will run cehr-bert on the phenotype tasks
+```shell
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/run_cehrbert.sh \
+  --base_dir="$CEHR_BERT_DATA_DIR/phenotype_cehrbert_sequences" \ 
+  --dataset_prepared_path="$CEHR_BERT_DATA_DIR/dataset_prepared" \
+     --model_path=$CEHR_BERT_MODEL_DIR \
+     --output_dir=$EVALUATION_DIR \
+     --preprocessing_workers=16 \
+     --model_name="cehrbert"
+```
+### Patient outcome tasks
+For patient outcome prediction tasks, we extract representations using the entire patient history up to the prediction time:
+```bash
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/extract_features_bert.sh \
+  --cohort-folder $PATIENT_OUTCOME_DIR \
+  --input-dir $OMOP_DIR \
+  --output-dir  "$CEHR_BERT_DATA_DIR/patient_outcome_cehrbert_sequences" \
+  --patient-splits-folder "$OMOP_DIR/patient_splits" \
+  --ehr-tables "condition_occurrence procedure_occurrence" \
+```
+We will run cehr-bert on the patient outcome tasks
+```shell
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/run_cehrbert.sh \
+  --base_dir="$CEHR_BERT_DATA_DIR/patient_outcome_cehrbert_sequences" \ 
+  --dataset_prepared_path="$CEHR_BERT_DATA_DIR/dataset_prepared" \
+     --model_path=$CEHR_BERT_MODEL_DIR \
+     --output_dir=$EVALUATION_DIR \
+     --preprocessing_workers=16 \
+     --model_name="cehrbert"
+```
