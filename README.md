@@ -176,7 +176,7 @@ sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/extract_features_bert
   --input-dir $OMOP_DIR \
   --output-dir  "$CEHR_BERT_DATA_DIR/phenotype_cehrbert_sequences" \
   --patient-splits-folder "$OMOP_DIR/patient_splits" \
-  --ehr-tables "condition_occurrence procedure_occurrence" \
+  --ehr-tables "condition_occurrence procedure_occurrence drug_exposure" \
   --observation-window 730
 ```
 We will run cehr-bert on the phenotype tasks
@@ -186,7 +186,7 @@ sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/run_cehrbert.sh \
   --dataset_prepared_path="$CEHR_BERT_DATA_DIR/dataset_prepared" \
      --model_path=$CEHR_BERT_MODEL_DIR \
      --output_dir=$EVALUATION_DIR \
-     --preprocessing_workers=16 \
+     --preprocessing_workers=8 \
      --model_name="cehrbert"
 ```
 ### Patient outcome tasks
@@ -197,7 +197,7 @@ sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/extract_features_bert
   --input-dir $OMOP_DIR \
   --output-dir  "$CEHR_BERT_DATA_DIR/patient_outcome_cehrbert_sequences" \
   --patient-splits-folder "$OMOP_DIR/patient_splits" \
-  --ehr-tables "condition_occurrence procedure_occurrence" \
+  --ehr-tables "condition_occurrence procedure_occurrence drug_exposure"
 ```
 We will run cehr-bert on the patient outcome tasks
 ```shell
@@ -206,6 +206,88 @@ sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/run_cehrbert.sh \
   --dataset_prepared_path="$CEHR_BERT_DATA_DIR/dataset_prepared" \
      --model_path=$CEHR_BERT_MODEL_DIR \
      --output_dir=$EVALUATION_DIR \
-     --preprocessing_workers=16 \
+     --preprocessing_workers=8 \
      --model_name="cehrbert"
+```
+
+### CEHR-GPT
+Set up the environment
+```bash
+conda create -n cehrgpt python=3.10
+```
+Install cehrbert_data, cehrgpt and the evaluation packages
+```bash
+conda activate cehrbert
+pip install cehrbert_data==0.0.9
+pip install cehrgpt
+pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
+```
+Let's set up some environment variables for CEHR-GPT
+```bash
+export OMOP_DIR=""
+export CEHR_GPT_DATA_DIR=""
+export CEHR_GPT_MODEL_DIR=""
+```
+
+Step 1. Pre-train CEHR-GPT
+------------------------
+Follow the [Pretrain CEHR-GPT instructions](src/ehr_foundation_model_benchmark/evaluations/cehrgpt/README.md)
+
+Step 2. Extract patient representations using CEHR-GPT
+------------------------
+For CEHR-GPT, we need to construct the patient sequences from the OMOP dataset given the task labels and prediction times,
+then we use the pre-trained cehr-bert to extract the patient representation at the prediction time. 
+
+Set the environment variables
+```bash
+# the folder that will store the cehr-bert sequences for patient outcome and phenotype tasks
+export CEHR_GPT_DATA_DIR=""
+# this should point to where the cehr-bert model artifacts will be generated
+export CEHR_GPT_MODEL_DIR=""
+# the folder that contains all the phenotype labels
+export PHENOTYPE_COHORT_DIR = ""
+# the folder that contains all the patient outcome labels
+export PATIENT_OUTCOME_DIR = ""
+```
+
+### Phenotype tasks
+For patient phenotype tasks, we need to extract the patient sequences using a feature extraction window of 730 days (2 years) prior to the prediction time:
+```bash
+sh src/ehr_foundation_model_benchmark/evaluations/cehrgpt/extract_features_gpt.sh \
+  --cohort-folder $PHENOTYPE_COHORT_DIR \
+  --input-dir $OMOP_DIR \
+  --output-dir  "$CEHR_GPT_DATA_DIR/phenotype_cehrgpt_sequences" \
+  --patient-splits-folder "$OMOP_DIR/patient_splits" \
+  --ehr-tables "condition_occurrence procedure_occurrence drug_exposure" \
+  --observation-window 730
+```
+We will run cehr-gpt on the phenotype tasks
+```shell
+sh src/ehr_foundation_model_benchmark/evaluations/cehrgpt/run_cehrgpt.sh \
+  --base_dir="$CEHR_GPT_DATA_DIR/phenotype_cehrgpt_sequences" \ 
+  --dataset_prepared_path="$CEHR_GPT_DATA_DIR/dataset_prepared" \
+     --model_path=$CEHR_GPT_MODEL_DIR \
+     --output_dir=$EVALUATION_DIR \
+     --preprocessing_workers=8 \
+     --model_name="cehrgpt"
+```
+### Patient outcome tasks
+For patient outcome prediction tasks, we extract representations using the entire patient history up to the prediction time:
+```bash
+sh src/ehr_foundation_model_benchmark/evaluations/cehrgpt/extract_features_gpt.sh \
+  --cohort-folder $PATIENT_OUTCOME_DIR \
+  --input-dir $OMOP_DIR \
+  --output-dir  "$CEHR_GPT_DATA_DIR/patient_outcome_cehrgpt_sequences" \
+  --patient-splits-folder "$OMOP_DIR/patient_splits" \
+  --ehr-tables "condition_occurrence procedure_occurrence drug_exposure"
+```
+We will run cehr-gpt on the patient outcome tasks
+```bash
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/run_cehrgpt.sh \
+  --base_dir="$CEHR_GPT_DATA_DIR/patient_outcome_cehrgpt_sequences" \ 
+  --dataset_prepared_path="$CEHR_GPT_DATA_DIR/dataset_prepared" \
+  --model_path=$CEHR_GPT_MODEL_DIR \
+  --output_dir=$EVALUATION_DIR \
+  --preprocessing_workers=8 \
+  --model_name="cehrgpt"
 ```

@@ -89,12 +89,13 @@ TRAINING_DATA_CMD="python -m cehrbert_data.apps.generate_training_data \
 --input_folder \"$INPUT_FOLDER\" \
 --output_folder \"$OUTPUT_FOLDER\" \
 -d $START_DATE \
---att_type cehr_bert \
---inpatient_att_type mix \
+--att_type day \
+--inpatient_att_type day \
 -iv \
 -ip \
 --include_concept_list \
 --include_death \
+--gpt_patient_sequence \
 --domain_table_list ${DOMAIN_TABLES[@]}"
 
 echo "Running training data generation:"
