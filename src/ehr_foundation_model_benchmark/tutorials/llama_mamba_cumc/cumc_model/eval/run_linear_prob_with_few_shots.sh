@@ -17,7 +17,7 @@ show_help() {
 }
 
 # ALLOWED_TASKS=( "Celiac" "Ischemic_Stroke" "Pancreatic_Cancer" "SLE" )
-ALLOWED_TASKS=("AMI" "Celiac" "death" "long_los" "readmission" "Schizophrenia")
+ALLOWED_TASKS=("AMI" "CLL" "HTN" "Ischemic_Stroke" "MASLD" "Osteoporosis" "Pancreatic_Cancer" "SLE" "T2DM")
 # Check if no arguments provided
 if [ $# -eq 0 ]; then
   show_help
