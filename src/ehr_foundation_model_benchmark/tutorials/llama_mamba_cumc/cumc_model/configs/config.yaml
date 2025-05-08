@@ -1,0 +1,132 @@
+main:
+  # Training seed.
+  seed: 1
+  # Where outputs will be saved; If folder exists, then run will be resumed from this directory's `../ckpts/last.ckpt` file
+  path_to_output_dir: /home/zj2398@mc.cumc.columbia.edu/ICL_EHR/hf_ehr/cache/runs/${now:%Y-%m-%d_%H-%M-%S}/
+  # If TRUE, then delete existing checkpoint and restart from scratch
+  # If FALSE, then resume from the checkpoint in the file `last.ckpt` in `path_to_output_dir` (if exists)
+  is_force_restart: False
+  # If TRUE, then rewrite paths to use Shah Lab Carina directories (useful for internal Shah Lab runs)
+  is_carina: False
+
+hydra:
+  run:
+    dir: "${main.path_to_output_dir}"
+
+callbacks:
+  early_stopping:
+    # If we want to min/max the monitored quantity.
+    metric_mode: min
+    # Number of epochs with no improvement after which training will be stopped.
+    patience: 3
+  model_checkpointing:
+    # Save the top K best models according to val/loss. If -1, then save all models
+    save_top_k_val_loss: 1
+    # Save the most recent K models. If -1, then save all models
+    save_most_recent_k: 1
+    # Save model every N global steps; if NULL, save after every epoch; overwrites previous model
+    # useful for resuming training after a crash
+    save_most_recent_every_n_train_steps: 10_000
+    # Save model every N global steps; persists permanently
+    every_n_train_steps: 50_000
+    # Save model every N nonPAD training tokens seen; persists permanently; defaults to 500 million
+    every_n_train_nonPAD_tokens: 500_000_000
+    # Save model every N FLOPs; defaults to 50 quadrillion FLOPs
+    every_n_flops: null
+    # If TRUE, then log validation metrics when saving model checkpoints for: every_n_train_nonPAD_tokens, every_n_flops
+    is_run_eval_on_checkpoint: False
+
+data:
+  dataset:
+    # Path to FEMR extract
+    path_to_femr_extract: /share/pi/nigam/data/som-rit-phi-starr-prod.starr_omop_cdm5_deid_2023_02_08_extract_v8_no_notes
+    is_debug: False
+  dataloader:
+    # To avoid changing the config file for each run, specify the mode and keep both batch_size and 
+    # approx_batch_sampler
+    # Options: batch, approx
+    mode: approx
+    # # Batch size to be used.  [note: exclusive with `approx_batch_sampler`]
+    batch_size: 4
+    # Max tokens in batch to allow  [note: exclusive with `batch_size`]
+    approx_batch_sampler:
+      max_tokens: 4_096
+      bucket_size: 100
+      is_random_shuffle_across_buckets: True
+      is_random_shuffle_within_buckets: True
+    # Number of data loader workers to use.
+    n_workers: 4
+    # Max number of codes to feed into model at once per patient.
+    max_length: 1024
+    # If TRUE, then truncate patient timelines at random locations, rather than always doing right-hand side truncation.
+    is_truncation_random: true
+    # Use Rotary Position Embeddings (RoPE) instead of traditional positional embeddings
+    is_use_rope: False
+
+trainer:
+  # Accumulated gradients runs K small batches of size `data.dataloader.batch_size` before doing a backwards pass.
+  accumulate_grad_batches: "__PLACEHOLDER__"
+  # Value for gradient clipping
+  gradient_clip_value: 1.0
+  # Whether to clip the gradients based on their 'norm' or 'value'
+  gradient_clip_algorithm: norm
+  # List of devices to run on
+  devices: 0,1,2,3
+  # Supports: dp, ddp, ddp2, fsdp, deepspeed
+  distributed_backend: ddp
+  # Limits training to a minimum number of epochs
+  min_epochs: 1
+  # Limits training to a max number number of epochs
+  max_epochs: 40
+  # Limits training to `N` batches if `int`, or `N%` of batches if `float`
+  limit_train_batches: null
+  # Limits val to `N` batches if `int`, or `N%` of batches if `float`
+  limit_val_batches: 1
+  # How often we check the validation set within an epoch - `int` is every N batches and `float` is a fraction of the training dataset
+  val_check_interval: 1.0
+  # Log val at end of every epoch
+  check_val_every_n_epoch: 1
+  # OPTIMIZER
+  optimizer:
+    # type
+    type: AdamW
+    # Adam specific parameters
+    betas: (0.9, 0.95)
+    # weight decay
+    weight_decay: 0.1
+    # Learning rate
+    lr: 2e-4
+  # SCHEDULER
+  scheduler:
+    # Number of local steps (i.e. non-global) from `initial_lr` -> `trainer.optimizer.lr`
+    num_warmup_steps: 40_000
+    # Number of local steps (i.e. non-global) from `trainer.optimizer.lr` -> `final_lr`
+    num_decay_steps: 4_000_000
+    initial_lr: 1e-6
+    final_lr: 1e-5
+
+logging:
+  wandb:
+    # If true, then turn ON wandb logging
+    is_wandb: true
+    # Wandb run name (if NULL, then will use wandb's default random namep)
+    name: mimic4
+    # Wandb entity name (i.e. name of wandb organization)
+    entity: shalmalijoshi-columbia-university
+    # Wandb project name
+    project: ehr_benchmark_cumc
+    # DEFAULT behavior (FALSE) is if resuming from a checkpoint, then resume the existing wandb run from the last step in that model's checkpoint
+    # If TRUE, then create a new wandb run from scratch (even if resuming from a checkpoint)
+    # Setting to TRUE is helpful for quick debugging b/c resuming logging from an existing run can be slow (wandb needs to re-upload all data from previous run)
+    is_force_create_wandb_run_from_scratch: True
+  mlflow:
+    # If true, then turn ON mlflow logging
+    is_mlflow: False
+    # Run name
+    name: null
+    # MLFlow experiment name
+    project: hf_ehr
+  # If TRUE, then calculate + log grad norm over all params (slows down training)
+  is_log_grad_norm: False
+  # Log every N steps
+  log_every_n_steps: 1

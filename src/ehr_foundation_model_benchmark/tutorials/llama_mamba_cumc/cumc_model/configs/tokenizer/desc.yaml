@@ -1,0 +1,13 @@
+# @package _global_
+
+data:
+  tokenizer:
+    name: DescTokenizer
+    # path_to_config: /home/zj2398@mc.cumc.columbia.edu/ICL_EHR/hf_ehr/cache/tokenizers/desc/tokenizer_config.json
+    path_to_config: /data/processed_datasets/processed_datasets/zj2398/hf_cache/tokenizers/desc/tokenizer_config.json
+    metadata:
+      desc_emb_tokenizer: 'bert-base-uncased'
+      min_code_occurrence_count: 0 # Any code that occurs < `min_code_occurrence_count` times in the train dataset will be excluded
+      keep_n_max_occurrence_codes: null # Keep only the top `keep_n_max_occurrence_codes` codes, sorted by occurrence count in train dataset
+      excluded_vocabs:
+        - STANFORD_OBS

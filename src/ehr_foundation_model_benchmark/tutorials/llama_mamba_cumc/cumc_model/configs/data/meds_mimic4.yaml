@@ -1,0 +1,3 @@
+dataset:
+  name: MEDSDataset
+  path_to_meds_reader_extract: /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform_meds_reader
