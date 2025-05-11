@@ -79,11 +79,14 @@ def main(args):
                 )
                 while True:
                     count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
-                    for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
-                        if cls == 1 and count < MINIMUM_NUM_CASES:
-                            success = False
-                            print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
-                            break
+                    if len(count_by_class["boolean_value"]) == 1:
+                        success = False
+                    else:
+                        for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
+                            if cls == 1 and count < MINIMUM_NUM_CASES:
+                                success = False
+                                print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
+                                break
                     if success:
                         break
                     else:
