@@ -82,7 +82,7 @@ def load_meds(data, data_path, model, tokenizer, device, args):
             events = convert_to_events(df_filtered)
 
             # Generate embedding from pretrained model
-            embeddings, labels, ids, prediction_times = get_embeddings(model, tokenizer, events, data, device)
+            embeddings, labels, ids, prediction_times = get_embeddings(model, tokenizer, events, data, device, args)
 
             # Save embeddings for linear probing & evaluation
             torch.save({
@@ -113,7 +113,7 @@ def convert_to_events(tokens):
 
     return subject_data
 
-def get_embeddings(model, tokenizer, subject_data, labels, device):
+def get_embeddings(model, tokenizer, subject_data, labels, device, args):
     batch_events = []
     batch_embedding = []
     batch_ids = []
@@ -134,7 +134,11 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
                 two_years_ago = prediction_time - timedelta(days=2*365)
 
                 sorted_events = sorted(events_data, key=lambda x: x[1], reverse=True)
-                filtered_events = [event for event, event_time in sorted_events if two_years_ago <= event_time <= prediction_time]
+
+                if args.task in ["AMI", "Celiac", "CLL", "HTN", "Ischemic_Stroke", "MASLD", "Osteoporosis", "Pancreatic_Cancer", "SLE", "T2DM"]:
+                    filtered_events = [event for event, event_time in sorted_events if two_years_ago <= event_time <= prediction_time]
+                else:
+                    filtered_events = [event for event, event_time in sorted_events if event_time <= prediction_time]
 
                 if filtered_events:
                     batch_ids.append(subject_id)
