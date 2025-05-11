@@ -67,8 +67,8 @@ if __name__ == "__main__":
 
     
 
-    OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, f"meds-tab_check/models_mic1_{args.featurization_strategy}_{args.feature_aggregation_level}_{args.version}_{args.n_trials}")
-    TASKS_DIR = os.path.join(BASE_PATH, f"meds-tab_check/tasks_mic1_{args.featurization_strategy}_{args.feature_aggregation_level}_{args.version}_{args.n_trials}")
+    OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, f"meds-tab_check/models_mic1_{args.featurization_strategy}_{args.feature_aggregation_level}_{args.version}_{args.n_trials}-fix3")
+    TASKS_DIR = os.path.join(BASE_PATH, f"meds-tab_check/tasks_mic1_{args.featurization_strategy}_{args.feature_aggregation_level}_{args.version}_{args.n_trials}-fix3")
 
     N_PARALLEL_WORKERS = 4
 

@@ -241,4 +241,11 @@ if __name__ == "__main__":
         --model_name medstab \
         --task_name long_los
 
+ python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_prob.py \
+     --features_label_input_dir /data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/CLL_final/tabularize_export \
+        --meds_dir /data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform \
+        --output_dir /data2/results/foundation_benchmarking \
+        --model_name medstab \
+        --task_name CLL
+
 """

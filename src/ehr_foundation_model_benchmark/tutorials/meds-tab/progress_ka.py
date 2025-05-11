@@ -16,8 +16,8 @@ shard_files = count_parquet_files(folder_src_path)
 print(f"Found {shard_files} shard files in {folder_src_path}")
 
 # CONFIGURE THESE
-folder_path = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large-sample/Celiac_final/tabularize"  # <-- Set your folder here
-total_files_expected = 6*6*shard_files           # <-- Set your total target here
+folder_path = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix-med/long_los_final/tabularize"  # <-- Set your folder here
+total_files_expected = 4*1*shard_files           # <-- Set your total target here
 check_interval = 60                   # seconds
 
 def count_npz_files(path):
