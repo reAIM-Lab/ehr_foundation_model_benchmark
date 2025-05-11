@@ -43,3 +43,193 @@ Traceback (most recent call last):
     raise CalledProcessError(retcode, process.args,
 subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,4)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix-large/long_los_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix-large/long_los', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
 
+
+[2025-05-07 14:44:45.209820] ERROR in Task: readmission | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_patient_large.py", line 164, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/lib/python3.12/subprocess.py", line 548, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/anaconda3/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/data/anaconda3/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'meds-tab-xgboost'
+
+
+[2025-05-07 14:45:08.063441] ERROR in Task: long_los | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_patient_large.py", line 164, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/lib/python3.12/subprocess.py", line 548, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/anaconda3/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/data/anaconda3/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'meds-tab-xgboost'
+
+
+[2025-05-10 17:29:44.895970] ERROR in Task: AMI | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 132, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,64)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-10 17:29:58.023766] ERROR in Task: AMI | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 169, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,64)', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'output_model_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI-1.0', 'task_name=AMI', 'do_overwrite=False', 'hydra.sweeper.n_trials=100', 'hydra.sweeper.n_jobs=64', 'input_tabularized_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final/tabularize', 'input_label_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]', '+model_launcher.model.stratify=1.0']' returned non-zero exit status 1.
+
+
+[2025-05-10 17:51:23.507079] ERROR in Task: Celiac | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 132, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,64)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/Celiac_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/Celiac', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-10 17:51:34.750801] ERROR in Task: Celiac | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 169, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,64)', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/Celiac_final', 'output_model_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/Celiac-1.0', 'task_name=Celiac', 'do_overwrite=False', 'hydra.sweeper.n_trials=100', 'hydra.sweeper.n_jobs=64', 'input_tabularized_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/Celiac_final/tabularize', 'input_label_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/Celiac', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]', '+model_launcher.model.stratify=1.0']' returned non-zero exit status 1.
+
+
+[2025-05-10 23:13:16.083982] ERROR in Task: AMI | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 169, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,64)', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'output_model_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI-1.0', 'task_name=AMI', 'do_overwrite=False', 'hydra.sweeper.n_trials=100', 'hydra.sweeper.n_jobs=64', 'input_tabularized_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final/tabularize', 'input_label_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-10 23:13:53.323762] ERROR in Task: AMI | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 169, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,64)', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'output_model_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI-1.0', 'task_name=AMI', 'do_overwrite=False', 'hydra.sweeper.n_trials=100', 'hydra.sweeper.n_jobs=64', 'input_tabularized_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final/tabularize', 'input_label_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 00:06:32.829081] ERROR in Task: AMI | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 132, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,64)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 00:06:47.161954] ERROR in Task: AMI | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 169, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,64)', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'output_model_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI-1.0', 'task_name=AMI', 'do_overwrite=False', 'hydra.sweeper.n_trials=100', 'hydra.sweeper.n_jobs=64', 'input_tabularized_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final/tabularize', 'input_label_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 00:36:59.139355] ERROR in Task: AMI | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 132, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,64)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 00:37:12.578484] ERROR in Task: AMI | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 169, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,64)', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'output_model_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI-1.0', 'task_name=AMI', 'do_overwrite=False', 'hydra.sweeper.n_trials=100', 'hydra.sweeper.n_jobs=64', 'input_tabularized_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final/tabularize', 'input_label_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 03:09:17.307171] ERROR in Task: AMI | Step: meds-tab-xgboost-1.0
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 174, in <module>
+    subprocess.run(xgboost_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-xgboost', '--multirun', 'worker=range(0,64)', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final', 'output_model_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI-1.0', 'task_name=AMI', 'do_overwrite=False', 'hydra.sweeper.n_trials=100', 'hydra.sweeper.n_jobs=64', 'input_tabularized_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/AMI_final/tabularize', 'input_label_cache_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/AMI', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 11:30:33.377524] ERROR in Task: HTN | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 155, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,84)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/HTN', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 12:31:33.746376] ERROR in Task: HTN | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 155, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,84)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/HTN', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 13:15:07.731930] ERROR in Task: HTN | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 155, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,84)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/HTN', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 13:37:00.349846] ERROR in Task: HTN | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 155, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,84)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/HTN', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 13:55:42.722286] ERROR in Task: HTN | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 155, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,84)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/HTN', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 14:06:48.723064] ERROR in Task: HTN | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 155, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,84)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/HTN', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+
+
+[2025-05-11 14:37:32.377065] ERROR in Task: HTN | Step: meds-tab-tabularize-time-series
+Traceback (most recent call last):
+  File "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/run_medstab_pheno_large.py", line 155, in <module>
+    subprocess.run(tabularize_cmd, check=True)
+  File "/data/anaconda3/envs/ehr_flo/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['meds-tab-tabularize-time-series', '--multirun', 'worker=range(0,84)', 'hydra/launcher=joblib', 'input_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data', 'output_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final', 'do_overwrite=False', 'input_label_dir=/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/HTN', 'tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]', 'tabularization.window_sizes=[1d,7d,30d,60d,365d,full]']' returned non-zero exit status 1.
+

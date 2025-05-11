@@ -46,7 +46,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     if "logs" in task:
         continue
     # only long los tasks
-    if "long_los" in task or "Schizophrenia" in task or "death" in task:
+    if "readmission" in task or "Schizophrenia" in task or "death" in task:
         print(f"Skipping task {task}.")
         continue
 
@@ -83,7 +83,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         start_time = time.time()  # Start timing
         try:
             print("Running:", " ".join(cmd_reshard))
-            subprocess.run(cmd_reshard, check=True)
+            # subprocess.run(cmd_reshard, check=True)
         except Exception as e:
             log_error(task, f"reshard.py ({split})", e)
         finally:
@@ -99,7 +99,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     start_time = time.time()  # Start timing
     try:
         print("Running:", " ".join(describe_cmd))
-        subprocess.run(describe_cmd, check=True)
+        # subprocess.run(describe_cmd, check=True)
     except Exception as e:
         log_error(task, "meds-tab-describe", e)
     finally:
@@ -124,7 +124,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     start_time = time.time()  # Start timing
     try:
         print("Running:", " ".join(tabularize_cmd))
-        subprocess.run(tabularize_cmd, check=True)
+        # subprocess.run(tabularize_cmd, check=True)
     except Exception as e:
         log_error(task, "meds-tab-tabularize-time-series", e)
     finally:
@@ -138,14 +138,14 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
             "meds-tab-xgboost",
             "--multirun",
             f"worker=range(0,{N_PARALLEL_WORKERS})",
+            "hydra.sweeper.n_trials=100",
+            f"hydra.sweeper.n_jobs={N_PARALLEL_WORKERS}", # different from workers
             # f"worker=range(0,{100})",
             f"input_dir={os.path.join(REDSHARD_DIR, 'data')}",
             f"output_dir={os.path.join(OUTPUT_MODEL_DIR, task + '_final')}",
             f"output_model_dir={os.path.join(OUTPUT_MODEL_DIR, task + f'-{ratio}')}",
             f"task_name={task}",
             "do_overwrite=False",
-            "hydra.sweeper.n_trials=100",
-            f"hydra.sweeper.n_jobs={N_PARALLEL_WORKERS}", # different from workers
             f"input_tabularized_cache_dir={os.path.join(OUTPUT_MODEL_DIR, task + '_final', 'tabularize')}",
             # "tabularization.min_code_inclusion_count=10",
             f"input_label_cache_dir={os.path.join(TASKS_DIR, task)}",

@@ -1,6 +1,23 @@
 
 # task = "long_los"
-task = "death"
+# task = "death"
+# task = "readmission"
+# task = "CLL"
+# task = "AMI"
+
+import sys
+
+task = sys.argv[1]
+base_path = sys.argv[2]
+label_path = sys.argv[3]
+
+
+
+features_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large-katara/{task}_final/tabularize"
+codes_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large-katara/{task}_final/metadata"
+labels_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large-katara/{task}"
+output_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large-katara/{task}_final/tabularize_export"
+
 
 features_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/tabularize"
 codes_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/metadata"
@@ -8,10 +25,17 @@ labels_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/
 output_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/tabularize_export"
 
 
+features_path = f"{base_path}/{task}_final/tabularize"
+codes_path = f"{base_path}/{task}_final/metadata"
+labels_path = f"{label_path}/{task}"
+output_path = f"{base_path}/{task}_final/tabularize_export"
+
+
 import os
 import glob
 import time
 from tqdm import tqdm
+import shutil
 
 import numpy as np
 import pandas as pd
@@ -120,6 +144,8 @@ indices_subject_ids = []
 indices_timestamps = []
 bvs = []
 n_rows = 0
+k = 0
+n_labels_per_split = {}
 for file in (pbar:=tqdm(files, desc="Processing files", total=len(files))):
     filename = os.path.basename(file)
     task_name = filename.replace(".parquet", "")
@@ -140,12 +166,17 @@ for file in (pbar:=tqdm(files, desc="Processing files", total=len(files))):
     bv = labels_df["boolean_value"].values.tolist()
 
     indices_subject_ids.extend(sids)
+    if split not in n_labels_per_split:
+        n_labels_per_split[split] = len(sids)
+    else:
+        n_labels_per_split[split] += len(sids)
     indices_timestamps.extend(timestamps)
     bvs.extend(bv)
 
     feature_local_path = os.path.join(features_path, split, task_name)
     all_features_npz_files = sorted(glob.glob(os.path.join(feature_local_path, "**/**/*.npz")))
     tabs = []
+    bad = False
     for npz_file in (pbar2:=tqdm(all_features_npz_files, desc=f"Processing {task_name} features", total=len(all_features_npz_files), leave=False)):
         npz_agg = os.path.basename(npz_file)
         npz_agg_type = os.path.basename((os.path.dirname(npz_file)))
@@ -153,8 +184,14 @@ for file in (pbar:=tqdm(files, desc="Processing files", total=len(files))):
         # print(f"Processing {npz_filename} for task {task_name} in split {split}")
         pbar2.set_description(f"Processing {npz_window}-{npz_agg_type}-{npz_agg}")
         # time.sleep(0.05)  # Simulate some processing time
-
         tab = load_tab(npz_file)
+        if tab.shape[0] != len(sids):
+            os.remove(npz_file)
+            print(f"Removing {npz_file} for task {task_name} in split {split}")
+            k += 1
+            print(f"Warning: Number of features ({tab.shape[0]}) does not match number of labels ({len(sids)}) for {task_name} in split {split}.")
+            # exit()
+            bad = True
         tabs.append(tab)
         # print(tab.shape)
 
@@ -162,13 +199,25 @@ for file in (pbar:=tqdm(files, desc="Processing files", total=len(files))):
     # if len(tabs) == 0:
     #     print(f"No features found for {task_name} in split {split}. Skipping.")
     #     continue
+       
+
+    if bad:
+        print(f"Warning: Number of features does not match number of labels for {task_name} in split {split}. Skipping.")
+        continue
     features = sp.hstack(tabs, format="csc")
+
     n_rows += features.shape[0]
     features_all.append(features)
     # print(features.shape)
     # Load the labels
     # labels_df = pd.read
     # exit()
+
+print(f"Total number of labels per split: {n_labels_per_split}")
+
+print(k)
+# exit()
+
 
 os.makedirs(output_path, exist_ok=True)
 print(f"Total number of rows processed: {n_rows}")
@@ -191,9 +240,10 @@ print(f"Total features shape: {features_all.shape}")
 # Save the combined features to a file
 output_file = os.path.join(output_path, "features_combined.npz")
 print(f"Saving combined features to {output_file}")
-# sp.save_npz(output_file, features_all)
+
 fa_coo = features_all.tocoo()
 store_matrix(fa_coo, output_file, do_compress=True)
+
 print("Done")
 
 

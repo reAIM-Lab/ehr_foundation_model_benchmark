@@ -9,12 +9,24 @@
 import sys
 k = int(sys.argv[1])
 task = sys.argv[2]
-input_dir=f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/tabularize"
-original_label_dir=f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large/{task}"
+base_path = sys.argv[3]
+input_dir = sys.argv[4]
+original_label_dir = sys.argv[5]
 
 
-input_label_dir=f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_probing_xgb/{task}/labels_{k}"
-output_dir=f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_probing_xgb/{task}/output_{k}"
+# input_dir=f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large-katara/{task}_final/tabularize"
+# original_label_dir=f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/labels-fix2-large-katara/{task}"
+
+
+input_label_dir=f"{base_path}/labels_{k}"
+output_dir=f"{base_path}/output_{k}"
+
+print(input_dir)
+print(original_label_dir)
+
+print(input_label_dir)
+print(output_dir)
+# exit(1)
 
 from pathlib import Path
 from scipy.sparse import coo_array

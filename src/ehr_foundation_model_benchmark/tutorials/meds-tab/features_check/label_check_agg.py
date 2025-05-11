@@ -8,13 +8,13 @@ k = 10
 suffix = ""
 suffix = "-test"
 
-path_gen_labels = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_{k}/long_los_output{suffix}/long_los/labels"
-path_gen_tab = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_{k}/long_los_output{suffix}/long_los/task_cache"
-path_gen_mt = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_{k}/long_los_output{suffix}/metadata"
+path_gen_labels = f"/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_{k}/long_los_output{suffix}/long_los/labels"
+path_gen_tab = f"/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_{k}/long_los_output{suffix}/long_los/task_cache"
+path_gen_mt = f"/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_general_tiny_0.1_{k}/long_los_output{suffix}/metadata"
 
-path_task_labels = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded"
-path_task_tab = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_{k}/long_los_output{suffix}/tabularize"
-path_task_mt = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_{k}/long_los_output{suffix}/metadata"
+path_task_labels = f"/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/ohdsi_cumc_deid_2023q4r3_10000_sample_meds_unit_concatenated/task_labels/long_los_sharded"
+path_task_tab = f"/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_{k}/long_los_output{suffix}/tabularize"
+path_task_mt = f"/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ml4h_demo/meds-tab_check/models_mic1_task_tiny_0.1_{k}/long_los_output{suffix}/metadata"
 
 matches = [
     (path_gen_labels, path_task_labels, "parquet"),

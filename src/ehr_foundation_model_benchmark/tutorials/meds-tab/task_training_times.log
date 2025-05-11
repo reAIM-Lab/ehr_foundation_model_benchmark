@@ -146,3 +146,109 @@
 [2025-05-04 10:07:36.759364] Task: AMI | Step: reshard.py (tuning) | Duration: 6.47 seconds
 [2025-05-04 10:07:53.307401] Task: AMI | Step: reshard.py (held_out) | Duration: 16.55 seconds
 [2025-05-04 10:14:42.915327] Task: AMI | Step: meds-tab-describe | Duration: 409.61 seconds
+[2025-05-04 11:59:13.849020] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 6270.93 seconds
+[2025-05-07 14:44:45.207940] Task: readmission | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-07 14:44:45.208032] Task: readmission | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-07 14:44:45.208079] Task: readmission | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-07 14:44:45.208108] Task: readmission | Step: meds-tab-describe | Duration: 0.00 seconds
+[2025-05-07 14:44:45.208141] Task: readmission | Step: meds-tab-tabularize-time-series | Duration: 0.00 seconds
+[2025-05-07 14:44:45.211606] Task: readmission | Step: meds-tab-xgboost-1.0 | Duration: 0.00 seconds
+[2025-05-07 14:45:08.061876] Task: long_los | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-07 14:45:08.061962] Task: long_los | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-07 14:45:08.062006] Task: long_los | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-07 14:45:08.062034] Task: long_los | Step: meds-tab-describe | Duration: 0.00 seconds
+[2025-05-07 14:45:08.062064] Task: long_los | Step: meds-tab-tabularize-time-series | Duration: 0.00 seconds
+[2025-05-07 14:45:08.064761] Task: long_los | Step: meds-tab-xgboost-1.0 | Duration: 0.00 seconds
+[2025-05-10 10:49:30.252026] Task: AMI | Step: reshard.py (train) | Duration: 40.32 seconds
+[2025-05-10 10:50:29.994122] Task: AMI | Step: reshard.py (train) | Duration: 36.00 seconds
+[2025-05-10 10:50:37.858871] Task: AMI | Step: reshard.py (tuning) | Duration: 7.86 seconds
+[2025-05-10 10:50:57.576773] Task: AMI | Step: reshard.py (held_out) | Duration: 19.72 seconds
+[2025-05-10 10:50:59.164084] Task: AMI | Step: meds-tab-describe | Duration: 1.59 seconds
+[2025-05-10 17:29:44.898611] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 23925.73 seconds
+[2025-05-10 17:29:58.024939] Task: AMI | Step: meds-tab-xgboost-1.0 | Duration: 13.13 seconds
+[2025-05-10 17:30:23.376092] Task: Celiac | Step: reshard.py (train) | Duration: 25.35 seconds
+[2025-05-10 17:30:31.291405] Task: Celiac | Step: reshard.py (tuning) | Duration: 7.91 seconds
+[2025-05-10 17:30:47.902803] Task: Celiac | Step: reshard.py (held_out) | Duration: 16.61 seconds
+[2025-05-10 17:39:24.284584] Task: Celiac | Step: meds-tab-describe | Duration: 516.38 seconds
+[2025-05-10 17:51:23.507924] Task: Celiac | Step: meds-tab-tabularize-time-series | Duration: 719.22 seconds
+[2025-05-10 17:51:34.751668] Task: Celiac | Step: meds-tab-xgboost-1.0 | Duration: 11.24 seconds
+[2025-05-10 17:52:03.411064] Task: HTN | Step: reshard.py (train) | Duration: 28.66 seconds
+[2025-05-10 17:52:09.146566] Task: HTN | Step: reshard.py (tuning) | Duration: 5.74 seconds
+[2025-05-10 17:52:24.446685] Task: HTN | Step: reshard.py (held_out) | Duration: 15.30 seconds
+[2025-05-10 17:59:07.407634] Task: HTN | Step: meds-tab-describe | Duration: 402.96 seconds
+[2025-05-10 20:39:46.055661] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 9638.65 seconds
+[2025-05-10 20:41:41.659939] Task: AMI | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-10 20:41:41.660019] Task: AMI | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-10 20:41:41.660056] Task: AMI | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-10 20:41:41.660082] Task: AMI | Step: meds-tab-describe | Duration: 0.00 seconds
+[2025-05-10 23:12:09.241234] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 9027.58 seconds
+[2025-05-10 23:13:04.728353] Task: AMI | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-10 23:13:04.728429] Task: AMI | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-10 23:13:04.728466] Task: AMI | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-10 23:13:04.728490] Task: AMI | Step: meds-tab-describe | Duration: 0.00 seconds
+[2025-05-10 23:13:04.728516] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 0.00 seconds
+[2025-05-10 23:13:16.085154] Task: AMI | Step: meds-tab-xgboost-1.0 | Duration: 11.36 seconds
+[2025-05-10 23:13:16.085565] Task: HTN | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-10 23:13:16.085614] Task: HTN | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-10 23:13:16.085655] Task: HTN | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-10 23:13:16.085684] Task: HTN | Step: meds-tab-describe | Duration: 0.00 seconds
+[2025-05-10 23:13:16.085713] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 0.00 seconds
+[2025-05-10 23:13:18.632583] Task: HTN | Step: meds-tab-xgboost-1.0 | Duration: 2.55 seconds
+[2025-05-10 23:13:29.614418] Task: AMI | Step: reshard.py (train) | Duration: 2.26 seconds
+[2025-05-10 23:13:42.060476] Task: AMI | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-10 23:13:42.060553] Task: AMI | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-10 23:13:42.060589] Task: AMI | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-10 23:13:42.060613] Task: AMI | Step: meds-tab-describe | Duration: 0.00 seconds
+[2025-05-10 23:13:42.060640] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 0.00 seconds
+[2025-05-10 23:13:53.325569] Task: AMI | Step: meds-tab-xgboost-1.0 | Duration: 11.26 seconds
+[2025-05-10 23:19:27.745621] Task: AMI | Step: reshard.py (train) | Duration: 1.92 seconds
+[2025-05-10 23:28:05.779407] Task: AMI | Step: reshard.py (train) | Duration: 28.10 seconds
+[2025-05-10 23:28:13.216423] Task: AMI | Step: reshard.py (tuning) | Duration: 7.44 seconds
+[2025-05-10 23:28:28.446968] Task: AMI | Step: reshard.py (held_out) | Duration: 15.23 seconds
+[2025-05-10 23:28:29.338504] Task: AMI | Step: meds-tab-describe | Duration: 0.89 seconds
+[2025-05-11 00:06:32.830511] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 2283.49 seconds
+[2025-05-11 00:06:47.163475] Task: AMI | Step: meds-tab-xgboost-1.0 | Duration: 14.33 seconds
+[2025-05-11 00:18:58.380295] Task: AMI | Step: reshard.py (train) | Duration: 33.68 seconds
+[2025-05-11 00:19:06.858168] Task: AMI | Step: reshard.py (tuning) | Duration: 8.48 seconds
+[2025-05-11 00:19:26.697797] Task: AMI | Step: reshard.py (held_out) | Duration: 19.84 seconds
+[2025-05-11 00:19:27.638472] Task: AMI | Step: meds-tab-describe | Duration: 0.94 seconds
+[2025-05-11 00:36:59.141780] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 1051.50 seconds
+[2025-05-11 00:37:12.579479] Task: AMI | Step: meds-tab-xgboost-1.0 | Duration: 13.44 seconds
+[2025-05-11 01:06:54.586532] Task: AMI | Step: reshard.py (train) | Duration: 37.21 seconds
+[2025-05-11 01:07:03.675810] Task: AMI | Step: reshard.py (tuning) | Duration: 9.09 seconds
+[2025-05-11 01:07:20.671425] Task: AMI | Step: reshard.py (held_out) | Duration: 17.00 seconds
+[2025-05-11 01:07:21.714695] Task: AMI | Step: meds-tab-describe | Duration: 1.04 seconds
+[2025-05-11 03:09:05.943345] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 7304.23 seconds
+[2025-05-11 03:09:17.309582] Task: AMI | Step: meds-tab-xgboost-1.0 | Duration: 11.37 seconds
+[2025-05-11 09:34:27.450542] Task: AMI | Step: reshard.py (train) | Duration: 27.26 seconds
+[2025-05-11 09:34:33.205904] Task: AMI | Step: reshard.py (tuning) | Duration: 5.76 seconds
+[2025-05-11 09:34:48.474701] Task: AMI | Step: reshard.py (held_out) | Duration: 15.27 seconds
+[2025-05-11 09:34:49.368679] Task: AMI | Step: meds-tab-describe | Duration: 0.89 seconds
+[2025-05-11 09:46:54.319104] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 724.95 seconds
+[2025-05-11 09:48:54.203998] Task: AMI | Step: reshard.py (train) | Duration: 27.79 seconds
+[2025-05-11 09:49:00.490736] Task: AMI | Step: reshard.py (tuning) | Duration: 6.29 seconds
+[2025-05-11 09:49:15.636706] Task: AMI | Step: reshard.py (held_out) | Duration: 15.15 seconds
+[2025-05-11 09:49:16.534143] Task: AMI | Step: meds-tab-describe | Duration: 0.90 seconds
+[2025-05-11 10:49:07.875834] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 3591.34 seconds
+[2025-05-11 10:49:59.522386] Task: AMI | Step: reshard.py (train) | Duration: 0.00 seconds
+[2025-05-11 10:49:59.523287] Task: AMI | Step: reshard.py (tuning) | Duration: 0.00 seconds
+[2025-05-11 10:49:59.523332] Task: AMI | Step: reshard.py (held_out) | Duration: 0.00 seconds
+[2025-05-11 10:49:59.523357] Task: AMI | Step: meds-tab-describe | Duration: 0.00 seconds
+[2025-05-11 10:49:59.523390] Task: AMI | Step: meds-tab-tabularize-time-series | Duration: 0.00 seconds
+[2025-05-11 10:56:21.121854] Task: AMI | Step: meds-tab-xgboost-1.0 | Duration: 381.60 seconds
+[2025-05-11 10:57:46.521525] Task: HTN | Step: reshard.py (train) | Duration: 30.43 seconds
+[2025-05-11 10:57:52.509733] Task: HTN | Step: reshard.py (tuning) | Duration: 5.99 seconds
+[2025-05-11 10:58:08.680418] Task: HTN | Step: reshard.py (held_out) | Duration: 16.17 seconds
+[2025-05-11 10:58:09.715737] Task: HTN | Step: meds-tab-describe | Duration: 1.04 seconds
+[2025-05-11 11:18:38.835015] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 1229.12 seconds
+[2025-05-11 11:19:43.285601] Task: HTN | Step: reshard.py (train) | Duration: 27.90 seconds
+[2025-05-11 11:19:49.930757] Task: HTN | Step: reshard.py (tuning) | Duration: 6.64 seconds
+[2025-05-11 11:20:05.438896] Task: HTN | Step: reshard.py (held_out) | Duration: 15.51 seconds
+[2025-05-11 11:20:06.325997] Task: HTN | Step: meds-tab-describe | Duration: 0.89 seconds
+[2025-05-11 11:30:33.379680] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 627.05 seconds
+[2025-05-11 12:31:33.747072] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 4287.42 seconds
+[2025-05-11 13:15:07.734147] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 6901.41 seconds
+[2025-05-11 13:37:00.350535] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 8214.02 seconds
+[2025-05-11 13:55:42.722856] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 9336.40 seconds
+[2025-05-11 14:06:48.723758] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 10002.40 seconds
+[2025-05-11 14:37:32.377755] Task: HTN | Step: meds-tab-tabularize-time-series | Duration: 11846.05 seconds

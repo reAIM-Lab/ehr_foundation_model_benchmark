@@ -4,7 +4,6 @@
 PROCESS_LIST="processes.txt"
 
 # Python path to match (adjust if needed)
-# PYTHON_PATH="/data/anaconda3/envs/ehr_flo/bin/python3.11"
 PYTHON_PATH="joblib.externals.loky.backend.popen_loky_posix"
 
 # Extract and kill matching PIDs

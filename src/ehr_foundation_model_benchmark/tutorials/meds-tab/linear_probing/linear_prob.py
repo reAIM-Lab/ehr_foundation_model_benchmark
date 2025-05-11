@@ -1,3 +1,5 @@
+# Variant from ... to read meds-tab features
+
 import argparse
 from pathlib import Path
 
@@ -14,6 +16,7 @@ import scipy.sparse as sp
 MINIMUM_NUM_CASES = 10
 TRAIN_SIZES = [100, 1000, 10000, 100000]
 
+# TODO import from medstab
 def load_tab(path):
     """Loads a sparse matrix from disk.
 
@@ -234,18 +237,25 @@ if __name__ == "__main__":
         parser.parse_args()
     )
 """
- python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_prob.py \
+ python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_probing/linear_prob.py \
      --features_label_input_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_final/tabularize_export \
         --meds_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform \
-        --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_probing \
+        --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_probing_std \
         --model_name medstab \
         --task_name long_los
 
- python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_prob.py \
+ python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_probing/linear_prob.py \
      --features_label_input_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/death_final/tabularize_export \
         --meds_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform \
         --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/death_probing_std \
         --model_name medstab \
         --task_name death
 
+
+ python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_probing/linear_prob.py \
+     --features_label_input_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/readmission_final/tabularize_export \
+        --meds_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform \
+        --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/readmission_probing_std \
+        --model_name medstab \
+        --task_name readmission
 """

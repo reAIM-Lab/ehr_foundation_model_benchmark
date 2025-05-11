@@ -1,9 +1,12 @@
 import os
 import subprocess
+import shutil
 
 # Root path where all 'xxx' folders are located
-# root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix-large"
 root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large"
+# root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large-katara"
+
+print(os.listdir(root_dir))
 
 # Base command to call
 base_script = "/home/ffp2106@mc.cumc.columbia.edu/meds-evaluation/src/meds_evaluation/__main__.py"
@@ -19,8 +22,8 @@ for sampling in [1.0]:
             continue  # Skip folders with '_final'
         if not str(sampling) in model_name:
             continue
-        # if not "long_los" in model_name:
-            # continue
+        if not "AMI" in model_name:
+            continue
 
         model_path = os.path.join(root_dir, model_name)
         if not os.path.isdir(model_path):
@@ -44,6 +47,12 @@ for sampling in [1.0]:
         
         # Build full predictions_path
         predictions_path = os.path.join(model_path, datetime_folder, "best_trial", "held_out_predictions.parquet")
+
+        task = model_name.replace("-1.0", "")
+        output_to_copy = f'/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/results_probing/{task}'
+        os.makedirs(output_to_copy, exist_ok=True)
+        shutil.copy2(predictions_path, f'{output_to_copy}/medstab_100000.parquet')
+
 
         if not os.path.exists(os.path.expanduser(predictions_path)):
             print(f"[Warning] Predictions file not found at {predictions_path}. Skipping.")

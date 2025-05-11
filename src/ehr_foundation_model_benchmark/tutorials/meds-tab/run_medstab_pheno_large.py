@@ -9,13 +9,14 @@ import os
 
 # Constants
 BASE_PATH = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped"
-PHENOTYPE_PATH = os.path.join(BASE_PATH, "task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years")
+PHENOTYPE_PATH = os.path.join(BASE_PATH, "task_labels/phenotype_sample/")
 # PHENOTYPE_PATH = '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/'
 # PHENOTYPE_PATH = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/femr/motor/labels"
 REDSHARD_DIR = os.path.join(BASE_PATH, "post_transform")
 OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, "models/meds_tab/output-fix2-large")
 TASKS_DIR = os.path.join(BASE_PATH, "models/meds_tab/labels-fix2-large")
-N_PARALLEL_WORKERS = 64 #32 #4
+N_PARALLEL_WORKERS = 84 #64 #32 #4
+N_PARALLEL_WORKERS_XGB = 64
 SPLITS = ["train", "tuning", "held_out"]
 LOG_FILE = "processing_errors.log"
 TIME_LOG_FILE = "task_training_times.log"  # File to save training times
@@ -29,6 +30,24 @@ def log_error(task, step, exception):
 def log_training_time(task, step, duration):
     with open(TIME_LOG_FILE, "a") as f:
         f.write(f"[{datetime.now()}] Task: {task} | Step: {step} | Duration: {duration:.2f} seconds\n")
+
+def clean_cache(task):
+    path = f'/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/tabularize'
+
+    files = glob.glob(os.path.join(path, '**', '.*.npz_cache'), recursive=True)
+    k = 0
+    for file in files:
+        try:
+            # remove only if name.npz does not exist when .name.npz_cache exists
+            base_name = os.path.splitext(file)[0].replace('/.', '/') 
+            if os.path.exists(base_name + '.npz'):
+                continue
+            k += 1
+            shutil.rmtree(file)  # Remove the directory containing the cache file
+            print(f"Removed cache file: {file}")
+        except Exception as e:
+            print(f"Error removing {file}: {e}")
+    print(f"Total cache files removed: {k}")
 
 # Get all phenotype task subfolders
 phenotype_tasks = list(sorted([
@@ -50,6 +69,8 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     # if "long_los" in task or "Schizophrenia" in task or "death" in task:
         # print(f"Skipping task {task}.")
         # continue
+    if "AMI" in task or "CLL" in task or "Celiac" in task:
+        continue
 
     task = os.path.basename(task)
     task_path = os.path.join(PHENOTYPE_PATH, task)
@@ -125,14 +146,28 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         # "tabularization.window_sizes=[full]"
     ]
     start_time = time.time()  # Start timing
-    try:
-        print("Running:", " ".join(tabularize_cmd))
-        subprocess.run(tabularize_cmd, check=True)
-    except Exception as e:
-        log_error(task, "meds-tab-tabularize-time-series", e)
-    finally:
-        duration = time.time() - start_time  # Calculate duration
-        log_training_time(task, "meds-tab-tabularize-time-series", duration)
+    complete = False
+    repet = 0
+    while not complete:
+        crash = False
+        try:
+            print("Running:", " ".join(tabularize_cmd))
+            subprocess.run(tabularize_cmd, check=True)
+            complete = True
+        except Exception as e:
+            log_error(task, "meds-tab-tabularize-time-series", e)
+            crash = True
+        finally:
+            duration = time.time() - start_time  # Calculate duration
+            log_training_time(task, "meds-tab-tabularize-time-series", duration)
+        if crash:
+            print("Crash in meds-tab-tabularize-time-series")
+            clean_cache(task)
+            repet += 1
+            if repet > 3:
+                print("Too many crashes.", repet)
+                # print("Too many crashes. Exiting.")
+                # exit()
 
     # Step 4: Run meds-tab-xgboost
     # for ratio in [0.001, 0.01, 0.1]:
@@ -159,7 +194,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
             
             # "tabularization.aggs=[code/count]",
             # "tabularization.window_sizes=[full]",
-            f"+model_launcher.model.stratify={ratio}"
+            # f"+model_launcher.model.stratify={ratio}"
         ]
         start_time = time.time()  # Start timing
         try:
@@ -170,5 +205,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         finally:
             duration = time.time() - start_time  # Calculate duration
             log_training_time(task, f"meds-tab-xgboost-{ratio}", duration)
+
+        exit()
 
 print("Done")
