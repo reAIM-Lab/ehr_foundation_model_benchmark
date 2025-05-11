@@ -89,7 +89,7 @@ if __name__ == "__main__":
         "--input_meds",
         dest="input_meds",
         action="store",
-        default="/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped",
+        required=True,
         help="Path to input MEDS data"
     )
 
