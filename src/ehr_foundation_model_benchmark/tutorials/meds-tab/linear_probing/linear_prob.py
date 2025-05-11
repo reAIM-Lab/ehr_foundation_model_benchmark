@@ -112,11 +112,14 @@ def main(args):
                 )
                 while True:
                     count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
-                    for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
-                        if cls == 1 and count < MINIMUM_NUM_CASES:
-                            success = False
-                            print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
-                            break
+                    if len(count_by_class["boolean_value"]) == 1:
+                        success = False
+                    else:
+                        for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
+                            if cls == 1 and count < MINIMUM_NUM_CASES:
+                                success = False
+                                print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
+                                break
                     if success:
                         break
                     else:
@@ -241,15 +244,15 @@ if __name__ == "__main__":
      --features_label_input_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_final/tabularize_export \
         --meds_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform \
         --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/long_los_probing_std \
-        --model_name medstab \
+        --model_name medstab-lr \
         --task_name long_los
 
  python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_probing/linear_prob.py \
      --features_label_input_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/death_final/tabularize_export \
         --meds_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform \
-        --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/death_probing_std \
-        --model_name medstab \
-        --task_name death
+        --output_dir /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/results_probing \
+        --model_name medstab-lr \
+        --task_name long_los
 
 
  python ~/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/linear_probing/linear_prob.py \

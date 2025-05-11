@@ -32,7 +32,7 @@ OUTPUT_FIX2_LARGE_XGB = os.path.join(BASE_ROOT, "models/meds_tab/output-fix2-lar
 # TASKS = ["long_los", "death", "readmission"]
 # TASKS = ["CLL"]
 # TASKS = ["AMI"]
-TASKS = ['death']
+TASKS = ['long_los', 'readmission']
 SAMPLE_SIZES = [100, 1000, 10000] #[10000, 1000, 100]
 # SAMPLE_SIZES = [100, 1000, 10000]
 
