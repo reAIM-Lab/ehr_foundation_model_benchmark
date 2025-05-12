@@ -6,6 +6,7 @@ from datetime import datetime
 from tqdm import tqdm
 import glob
 import os
+import shutil
 
 # Constants
 BASE_PATH = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped"
@@ -15,7 +16,7 @@ PHENOTYPE_PATH = os.path.join(BASE_PATH, "task_labels/phenotype_sample/")
 REDSHARD_DIR = os.path.join(BASE_PATH, "post_transform")
 OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, "models/meds_tab/output-fix2-large")
 TASKS_DIR = os.path.join(BASE_PATH, "models/meds_tab/labels-fix2-large")
-N_PARALLEL_WORKERS = 84 #64 #32 #4
+N_PARALLEL_WORKERS = 64 #64 #32 #4
 N_PARALLEL_WORKERS_XGB = 64
 SPLITS = ["train", "tuning", "held_out"]
 LOG_FILE = "processing_errors.log"
@@ -35,6 +36,7 @@ def clean_cache(task):
     path = f'/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/{task}_final/tabularize'
 
     files = glob.glob(os.path.join(path, '**', '.*.npz_cache'), recursive=True)
+    print(path)
     k = 0
     for file in files:
         try:
@@ -47,6 +49,7 @@ def clean_cache(task):
             print(f"Removed cache file: {file}")
         except Exception as e:
             print(f"Error removing {file}: {e}")
+            exit()
     print(f"Total cache files removed: {k}")
 
 # Get all phenotype task subfolders
@@ -69,7 +72,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     # if "long_los" in task or "Schizophrenia" in task or "death" in task:
         # print(f"Skipping task {task}.")
         # continue
-    if "AMI" in task or "CLL" in task or "Celiac" in task:
+    if "AMI" in task or "CLL" in task or "Celiac" in task or "HTN" in task:
         continue
 
     task = os.path.basename(task)
@@ -206,6 +209,6 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
             duration = time.time() - start_time  # Calculate duration
             log_training_time(task, f"meds-tab-xgboost-{ratio}", duration)
 
-        exit()
+        # exit()
 
 print("Done")

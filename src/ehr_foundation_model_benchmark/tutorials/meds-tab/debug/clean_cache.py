@@ -4,7 +4,7 @@ import glob
 import os
 import shutil
 
-path = '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final/tabularize'
+path = '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/Ischemic_Stroke_final/tabularize'
 
 files = glob.glob(os.path.join(path, '**', '.*.npz_cache'), recursive=True)
 k = 0

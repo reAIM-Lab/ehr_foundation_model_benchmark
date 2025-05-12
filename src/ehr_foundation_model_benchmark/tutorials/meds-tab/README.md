@@ -1,8 +1,10 @@
 
+Tested with polars 1.18.0
 
 
 Install meds-tab
 Install meds-evaluation
+xgboost-cpu
 
 run script
 

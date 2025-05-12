@@ -15,8 +15,8 @@ import scipy.sparse as sp
 
 MINIMUM_NUM_CASES_TRAIN = 8
 MINIMUM_NUM_CASES_TUNING = 2
-TRAIN_SIZES = [80, 800, 8000, 80000]
-TUNING_SIZES = [20, 200, 2000, 20000]
+TRAIN_SIZES = [80, 800, 8000]
+TUNING_SIZES = [20, 200, 2000]
 
 # TODO import from medstab
 def load_tab(path):
@@ -58,6 +58,9 @@ def main(args):
     task_output_dir.mkdir(exist_ok=True, parents=True)
 
     features_label = features_label.sort("subject_id", "prediction_time")
+
+    # print(features_label)
+    # print(subject_splits)
 
     train_dataset = features_label.join(
         subject_splits.select("subject_id", "split"), "subject_id"
