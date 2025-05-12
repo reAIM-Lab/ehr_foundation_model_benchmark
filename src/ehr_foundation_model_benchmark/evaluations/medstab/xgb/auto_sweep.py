@@ -114,7 +114,7 @@ def main():
                 f"tabularization.filtered_code_metadata_fp={os.path.join(OUTPUT_FIX2_LARGE, f'{task}_final/metadata/codes.parquet')}"
             ])
 
-            # copy output prediction to folder for katara
+            # copy
             output_to_copy = f'XX7/{task}'
             xgb_results = f'{OUTPUT_FIX2_LARGE_XGB}/{task}'
             # find last 
