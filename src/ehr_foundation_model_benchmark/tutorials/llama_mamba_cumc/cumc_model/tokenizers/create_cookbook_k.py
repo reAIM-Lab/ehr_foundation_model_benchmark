@@ -8,7 +8,7 @@ Usage:
 """
 
 '''
-/user/zj2398/long_context_clues/hf_ehr/configs/tokenizer/cookbook_k.yaml
+
 '''
 
 import os
@@ -70,7 +70,7 @@ def main():
     path_to_tokenizer_config, __ = get_tokenizer_info_from_config_yaml(args.path_to_tokenizer_config)
 
     # we can set the config manually
-    # path_to_tokenizer_config = "/user/zj2398/long_context_clues/hf_ehr/cache/tokenizers/cookbook_k/tokenizer_config.json"
+    # path_to_tokenizer_config = "..."
    
     # Create new tokenizer config directory with `_k` suffix (e.g. `clmbr_v8_8k`) b/c limiting vocab to top-k codes
     path_to_old_tokenizer_config_dir: str = os.path.dirname(path_to_tokenizer_config)

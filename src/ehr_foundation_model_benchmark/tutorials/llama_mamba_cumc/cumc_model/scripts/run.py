@@ -33,7 +33,7 @@ torch.serialization.add_safe_globals([DictConfig, ListConfig, ContainerMetadata]
 
 
 try:
-    from hf_ehr.models.based import BasedLanguageModel
+    from cumc_model.models.based import BasedLanguageModel
 except ImportError:
     print("BasedLanguageModel not found")
     pass
@@ -443,7 +443,7 @@ def main(config: DictConfig) -> None:
         accelerator='gpu',
         devices=config.trainer.devices,
         # strategy=config.trainer.distributed_backend,
-        strategy="single_device",
+        strategy=config.trainer.distributed_backend,
         # devices=3,
         limit_train_batches=config.trainer.limit_train_batches,
         limit_val_batches=config.trainer.limit_val_batches,

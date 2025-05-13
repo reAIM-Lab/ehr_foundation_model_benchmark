@@ -2,7 +2,7 @@ main:
   # Training seed.
   seed: 1
   # Where outputs will be saved; If folder exists, then run will be resumed from this directory's `../ckpts/last.ckpt` file
-  path_to_output_dir: /home/zj2398@mc.cumc.columbia.edu/ICL_EHR/hf_ehr/cache/runs/${now:%Y-%m-%d_%H-%M-%S}/
+  path_to_output_dir: "__PLACEHOLDER__"
   # If TRUE, then delete existing checkpoint and restart from scratch
   # If FALSE, then resume from the checkpoint in the file `last.ckpt` in `path_to_output_dir` (if exists)
   is_force_restart: False
@@ -39,7 +39,7 @@ callbacks:
 data:
   dataset:
     # Path to FEMR extract
-    path_to_femr_extract: /share/pi/nigam/data/som-rit-phi-starr-prod.starr_omop_cdm5_deid_2023_02_08_extract_v8_no_notes
+    path_to_femr_extract: "__PLACEHOLDER__"
     is_debug: False
   dataloader:
     # To avoid changing the config file for each run, specify the mode and keep both batch_size and 

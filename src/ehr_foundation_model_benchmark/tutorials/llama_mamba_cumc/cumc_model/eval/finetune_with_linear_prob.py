@@ -67,7 +67,6 @@ def main(args):
             remaining_train_set = train_dataset.filter(~pl.col("sample_id").is_in(existing_sample_ids))
             existing_samples = train_dataset.filter(pl.col("sample_id").is_in(existing_sample_ids))
             try:
-                # first randomly sample 
                 size_required = size - len(existing_samples)
                 success = True
                 subset = pl.concat([
@@ -80,26 +79,14 @@ def main(args):
                 )
                 while True:
                     count_by_class = subset.group_by("boolean_value").count().to_dict(as_series=False)
-                    # print(f"The size is {size}, count_by_class is {count_by_class}")
-                    # for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
-                    #     if cls == 1 and count < MINIMUM_NUM_CASES:
-                    #         success = False
-                    #         print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
-                    #         break
-                    n_positive = len(subset.filter(pl.col("boolean_value") == 1))
-                    n_negative = len(subset.filter(pl.col("boolean_value") == 0))
-                    
-                    print(f"The size is {size}, positive cases: {n_positive}, negative cases: {n_negative}")
-                    
-                    # Check if we have enough positive cases and at least some negative cases
-                    if n_positive < MINIMUM_NUM_CASES:
+                    if len(count_by_class["boolean_value"]) == 1:
                         success = False
-                        print(f"The number of positive cases is {n_positive} less than {MINIMUM_NUM_CASES} for sampling size {size}")
-                    
-                    if n_negative < MINIMUM_NUM_CASES:
-                        success = False
-                        print(f"The number of negative cases is {n_negative} less than {MINIMUM_NUM_CASES} for sampling size {size}")
-
+                    else:
+                        for cls, count in zip(count_by_class["boolean_value"], count_by_class["count"]):
+                            if cls == 1 and count < MINIMUM_NUM_CASES:
+                                success = False
+                                print(f"The number of positive cases is less than {MINIMUM_NUM_CASES} for {size}")
+                                break
                     if success:
                         break
                     else:

@@ -2,7 +2,7 @@ import argparse
 import time
 import warnings
 from pathlib import Path
-
+import pandas as pd
 import polars as pl
 import numpy as np
 import torch
@@ -56,13 +56,32 @@ def main(args):
     # Load in embeddings and labels for task (model dependent)
     start_time = time.time()
 
-    # train_embeddings, train_labels, _, _ = load_task_embeddings(args, train, train_path, device,"train")
+    train_embeddings, train_labels, _, _ = load_task_embeddings(args, train, train_path, device,"train")
     tune_embeddings, tune_labels, _, _ = load_task_embeddings(args, tune, tune_path, device,"tune")
-    test_embeddings, test_labels, test_ids, test_times = load_task_embeddings(args, test, test_path, device,"testing")
+    test_embeddings, test_labels, test_ids, test_times = load_task_embeddings(args, test, test_path, device,"test")
     
-    # print(len(train_labels))
-    # print(len(tune_labels))
+    print(len(train_labels))
+    print(len(tune_labels))
     print(len(test_labels))
+
+    # combine train and tune embeddings and labels
+    base_path = Path(args.input_meds)
+    output_dir = base_path / args.model_type / args.task/ "features_with_label" 
+
+    train_path   = output_dir  / "train.parquet"
+    tune_path    = output_dir  / "tune.parquet"
+
+    # 1) load
+    df_train = pd.read_parquet(train_path)
+    df_tune  = pd.read_parquet(tune_path)
+
+    # 2) concat & sort
+    df = pd.concat([df_train, df_tune], ignore_index=True)
+    df = df.sort_values(by=["subject_id", "prediction_time"])
+
+    # 3) overwrite train.parquet
+    df.to_parquet(train_path, index=False)
+
 
     end_time = time.time()
     print(f"Inference Time taken: {end_time - start_time:.2f} seconds")

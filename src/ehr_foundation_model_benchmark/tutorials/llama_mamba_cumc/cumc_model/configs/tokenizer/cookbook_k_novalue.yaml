@@ -3,7 +3,7 @@
 data:
   tokenizer:
     name: CookbookTokenizer
-    # TODO: Change this to the correct path eg: /cache/tokenizers/cookbook_novalue/tokenizer_config.json
+    # TODO: Change this to the correct path eg: /cache/tokenizers/cookbook_novalue_39k/tokenizer_config.json
     path_to_config: "__PLACEHOLDER__"
     metadata:
       is_remap_numerical_codes_to_quantiles: False # If True, remap numerical codes to a bucketed range
