@@ -42,7 +42,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Arguments for sampling Columbia MEDS data"
+        description="Arguments for sampling MEDS data"
     )
     parser.add_argument(
         "--input_meds",
