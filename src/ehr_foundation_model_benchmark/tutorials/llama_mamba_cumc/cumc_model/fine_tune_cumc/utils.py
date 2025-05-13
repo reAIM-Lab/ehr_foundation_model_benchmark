@@ -266,10 +266,6 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
                 #filtered_eventtimes = [event_time for event, event_time in sorted_events if two_years_ago <= event_time < prediction_time]
 
                 if filtered_events:
-                    # min_time = min(filtered_eventtimes)
-                    # max_time = max(filtered_eventtimes)
-                    # print(f"Min event_time: {min_time}, Max event_time: {max_time}")
-                    # print(f"Prediction time: {prediction_time} ")
 
                     batch_ids.append(subject_id)
                     batch_times.append(prediction_time)
@@ -341,18 +337,6 @@ def get_embeddings(model, tokenizer, subject_data, labels, device):
 
     return batch_embedding, sorted_labels, sorted_ids, sorted_times
 
-# def standardize(train, val, test):
-#     train_mean = train.mean(dim=0, keepdim=True)
-#     train_std = train.std(dim=0, keepdim=True)
-
-#     # Avoid division by zero
-#     train_std[train_std == 0] = 1.0
-
-#     train = (train - train_mean) / train_std
-#     val = (val - train_mean) / train_std
-#     test = (test - train_mean) / train_std
-
-#     return train, val, test
 
 def create_event(row):
     return Event(

@@ -11,10 +11,11 @@
 module load hf_ehr
 
 # Run your command
+# Please change the path to the dataset config and tokenizer config
 python create_cookbook.py \
     --dataset meds_mimic4 \
-    --path_to_dataset_config /user/zj2398/long_context_clues/hf_ehr/configs/data/meds_mimic4.yaml \
-    --path_to_tokenizer_config /user/zj2398/long_context_clues/hf_ehr/configs/tokenizer/cookbook.yaml \
+    --path_to_dataset_config .../configs/data/meds_mimic4.yaml \
+    --path_to_tokenizer_config .../configs/tokenizer/cookbook.yaml \
     --n_procs 256 \
     --chunk_size 10000 \
     --is_force_refresh

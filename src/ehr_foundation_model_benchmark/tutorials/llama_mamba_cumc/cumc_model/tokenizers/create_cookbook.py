@@ -1,19 +1,12 @@
-#!/user/zj2398/.conda/envs/hf_env
-
 """
 Creates a tokenizer config for the cookbook tokenizer
-
-Usage:
-    python create_cookbook.py --path_to_dataset_config ../configs/data/v8.yaml --path_to_tokenizer_config ../configs/tokenizer/clmbr.yaml --n_procs 5 --chunk_size 10000 --is_force_refresh
-    python create_cookbook.py --path_to_dataset_config ../configs/data/meds_dev.yaml --path_to_tokenizer_config ../configs/tokenizer/clmbr.yaml --n_procs 10 --chunk_size 10000 --n_buckets_for_numerical_range_codes 5
 """
 
 '''
-eg:  --path_to_dataset_config =  /user/zj2398/long_context_clues/hf_ehr/configs/data/meds_mimic4.yaml
---path_to_tokenizer_config = /user/zj2398/long_context_clues/hf_ehr/configs/tokenizer/cookbook.yaml
+Usage:
+eg:  python create_cookbook.py  --path_to_dataset_config =  .../data/meds_mimic4.yaml  --path_to_tokenizer_config = .../configs/tokenizer/cookbook.yaml --n_procs 5 --chunk_size 10000 --is_force_refresh
 '''
 
-# python create_cookbook.py  --dataset MEDSDataset --path_to_dataset_config /user/zj2398/long_context_clues/hf_ehr/configs/data/meds_mimic4.yaml --path_to_tokenizer_config /user/zj2398/long_context_clues/hf_ehr/configs/tokenizer/cookbook.yaml --n_procs 128 --chunk_size 10000 --is_force_refresh 
 
 import os
 import argparse
@@ -33,8 +26,7 @@ from hf_ehr.config import (
 from hf_ehr.tokenizers.utils import call_func_with_logging
 from hf_ehr.utils import get_dataset_info_from_config_yaml, get_tokenizer_info_from_config_yaml
 
-# DEFAULT_PATH_TO_CACHE_DIR: str = '/share/pi/nigam/mwornow/hf_ehr/cache/create_cookbook/' 
-DEFAULT_PATH_TO_CACHE_DIR: str =  '/data/processed_datasets/processed_datasets/zj2398/hf_cache/create_cookbook/'
+DEFAULT_PATH_TO_CACHE_DIR: str =  'PLACEHOLDER'
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser('Create CookbookTokenizer for a dataset')

@@ -16,8 +16,9 @@ show_help() {
   echo "All options are required."
 }
 
-# ALLOWED_TASKS=( "Celiac" "Ischemic_Stroke" "Pancreatic_Cancer" "SLE" )
-ALLOWED_TASKS=("AMI" "CLL" "HTN" "Ischemic_Stroke" "MASLD" "Osteoporosis" "Pancreatic_Cancer" "SLE" "T2DM")
+# ALLOWED_TASKS=( "Celiac")
+# ALLOWED_TASKS=("AMI" "CLL" "HTN" "Ischemic_Stroke" "MASLD" "Osteoporosis" "Pancreatic_Cancer" "SLE" "T2DM")
+# ALLOWED_TASKS=("AMI"  "Ischemic_Stroke")
 # Check if no arguments provided
 if [ $# -eq 0 ]; then
   show_help
@@ -83,10 +84,11 @@ for cohort_dir in "$BASE_DIR"*/; do
   # Extract task name from folder name
   task_name=$(basename "$cohort_dir")
 
-  if [[ ! " ${ALLOWED_TASKS[*]} " =~ " ${task_name} " ]]; then
-    echo "Skipping cohort: $task_name (not in allowed list)"
-    continue
-  fi
+  # if [[ ! " ${ALLOWED_TASKS[*]} " =~ " ${task_name} " ]]; then
+  #   # echo "Skipping cohort: $task_name (not in allowed list)"
+  #   continue
+  # fi
+  
 
 
   # Skip if not a directory
@@ -107,7 +109,7 @@ for cohort_dir in "$BASE_DIR"*/; do
   echo "Found features directory: $features_dir"
 
   # Run the fine-tuning command
-  echo "Running benchmark for $task_name..."
+  # echo "Running benchmark for $task_name..."
   python -u -m finetune_with_linear_prob \
     --features_label_input_dir "$features_dir" \
     --model_name "$MODEL_NAME" \

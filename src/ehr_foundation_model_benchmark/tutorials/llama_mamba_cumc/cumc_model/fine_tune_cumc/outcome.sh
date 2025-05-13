@@ -3,10 +3,13 @@
 ## input_meds="/data/processed_datasets/processed_datasets/ehr_foundation_data//ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped"
 # List of tasks
 # tasks=("AMI" "Celiac" "CLL" "HTN" "Ischemic_Stroke" "MASLD" "Osteoporosis" "Pancreatic_Cancer" "SLE" "T2DM")
-tasks=("Ischemic_Stroke")
+# tasks=("Ischemic_Stroke")
+# tasks=("death" "long_los" "readmission" "Schizophrenia" "Pancreatic_Cancer" "SLE" "T2DM")
+tasks=("Celiac")
+
+
 # train_sizes=(1000 10000 100000)
 # tasks=("readmission")
-# tasks=("MASLD" "Osteoporosis" "Pancreatic_Cancer" "SLE" "T2DM")
 # tasks=("MASLD")
 model_type=$1
 model_path=$2
