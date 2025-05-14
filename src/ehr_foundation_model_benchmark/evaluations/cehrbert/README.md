@@ -17,6 +17,10 @@ Let's set up some environment variables
 export OMOP_DIR=""
 export CEHR_BERT_DATA_DIR=""
 export CEHR_BERT_MODEL_DIR=""
+# the folder that contains cehr-bert features and the corresponding labels
+export CEHR_BERT_FEATURES_DIR = ""
+# the folder that contains the evaluation metrics
+export EVALUATION_DIR = ""
 ```
 Create the dataset_prepared folder to cache the tokenized dataset
 ```shell
@@ -61,4 +65,60 @@ python -u -m cehrbert.runners.hf_cehrbert_pretrain_runner \
   --warmup_steps 500 --weight_decay 0.01 \
   --num_train_epochs 50 --learning_rate 0.002 \
   --use_early_stopping --early_stopping_threshold 0.001
+```
+
+Step 3. CEHR-BERT model evaluation
+------------------------
+### Phenotype tasks
+For patient phenotype tasks, we need to extract the patient sequences using a feature extraction window of 730 days (2 years) prior to the prediction time:
+```bash
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/extract_features_bert.sh \
+  --cohort-folder $PHENOTYPE_COHORT_DIR \
+  --input-dir $OMOP_DIR \
+  --output-dir  "$CEHR_BERT_DATA_DIR/phenotype_cehrbert_sequences" \
+  --patient-splits-folder "$OMOP_DIR/patient_splits" \
+  --ehr-tables "condition_occurrence procedure_occurrence drug_exposure" \
+  --observation-window 730
+```
+We will run cehr-bert on the phenotype tasks
+```shell
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/run_cehrbert.sh \
+  --base_dir="$CEHR_BERT_DATA_DIR/phenotype_cehrbert_sequences" \ 
+  --dataset_prepared_path="$CEHR_BERT_DATA_DIR/dataset_prepared" \
+     --model_path=$CEHR_BERT_MODEL_DIR \
+     --output_dir=$CEHRBERT_FEATURES_DIR \
+     --preprocessing_workers=8 \
+     --model_name="cehrbert"
+```
+### Patient outcome tasks
+For patient outcome prediction tasks, we extract representations using the entire patient history up to the prediction time:
+```bash
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/extract_features_bert.sh \
+  --cohort-folder $PATIENT_OUTCOME_DIR \
+  --input-dir $OMOP_DIR \
+  --output-dir  "$CEHR_BERT_DATA_DIR/patient_outcome_cehrbert_sequences" \
+  --patient-splits-folder "$OMOP_DIR/patient_splits" \
+  --ehr-tables "condition_occurrence procedure_occurrence drug_exposure"
+```
+We will run cehr-bert on the patient outcome tasks
+```shell
+sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/run_cehrbert.sh \
+  --base_dir="$CEHR_BERT_DATA_DIR/patient_outcome_cehrbert_sequences" \ 
+  --dataset_prepared_path="$CEHR_BERT_DATA_DIR/dataset_prepared" \
+     --model_path=$CEHR_BERT_MODEL_DIR \
+     --output_dir=$CEHR_BERT_FEATURES_DIR \
+     --preprocessing_workers=8 \
+     --model_name="cehrbert"
+```
+
+Step 4. Evaluate using CEHR-BERT features
+------------------------
+To evaluate model performance, we use the following script to train logistic regression classifiers with 5-fold cross-validation using scikit-learn. 
+This includes few-shot experiments with varying training set sizes: 100, 1,000, 10,000, and the full training set, evaluated on a fixed test set: 
+```bash
+sh src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few_shots.sh \
+  --base_dir $CEHR_BERT_FEATURES_DIR \
+  --output_dir $EVALUATION_DIR \
+  --meds_dir $OMOP_MEDS \
+  --model_name cehrbert
 ```
