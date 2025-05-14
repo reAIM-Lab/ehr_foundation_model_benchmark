@@ -2,6 +2,7 @@
 Code repository for FOMO EHR foundation model benchmarks.
 
 ## Table of Contents
+(Table of contents links may not due to anonymization)
 - [Requirements](#requirements)
 - [Models for Evaluation](#models-for-evaluation)
   - [EHR Foundation Models](#ehr-foundation-models)
@@ -46,10 +47,12 @@ and the same patient split was used for both OMOP and MEDS datasets.
 
 
 ### Unit Harmonization
-Detailed step-by-step instructions are available in the [Unit Harmonization Guide](src/ehr_foundation_model_benchmark/data/unit_harmonization/README.md).
+Detailed step-by-step instructions are available in the [Unit Harmonization Guide](src/ehr_foundation_model_benchmark/data/unit_harmonization/README.md). 
+The hyperlink may not due to anonymization, please refresh the page or go to the corresponding README manually
 
 ### ICD9 to ICD10 Mapping
-Follow the ICD-9 to ICD-10 mapping instructions in the [ICD Mapping Guide](src/ehr_foundation_model_benchmark/data/icd_mapping/README.md).
+Follow the ICD-9 to ICD-10 mapping instructions in the [ICD Mapping Guide](src/ehr_foundation_model_benchmark/data/icd_mapping/README.md). 
+The hyperlink may not due to anonymization, please refresh the page or go to the corresponding README manually
 
 ###  Convert OMOP to MEDS
 ```shell
@@ -112,6 +115,8 @@ as further fine-tuning of foundation models can be computationally expensive and
 we extract patient representations at the prediction time, train a logistic regression model using 5-fold cross-validation 
 on the extracted features and corresponding labels, and report the AUROC on the held-out test. To ensure consistency, 
 we use a fixed random seed for shuffling samples and fitting the logistic regression model.
+
+The hyperlink may not due to anonymization, please refresh the page after clicking the link or go to the corresponding README manually
 
 - MOTOR: [MOTOR Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/motor/README.md)
 - CEHR-BERT: [CEHR-BERT Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/cehrbert/README.md)
