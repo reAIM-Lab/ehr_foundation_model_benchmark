@@ -68,7 +68,7 @@ python -u -m cehrgpt.runners.hf_cehrgpt_pretrain_runner \
   --use_early_stopping --early_stopping_threshold 0.001
 ```
 
-Step 2. Extract patient representations using CEHR-GPT
+Step 3. Extract patient representations using CEHR-GPT
 ------------------------
 For CEHR-GPT, we need to construct the patient sequences from the OMOP dataset given the task labels and prediction times,
 then we use the pre-trained cehr-gpt to extract the patient representation at the prediction time. 
@@ -84,9 +84,6 @@ export CEHRGPT_FEATURES_DIR = ""
 # the folder that contains the evaluation metrics
 export EVALUATION_DIR = ""
 ```
-
-Step 3. CEHR-GPT feature extraction
-------------------------
 ### Phenotype tasks
 For patient phenotype tasks, we need to extract the patient sequences using a feature extraction window of 730 days (2 years) prior to the prediction time:
 ```bash
