@@ -43,7 +43,7 @@ Use `main_create_data_downstream`: The input for this should be identical in for
 ```bash
 python3 main_create_data_downstream.py --config_path PATH/TO/create_downstreamdata.yaml
 ```
-### Run feature extraction**
+### Run feature extraction
 Use `main_feature_extraction`: Runs the model on outputs of `main_create_data_downstream` and creates a folder of parquet files with the following fields: `PID`, `subject_id`, `prediction_time`, and `features`, where features is a list containing embeddings from the last hidden layer. These outputs can then be used for linear probing. Use linear_prob_features.yaml config. 
 ```bash
 python3 main_create_data_downstream.py --config_path PATH/TO/create_downstreamdata.yaml
