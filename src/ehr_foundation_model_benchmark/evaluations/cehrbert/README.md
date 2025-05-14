@@ -1,4 +1,4 @@
-# Columbia CEHR-BERT benchmark Pipeline
+# CEHR-BERT benchmark Pipeline
 CEHR-BERT uses the OMOP data as the input directly.
 
 ```bash
@@ -9,7 +9,7 @@ Install cehrbert_data, cehrbert and the evaluation packages
 conda activate cehrbert
 pip install cehrbert_data==0.0.9
 pip install cehrbert==1.4.3
-pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
+pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 ```
 
 Let's set up some environment variables

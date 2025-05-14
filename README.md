@@ -134,12 +134,14 @@ sh src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few
 Set up the environment
 ```bash
 conda create -n cehrbert python=3.10
+export CEHRBERT_FOLDER="src/ehr_foundation_model_benchmark/evaluations/cehrbert/"
 ```
 Install cehrbert_data, cehrbert and the evaluation packages
 ```bash
 conda activate cehrbert
 pip install cehrbert_data==0.0.9
 pip install cehrbert==1.4.3
+pip install $CEHRBERT_FOLDER/meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 pip install .
 ```
 Let's set up some environment variables for CEHR-BERT
