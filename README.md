@@ -1,6 +1,21 @@
 # FoMo: A Framework for EHR Foundation Model Evaluation
 Code repository for FOMO EHR foundation model benchmarks.
 
+## Table of Contents
+- [Requirements](#requirements)
+- [Models for Evaluation](#models-for-evaluation)
+  - [EHR Foundation Models](#ehr-foundation-models)
+  - [Baseline Models](#baseline-models)
+- [Data Source](#data-source)
+  - [Unit Harmonization](#unit-harmonization)
+  - [ICD9 to ICD10 Mapping](#icd9-to-icd10-mapping)
+  - [Convert OMOP to MEDS](#convert-omop-to-meds)
+  - [Model Summary and Input Data Formats](#model-summary-and-input-data-formats)
+- [Evaluation Tasks](#evaluation-tasks)
+  - [Phenotypes](#phenotypes)
+  - [Patient Outcomes](#patient-outcomes)
+- [Model Evaluation](#model-evaluation)
+
 ## Requirements
 Ensure you have the following installed:
 - Python 3.10
