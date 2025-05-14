@@ -14,9 +14,9 @@ pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 ```
 Set the environment variables
 ```bash
-# CUIMC MEDS data folder
+# MEDS data folder
 export OMOP_MEDS = ""
-# CUIMC MEDS READER folder
+# MEDS READER folder
 export OMOP_MEDS_READER = ""
 # this should point to where the MOTOR data and model artifacts will be generated
 export PRETRAINING_DATA = ""

@@ -1,4 +1,4 @@
-# Columbia CEHR-GPT benchmark Pipeline
+# CEHR-GPT benchmark Pipeline
 CEHR-GPT uses the OMOP data as the input directly.
 
 ```bash
