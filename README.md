@@ -32,7 +32,7 @@ Ensure you have the following installed:
 - LLAMA (context clues)
 ### Baseline Models
 - MEDS-TAB
-- FEMR Baseline
+- FEMR Baselines (Logistic Regression and LightGBM)
 
 ## Data Source
 We used the OMOP Common Data Model (CDM) derived from electronic health record (EHR) data at a large urban academic medical center, 
