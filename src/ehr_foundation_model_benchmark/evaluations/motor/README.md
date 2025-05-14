@@ -1,16 +1,16 @@
-# Columbia MOTOR benchmark Pipeline
+# MOTOR benchmark Pipeline
 MOTOR is implemented in the FEMR library, which the [meds_reader](https://github.com/EthanSteinberg/meds_reader) utility for processing MEDS data. 
 
 ## Set up the environment
 ```bash
 conda create -n femr python=3.10
 ```
-Install MEDS_READER, FEMR and evaluation packages
+Install MEDS_READER, FEMR and evaluation packages if you haven't done so
 ```bash
 conda activate femr
-pip install meds_reader==0.0.6
-pip install git+https://github.com/ChaoPang/femr.git@omop_meds_v3_tutorial
-pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
+pip install meds_reader==0.1.13
+pip install femr-0.2.0-py3-none-any.whl
+pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 ```
 Set the environment variables
 ```bash

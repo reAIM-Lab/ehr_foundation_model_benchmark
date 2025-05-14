@@ -82,13 +82,15 @@ MOTOR is implemented in the FEMR library, which the [meds_reader](https://github
 Set up the environment
 ```bash
 conda create -n femr python=3.10
+export MOTOR_FOLDER="src/ehr_foundation_model_benchmark/evaluations/motor/"
 ```
 Install MEDS_READER, FEMR and evaluation packages
 ```bash
 conda activate femr
-pip install meds_reader==0.0.6
-pip install git+https://github.com/ChaoPang/femr.git@omop_meds_v3_tutorial
-pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
+pip install meds_reader==0.1.13
+pip install $MOTOR_FOLDER/femr-0.2.0-py3-none-any.whl
+pip install $MOTOR_FOLDER/meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
+pip install .
 ```
 Step 1. Pretrain MOTOR
 ------------------------
@@ -138,7 +140,7 @@ Install cehrbert_data, cehrbert and the evaluation packages
 conda activate cehrbert
 pip install cehrbert_data==0.0.9
 pip install cehrbert==1.4.3
-pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
+pip install .
 ```
 Let's set up some environment variables for CEHR-BERT
 ```bash

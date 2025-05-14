@@ -20,10 +20,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "femr @ git+https://github.com/ChaoPang/femr.git@omop_meds_v3_tutorial",
     "cehrbert",
     "polars",
-    "meds_evaluation @ git+https://github.com/Jeanselme/meds-evaluation.git@bootstrapping",
 ]
 
 [tool.setuptools_scm]
