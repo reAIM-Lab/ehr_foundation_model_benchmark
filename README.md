@@ -1,5 +1,5 @@
 # ehr_foundation_model_benchmark
-Code repository for DBMI's EHR foundation model benchmarks.
+Code repository for FOMO EHR foundation model benchmarks.
 
 ## Requirements
 Ensure you have the following installed:
@@ -17,8 +17,8 @@ Ensure you have the following installed:
 - LLAMA (context clues)
 ### Baseline Models
 - MEDS-TAB
-- Logistic Regression
-- Gradient Boosting Machines (GBM)
+- FEMR Logistic Regression
+- FEMR Gradient Boosting Machines (GBM)
 
 ## Data Source
 We used the OMOP Common Data Model (CDM) derived from electronic health record (EHR) data at a large urban academic medical center, 
@@ -66,7 +66,33 @@ meds_etl_omop $OMOP_DIR $OMOP_MEDS --num_proc 16
 
 ## Evaluation Tasks
 ### Phenotypes
+The 11 phenotypes include a diverse set of both **acute** (e.g., myocardial infarction, ischemic stroke) and **chronic** conditions (e.g., type 2 diabetes, hypertension, schizophrenia), covering a broad range of clinical domains such as cardiovascular, autoimmune, metabolic, oncologic, and psychiatric diseases. This diversity enables comprehensive evaluation of a model's ability to capture different temporal patterns, 
+disease progression, and diagnostic complexity across varying prediction scenarios.
+
+| Phenotype                          | Description |
+|-----------------------------------|-------------|
+| **Celiac Disease**                | A chronic autoimmune disorder triggered by gluten. Defined by diagnosis codes and risk factors like family history and digestive disorders. |
+| **Acute Myocardial Infarction (AMI)** | An acute heart condition. Identified via inpatient or ER diagnoses of myocardial infarction and related ischemic heart disease indicators. |
+| **Systemic Lupus Erythematosus (SLE)** | A chronic autoimmune disease. Requires a combination of symptoms, treatment history, and confirmed SLE diagnosis. |
+| **Pancreatic Cancer**             | A chronic malignancy of the pancreas. Identified using pancreatic neoplasm codes, excluding benign tumors. |
+| **Hypertension (HTN)**            | A chronic condition involving elevated blood pressure. Diagnosed via hypertensive disorder codes and related cardiovascular risk factors. |
+| **Metabolic Dysfunction-Associated Steatotic Liver Disease (MASLD)** | A chronic liver condition formerly known as NAFLD. Defined by liver disease codes and metabolic risk factors such as obesity and diabetes. |
+| **Ischemic Stroke**               | An acute neurological event due to arterial blockage. Requires I63 diagnosis codes during inpatient or ER visits. |
+| **Osteoporosis**                  | A chronic bone disease leading to fragility. Case cohort based on diagnosis codes; risk factors include age, gender, body weight, and medications. |
+| **Chronic Lymphoid Leukemia (CLL)** | A chronic blood cancer. Identified using CLL concept sets, with risk factors including age, symptoms, and family history. |
+| **Type 2 Diabetes Mellitus (T2DM)** | A chronic metabolic disease. Requires diagnosis plus antidiabetic drug use or elevated HbA1c; risk factors include age, obesity, and prediabetes. |
+| **Schizophrenia**                 | A chronic psychiatric disorder. Defined by diagnostic transition from psychosis to schizophrenia in patients aged 10–35 with adequate history. |
+
 ### Patient Outcomes
+These three patient outcome tasks—**in-hospital mortality**, **30-day readmission**, and **prolonged length-of-stay**—are closely tied to hospital operations. They reflect critical quality metrics that impact resource allocation, patient safety, and institutional performance, 
+making them essential for both clinical decision support and healthcare management.
+
+| Outcome Cohort                   | Description |
+|----------------------------------|-------------|
+| **In-hospital mortality (`Death`)** | Predicts whether a patient will die during a current hospitalization. Includes admissions lasting >48 hours. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
+| **30-day readmission (`Readmission`)** | Predicts all-cause readmission within 30 days of discharge. Prediction time is at discharge. Patients must have ≥2 years of prior history and not be censored within 30 days post-discharge. Same-day readmissions are excluded. |
+| **Prolonged length-of-stay (`LoS`)** | Predicts whether a hospitalization lasts more than 7 days. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
+
 
 ## Model Evaluation
 The EHR foundation models are pre-trained prior to evaluation, while the baseline models are evaluated directly without pretraining. 
