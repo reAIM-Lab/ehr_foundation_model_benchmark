@@ -8,8 +8,8 @@ This folder contains the code for meds-tab evaluation. It contains a lot of help
 conda create --name medstab
 conda activate medstab
 conda install python==3.11.*
-pip install git+https://github.com/florian6973/MEDS_Tabular_AutoML.git
-pip install git+https://github.com/Jeanselme/meds-evaluation.git@bootstrapping
+pip install meds_tab-0.1.dev478+g74f80c3-py3-none-any.whl
+pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 ```
 
 ## Meds-tab folders
