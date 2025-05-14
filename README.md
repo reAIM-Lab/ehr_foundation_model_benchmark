@@ -46,12 +46,11 @@ and the same patient split was used for both OMOP and MEDS datasets.
 
 
 ### Unit Harmonization
-Step-by-step explanations can be found in [here](src/ehr_foundation_model_benchmark/tools/README.md).
+Step-by-step explanations can be found in [here](src/ehr_foundation_model_benchmark/data/unit_harmonization/README.md).
 
 ### ICD9 to ICD10 Mapping
-```shell
+Follow the ICD-9 to ICD-10 mapping instructions in the [ICD Mapping Guide](src/ehr_foundation_model_benchmark/data/idc_mapping/README.md).
 
-```
 ###  Convert OMOP to MEDS
 ```shell
 export OMOP_DIR=""
