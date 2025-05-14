@@ -31,8 +31,8 @@ Ensure you have the following installed:
 - MAMBA (context clues)
 - LLAMA (context clues)
 ### Baseline Models
-- MEDS-TAB
 - FEMR Baselines (Logistic Regression and LightGBM)
+- MEDS-TAB (Logistic Regression and XGBoost)
 
 ## Data Source
 We used the OMOP Common Data Model (CDM) derived from electronic health record (EHR) data at a large urban academic medical center, 
@@ -46,9 +46,8 @@ and the same patient split was used for both OMOP and MEDS datasets.
 
 
 ### Unit Harmonization
-```shell
+Step-by-step explanations can be found in [here](src/ehr_foundation_model_benchmark/tools/README.md).
 
-```
 ### ICD9 to ICD10 Mapping
 ```shell
 
@@ -74,8 +73,8 @@ meds_etl_omop $OMOP_DIR $OMOP_MEDS --num_proc 16
 | CEHR-BERT      | OMOP                 | A masked language model tailored for OMOP-based structured EHR data, used for patient representation and embedding learning.                                                  |
 | MAMBA          | MEDS                 | A long-context architecture for EHR modeling based on state-space models, optimized for sequential MEDS-formatted data.                                                       |
 | LLAMA          | MEDS                 | A large language model adapted to structured EHR inputs via MEDS, used for zero-shot and generative clinical reasoning.                                                       |
-| MEDS-TAB       | MEDS                 | MEDS-TAB extends baseline features using flexible time windows and aggregation functions (e.g., count, value, min, max), then trains Logistic Regression and XGBoost models.  |
 | FEMR Baselines | MEDS | A baseline model uses normalized age and event counts from a patient’s history up to prediction time, trained with Logistic Regression and LightGBM.                          |
+| MEDS-TAB       | MEDS                 | MEDS-TAB extends baseline features using flexible time windows and aggregation functions (e.g., count, value, min, max), then trains Logistic Regression and XGBoost models.  |
 
 ## Evaluation Tasks
 ### Phenotypes
