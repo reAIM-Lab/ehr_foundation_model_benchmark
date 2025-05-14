@@ -37,7 +37,6 @@ def report_harmonized(data, name):
 
 def process_file(
         file,
-        harmonized_measurement_dir: str,
         demo: bool = False
 ):
     report_data = []
@@ -155,9 +154,7 @@ def process_file(
 
     if not demo:
         print("save")
-        file_name = os.path.basename(file)
-        output_file = os.path.join(harmonized_measurement_dir, file_name)
-        data.to_parquet(output_file)
+        data.to_parquet(file.replace(".snappy.parquet", "-harmonized-v5.snappy.parquet"))
         print("end")
 
 
@@ -167,12 +164,6 @@ if __name__ == "__main__":
     argparser.add_argument(
         "--source_measurement_dir",
         dest="source_measurement_dir",
-        type=str,
-        required=True,
-    )
-    argparser.add_argument(
-        "--harmonized_measurement_dir",
-        dest="harmonized_measurement_dir",
         type=str,
         required=True,
     )
@@ -201,8 +192,7 @@ if __name__ == "__main__":
 
     with mp.get_context("spawn").Pool(processes=max_processes) as pool:
         results = pool.map(
-            functools.partial(process_file, harmonized_measurement_dir=args.harmonized_measurement_dir, demo=args.demo)
-            ,files
+            functools.partial(process_file, demo=args.demo), files
         )
 
     for result in results:

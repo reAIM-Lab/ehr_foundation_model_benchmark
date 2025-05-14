@@ -15,8 +15,8 @@ pip install pymssql
 
 Set up the environment variables
 ```bash
-export SOURCE_MEASUREMENT_DIR=""
-export HARMONIZED_MEASUREMENT_DIR=""
+export SOURCE_OMOP_FOLDER=""
+export HARMONIZED_OMOP_FOLDER=""
 ```
 
 Step. 1 Run `analyze_labs.py` to create the summary lab csv table
@@ -32,8 +32,7 @@ Step. 2 Run `convert_units.py` to run the conversion
 This step converts the measurement units using the statistics generated from `measurement_unit_counts.csv`. 
 ```bash
 python $UNIT_HARMONIZATION_HOME/convert_units.py \
-  --source_measurement_dir SOURCE_MEASUREMENT_DIR \
-  --harmonized_measurement_dir HARMONIZED_MEASUREMENT_DIR
+  --source_measurement_dir $SOURCE_OMOP_FOLDER/measurement
 ```
 
 Step.3 Run `stats.py` to compute the conversion summary.
@@ -43,5 +42,15 @@ This script processes harmonized measurement files to
 - classify unit and value matching types 
 - Generate comprehensive statistics on unit and value harmonization
 ```bash
-python $UNIT_HARMONIZATION_HOME/convert_units.py --measurement_parquet_folder MEASUREMENT_PARQUET_FOLDER
+python $UNIT_HARMONIZATION_HOME/convert_units.py \
+  --measurement_parquet_folder $SOURCE_OMOP_FOLDER/measurement
+```
+
+Step.4 Create a new OMOP instance with the harmonized measurement
+--------------------------------
+```bash
+python $UNIT_HARMONIZATION_HOME/merge_harmonized_labs_with_omop.py \
+  --omop_folder $SOURCE_OMOP_FOLDER \
+  --harmonized_labs_folder $SOURCE_OMOP_FOLDER/measurement \
+  --output_folder $HARMONIZED_OMOP_FOLDER
 ```
