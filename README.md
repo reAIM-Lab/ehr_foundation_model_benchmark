@@ -121,6 +121,6 @@ we use a fixed random seed for shuffling samples and fitting the logistic regres
 - CORE-BEHRT: [CORE-BEHRT Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/corebehrt/README.md)
 - FEMR Baselines: [FEMR Baseline Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/femr_baseline/README.md)
 - MEDS-TAB Baselines: [MEDS-TAB Baseline Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/medstab/README.md)
-- EHRSHOT-MAMABA Baselines: [EHRSHOT-MAMABA Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/mamba_ehrshot/README.md)
+- MAMBA-EHRSHOT Baselines: [MAMBA-EHRSHOT Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/mamba_ehrshot/README.md)
 - MAMBA
 - Llama
