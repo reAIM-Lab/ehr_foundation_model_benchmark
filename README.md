@@ -218,13 +218,15 @@ sh src/ehr_foundation_model_benchmark/evaluations/cehrbert/run_cehrbert.sh \
 Set up the environment
 ```bash
 conda create -n cehrgpt python=3.10
+export CEHRGPT_FOLDER="src/ehr_foundation_model_benchmark/evaluations/cehrgpt/"
 ```
 Install cehrbert_data, cehrgpt and the evaluation packages
 ```bash
-conda activate cehrbert
+conda activate cehrgpt
 pip install cehrbert_data==0.0.9
 pip install cehrgpt
-pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
+pip install $CEHRGPT_FOLDER/meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
+pip install .
 ```
 Let's set up some environment variables for CEHR-GPT
 ```bash
@@ -240,7 +242,7 @@ Follow the [Pretrain CEHR-GPT instructions](src/ehr_foundation_model_benchmark/e
 Step 2. Extract patient representations using CEHR-GPT
 ------------------------
 For CEHR-GPT, we need to construct the patient sequences from the OMOP dataset given the task labels and prediction times,
-then we use the pre-trained cehr-bert to extract the patient representation at the prediction time. 
+then we use the pre-trained cehr-gpt to extract the patient representation at the prediction time. 
 
 Set the environment variables
 ```bash

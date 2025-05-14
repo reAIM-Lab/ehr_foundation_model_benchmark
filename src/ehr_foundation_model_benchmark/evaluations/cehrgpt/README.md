@@ -9,7 +9,7 @@ Install cehrbert_data, cehrgpt and the evaluation packages
 conda activate cehrgpt
 pip install cehrbert_data==0.0.9
 pip install cehrgpt
-pip install git+https://github.com/reAIM-Lab/ehr_foundation_model_benchmark.git@main
+pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 ```
 
 Let's set up some environment variables
