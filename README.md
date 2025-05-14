@@ -1,4 +1,4 @@
-# ehr_foundation_model_benchmark
+# FoMo: A Framework for EHR Foundation Model Evaluation
 Code repository for FOMO EHR foundation model benchmarks.
 
 ## Requirements
