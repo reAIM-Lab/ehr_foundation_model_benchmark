@@ -70,7 +70,7 @@ meds_etl_omop $OMOP_DIR $OMOP_MEDS --num_proc 16
 
 ## Model Evaluation
 The EHR foundation models are pre-trained prior to evaluation, while the baseline models are evaluated directly without pretraining. 
-Following the evaluation protocols established in MOTOR [citation] and Contexts Clues [citation], we limit our assessments to linear probing, 
+Following the evaluation protocols established in [MOTOR](https://arxiv.org/abs/2301.03150) and [Contexts Clues](https://arxiv.org/abs/2412.16178), we limit our assessments to linear probing, 
 as further fine-tuning of foundation models can be computationally expensive and time-consuming. For each task, 
 we extract patient representations at the prediction time, train a logistic regression model using 5-fold cross-validation 
 on the extracted features and corresponding labels, and report the AUROC on the held-out test. To ensure consistency, 
@@ -80,3 +80,8 @@ we use a fixed random seed for shuffling samples and fitting the logistic regres
 - CEHR-BERT: [CEHR-BERT Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/cehrbert/README.md)
 - CEHR-GPT: [CEHR-GPT Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/cehrgpt/README.md)
 - CORE-BEHRT: [CORE-BEHRT Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/corebehrt/README.md)
+- FEMR Baselines: [FEMR Baseline Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/femr_baseline/README.md)
+- MEDS-TAB Baselines: [MEDS-TAB Baseline Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/medstab/README.md)
+- EHRSHOT-MAMABA Baselines: [EHRSHOT-MAMABA Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/mamba_ehrshot/README.md)
+- MAMBA
+- Llama
