@@ -6,7 +6,7 @@ import json
 from time import perf_counter as pc
 
 from ehr_foundation_model_benchmark.tools.path import files
-from ehr_foundation_model_benchmark.tools.mappings import (
+from ehr_foundation_model_benchmark.data.unit_harmonization.mappings import (
     get_conversions,
     get_copy_majority_units,
     get_one_unit_lab,
