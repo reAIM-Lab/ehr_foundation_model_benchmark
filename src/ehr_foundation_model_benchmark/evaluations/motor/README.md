@@ -4,6 +4,8 @@ MOTOR is implemented in the FEMR library, which the [meds_reader](https://github
 ## Set up the environment
 ```bash
 conda create -n femr python=3.10
+export PROJECT_ROOT=$(git rev-parse --show-toplevel)
+export MOTOR_HOME="$PROJECT_ROOT/src/ehr_foundation_model_benchmark/evaluations/motor"
 ```
 Install MEDS_READER, FEMR and evaluation packages if you haven't done so
 ```bash
@@ -12,7 +14,7 @@ pip install meds_reader==0.1.13
 pip install femr-0.2.0-py3-none-any.whl
 pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 # Install the FOMO project
-pip install -e $(git rev-parse --show-toplevel)
+pip install -e $PROJECT_ROOT
 ```
 Set the environment variables
 ```bash
@@ -74,19 +76,18 @@ export PATIENT_OUTCOME_DIR = ""
 ```
 For patient phenotype tasks, we extract patient representations a feature extraction window of 730 days (2 years) prior to the prediction time:
 ```bash
-sh src/ehr_foundation_model_benchmark/evaluations/motor/run_motor.sh $PHENOTYPE_COHORT_DIR \
-  --observation_window 730
+sh $MOTOR_HOME/run_motor.sh $PHENOTYPE_COHORT_DIR --observation_window 730
 ```
 For patient outcome prediction tasks, we extract representations using the entire patient history up to the prediction time:
 ```bash
-sh src/ehr_foundation_model_benchmark/evaluations/motor/run_motor.sh $PATIENT_OUTCOME_DIR
+sh $MOTOR_HOME/run_motor.sh $PATIENT_OUTCOME_DIR
 ```
 Step 3. Evaluate using MOTOR features
 ------------------------
 To evaluate model performance, we use the following script to train logistic regression classifiers with 5-fold cross-validation using scikit-learn. 
 This includes few-shot experiments with varying training set sizes: 100, 1,000, 10,000, and the full training set, evaluated on a fixed test set: 
 ```bash
-sh src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few_shots.sh \
+sh $PROJECT_ROOT/src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few_shots.sh \
   --base_dir $MOTOR_DIR/results/ \
   --output_dir $EVALUATION_DIR \
   --meds_dir $OMOP_MEDS \
