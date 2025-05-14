@@ -3,6 +3,8 @@ CORE-BEHRT uses the OMOP data as the input directly.
 
 ```bash
 conda create -n corebehrt python=3.10
+export PROJECT_ROOT=$(git rev-parse --show-toplevel)
+export COREBEHRT_HOME="$PROJECT_ROOT/src/ehr_foundation_model_benchmark/evaluations/corebehrt"
 ```
 Install corebehrt and the evaluation packages
 ```bash
@@ -10,7 +12,7 @@ conda activate corebehrt
 pip install corebehrt-0.1.0-py3-none-any.whl
 pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 # Install the FOMO project
-pip install -e $(git rev-parse --show-toplevel)
+pip install -e $PROJECT_ROOT
 ```
 
 Let's set up some environment variables
