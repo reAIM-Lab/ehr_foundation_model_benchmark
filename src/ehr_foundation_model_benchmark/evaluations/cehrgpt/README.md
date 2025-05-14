@@ -10,6 +10,8 @@ conda activate cehrgpt
 pip install cehrbert_data==0.0.9
 pip install cehrgpt
 pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
+# Install the FOMO project
+pip install -e $(git rev-parse --show-toplevel)
 ```
 
 Let's set up some environment variables

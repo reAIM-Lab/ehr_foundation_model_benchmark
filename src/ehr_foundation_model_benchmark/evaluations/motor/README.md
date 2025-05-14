@@ -11,6 +11,8 @@ conda activate femr
 pip install meds_reader==0.1.13
 pip install femr-0.2.0-py3-none-any.whl
 pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
+# Install the FOMO project
+pip install -e $(git rev-parse --show-toplevel)
 ```
 Set the environment variables
 ```bash
