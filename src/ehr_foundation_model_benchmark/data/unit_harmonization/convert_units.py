@@ -37,7 +37,7 @@ def report_harmonized(data, name):
 
 def process_file(
         file,
-        demo: bool = False
+        dry_run: bool = False
 ):
     report_data = []
 
@@ -63,7 +63,7 @@ def process_file(
     count = np.count_nonzero(cdt)
     len_data_before = len(data)
 
-    if not demo:
+    if not dry_run:
         data = data.loc[cdt].copy()
     s2 = pc()
     report_data.append(("Undefined labs", len_data_before - count, 100 - count / len_data_before * 100, s2 - s1))
@@ -80,7 +80,7 @@ def process_file(
             data.loc[cdt, "harmonized_value_as_number"] = data.loc[cdt, "value_as_number"]
             data.loc[cdt, "harmonized_unit_concept_id"] = data.loc[cdt, "unit_concept_id"]
 
-            if demo:
+            if dry_run:
                 break
 
     s2 = pc()
@@ -115,7 +115,7 @@ def process_file(
             ].apply(mapping_fun)
             data.loc[cdt, "harmonized_unit_concept_id"] = to_unit_id
 
-            if demo:
+            if dry_run:
                 break
     s2 = pc()
     report_harmonized(data, "after conversion")
@@ -139,7 +139,7 @@ def process_file(
         ].apply(mapping_fun)
         data.loc[cdt, "harmonized_unit_concept_id"] = to_unit_id
 
-        if demo:
+        if dry_run:
             break
 
     s2 = pc()
@@ -152,7 +152,7 @@ def process_file(
 
     report_harmonized(data, "at the end of the pipeline")
 
-    if not demo:
+    if not dry_run:
         print("save")
         data.to_parquet(file.replace(".snappy.parquet", "-harmonized-v5.snappy.parquet"))
         print("end")
@@ -168,8 +168,8 @@ if __name__ == "__main__":
         required=True,
     )
     argparser.add_argument(
-        "--demo",
-        dest="demo",
+        "--dry_run",
+        dest="dry_run",
         action="store_true"
     )
     argparser.add_argument(
@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     files = glob.glob(os.path.join(args.measurement_parquet_folder, "*.parquet"))
 
-    # Demo mode does not process all the labs, only one for each pipeline step to check the pipeline runs
+    # The dry_run mode does not process all the labs, only one for each pipeline step to check the pipeline runs
     if args.demo:
         files = [files[0], files[1]]
 
@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
     with mp.get_context("spawn").Pool(processes=max_processes) as pool:
         results = pool.map(
-            functools.partial(process_file, demo=args.demo), files
+            functools.partial(process_file, demo=args.dry_run), files
         )
 
     for result in results:
