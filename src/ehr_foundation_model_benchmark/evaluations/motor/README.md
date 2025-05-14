@@ -87,7 +87,7 @@ Step 3. Evaluate using MOTOR features
 To evaluate model performance, we use the following script to train logistic regression classifiers with 5-fold cross-validation using scikit-learn. 
 This includes few-shot experiments with varying training set sizes: 100, 1,000, 10,000, and the full training set, evaluated on a fixed test set: 
 ```bash
-sh $PROJECT_ROOT/src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few_shots.sh \
+sh $PROJECT_ROOT/src/ehr_foundation_model_benchmark/linear_prob/run_linear_prob_with_few_shots.sh \
   --base_dir $MOTOR_DIR/results/ \
   --output_dir $EVALUATION_DIR \
   --meds_dir $OMOP_MEDS \
