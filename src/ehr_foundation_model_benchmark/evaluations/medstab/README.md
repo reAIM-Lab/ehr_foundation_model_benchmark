@@ -14,7 +14,7 @@ pip install meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
 
 ## Meds-tab folders
 
-Meds-tab requires many folders to work, and they have been all replaced by special tokens for anonymization:
+Meds-tab pipeline requires many folders to work, and they have been all replaced by special tokens for anonymization:
 - meds-tab data path `XX1`
 - meds-tab task labels non-sharded path `XX2`
 - meds-tab task labels sharded path `XX3`
@@ -23,17 +23,19 @@ Meds-tab requires many folders to work, and they have been all replaced by speci
 - meds-tab featurization path `XX6` for subsampled datasets
 - results folder `XX7`
 
-## Scripts
+## Step-by-step pipeline instructions
 
-Main pipeline (**make sure to edit the paths first in the headers of these files**) to generate the results in `XX7`:
-- `featurization/run_medstab_patient_large.py` to run the featurization for the patient tasks `readmission`, `long_los` and `death/mortality`, as well as training the xgboost model with all samples.
-- `featurization/run_medstab_pheno_large.py` to run the featurization for the phenotype tasks `AMI`, `CLL`, `Celiac`, `HTN`, `Ischemic_Stroke`, `MASLD`, `Osteoporosis`, `Pancreatic Cancer`, `Schizophrenia`, `SLE`, `T2DM`, as well as training the xgboost model with all samples.
-- `xgb/auto_sweep.py` to run xgboost models on 100, 1000, and 10000 samples
-- `postprocessing/bootstrap.py` to export the xgboost results
-- `lr/linear_prob-lr.py` to run logistic regressions for 100, 1000, 10k and 100k (all) samples
-- `postprocessing/bootstrap-linear.py` to export the lr results
+To run the medstab pipeline, please **make sure to edit the paths first in the headers of the files below** and specify the tasks you are interested in: 
+1. Run `python featurization/run_medstab_patient_large.py` to run the featurization for the patient tasks `readmission`, `long_los` and `death/mortality`, as well as training the xgboost model with all samples.
+2. Run `python featurization/run_medstab_pheno_large.py` to run the featurization for the phenotype tasks `AMI`, `CLL`, `Celiac`, `HTN`, `Ischemic_Stroke`, `MASLD`, `Osteoporosis`, `Pancreatic Cancer`, `Schizophrenia`, `SLE`, `T2DM`, as well as training the xgboost model with all samples.
+3. Run `python xgb/auto_sweep.py` to run xgboost models on 100, 1000, and 10000 samples
+4. Run `python postprocessing/bootstrap.py` to export the xgboost results
+5. Run `python lr/linear_prob-lr.py` to run logistic regressions for 100, 1000, 10k and 100k (all) samples
+6. Run `python postprocessing/bootstrap-linear.py` to export the logistic regression results
 
 Please note that on our data, for one task, with 64 cores, meds-tab featurization consume 500 GB RAM and takes about 12 hours.
+
+Results will be available in the folder `XX7`.
 
 ## Additional details
 
