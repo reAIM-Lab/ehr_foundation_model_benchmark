@@ -17,8 +17,7 @@ Ensure you have the following installed:
 - LLAMA (context clues)
 ### Baseline Models
 - MEDS-TAB
-- FEMR Logistic Regression
-- FEMR Gradient Boosting Machines (GBM)
+- FEMR Baseline
 
 ## Data Source
 We used the OMOP Common Data Model (CDM) derived from electronic health record (EHR) data at a large urban academic medical center, 
@@ -52,17 +51,16 @@ meds_etl_omop $OMOP_DIR $OMOP_MEDS --num_proc 16
 ```
  ### Model Summary and Input Data Formats
 
-| Model               | Required Data Format | Description |
-|---------------------|----------------------|-------------|
-| CORE-BEHRT          | OMOP                 | A transformer-based model adapted from BEHRT for longitudinal patient representation using OMOP CDM structure. |
-| MOTOR               | MEDS                 | A Transformer model pretrained using a piecewise exponential time-to-event objective across structured EHR sequences in MEDS format. |
-| CEHR-GPT            | OMOP                 | A generative model trained on OMOP-formatted sequences to synthesize realistic patient trajectories and perform downstream predictions. |
-| CEHR-BERT           | OMOP                 | A masked language model tailored for OMOP-based structured EHR data, used for patient representation and embedding learning. |
-| MAMBA               | MEDS                 | A long-context architecture for EHR modeling based on state-space models, optimized for sequential MEDS-formatted data. |
-| LLAMA               | MEDS                 | A large language model adapted to structured EHR inputs via MEDS, used for zero-shot and generative clinical reasoning. |
-| MEDS-TAB            | MEDS                 | |
-| Logistic Regression | MEDS ||
-| GBM                 | MEDS ||
+| Model          | Required Data Format | Description                                                                                                                                                                   |
+|----------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CORE-BEHRT     | OMOP                 | A transformer-based model adapted from BEHRT for longitudinal patient representation using OMOP CDM structure.                                                                |
+| MOTOR          | MEDS                 | A Transformer model pretrained using a piecewise exponential time-to-event objective across structured EHR sequences in MEDS format.                                          |
+| CEHR-GPT       | OMOP                 | A generative model trained on OMOP-formatted sequences to synthesize realistic patient trajectories and perform downstream predictions.                                       |
+| CEHR-BERT      | OMOP                 | A masked language model tailored for OMOP-based structured EHR data, used for patient representation and embedding learning.                                                  |
+| MAMBA          | MEDS                 | A long-context architecture for EHR modeling based on state-space models, optimized for sequential MEDS-formatted data.                                                       |
+| LLAMA          | MEDS                 | A large language model adapted to structured EHR inputs via MEDS, used for zero-shot and generative clinical reasoning.                                                       |
+| MEDS-TAB       | MEDS                 | MEDS-TAB extends baseline features using flexible time windows and aggregation functions (e.g., count, value, min, max), then trains Logistic Regression and XGBoost models.  |
+| FEMR Baselines | MEDS | A baseline model uses normalized age and event counts from a patient’s history up to prediction time, trained with Logistic Regression and LightGBM.                          |
 
 ## Evaluation Tasks
 ### Phenotypes
@@ -87,11 +85,11 @@ disease progression, and diagnostic complexity across varying prediction scenari
 These three patient outcome tasks—**in-hospital mortality**, **30-day readmission**, and **prolonged length-of-stay**—are closely tied to hospital operations. They reflect critical quality metrics that impact resource allocation, patient safety, and institutional performance, 
 making them essential for both clinical decision support and healthcare management.
 
-| Outcome Cohort                   | Description |
-|----------------------------------|-------------|
-| **In-hospital mortality (`Death`)** | Predicts whether a patient will die during a current hospitalization. Includes admissions lasting >48 hours. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
-| **30-day readmission (`Readmission`)** | Predicts all-cause readmission within 30 days of discharge. Prediction time is at discharge. Patients must have ≥2 years of prior history and not be censored within 30 days post-discharge. Same-day readmissions are excluded. |
-| **Prolonged length-of-stay (`LoS`)** | Predicts whether a hospitalization lasts more than 7 days. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
+| Outcome Cohort                | Description |
+|-------------------------------|-------------|
+| **In-hospital mortality** | Predicts whether a patient will die during a current hospitalization. Includes admissions lasting >48 hours. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
+| **30-day readmission** | Predicts all-cause readmission within 30 days of discharge. Prediction time is at discharge. Patients must have ≥2 years of prior history and not be censored within 30 days post-discharge. Same-day readmissions are excluded. |
+| **Prolonged length-of-stay** | Predicts whether a hospitalization lasts more than 7 days. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
 
 
 ## Model Evaluation
