@@ -124,5 +124,5 @@ The hyperlink may not work due to anonymization, please refresh the page after c
 - CORE-BEHRT: [CORE-BEHRT Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/corebehrt/README.md)
 - FEMR Baselines: [FEMR Baseline Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/femr_baseline/README.md)
 - MEDS-TAB Baselines: [MEDS-TAB Baseline Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/medstab/README.md)
-- MAMBA-EHRSHOT Baselines: [MAMBA-EHRSHOT Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/mamba_transport/README.md)
+- MAMBA-Transport Baselines: [MAMBA-Transport Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/mamba_transport/README.md)
 - MAMBA / LLAMA: [MAMBA / LLAMA Pipeline instructions](src/ehr_foundation_model_benchmark/evaluations/llama_mamba/README.md)
