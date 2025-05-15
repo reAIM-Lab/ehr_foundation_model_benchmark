@@ -3,25 +3,37 @@
 
 This repo is mainly adopted from https://github.com/som-shahlab/hf_ehr/blob/main/README.md. The original paper is [**Context Clues paper**](https://arxiv.org/abs/2412.16178). 
 
-
-
-```
-Step 1. Installation:
-------------------------
-
+```bash
+conda create -n hf_env python=3.10
+export PROJECT_ROOT=$(git rev-parse --show-toplevel)
+export LLAMA_MAMBA_HOME="$PROJECT_ROOT/src/ehr_foundation_model_benchmark/evaluations/llama_mamba"
 ```
 
-Development install:
+Install hf_env and the evaluation packages
 ```bash
 conda create -n hf_env python=3.10 -y
 conda activate hf_env
 pip install flash-attn --no-build-isolation
-pip install -e .
-
-
-
+# Install the package for the context clues models
+pip install $LLAMA_MAMBA_HOME/hf_ehr-0.1.3-py3-none-any.whl
+# Install meds-evaluation
+pip install $LLAMA_MAMBA_HOME/meds_evaluation-0.1.dev95+g841c87f-py3-none-any.whl
+# Install the FOMO project
+pip install -e $PROJECT_ROOT
 ```
-Step 2. Pretrain Llama & Mamba Model
+
+Let's set up some environment variables
+```bash
+export dataset_name=""
+export path_to_dataset_config_file=""
+export path_to_tokenizer_file=""
+export path_to_cache_dir=""
+export path_to_tokenizer_json_file=""
+export num_process=32
+export config_path=""
+```
+
+Step 1. Pretrain Llama & Mamba Model
 ------------------------
 
 The pretraining consists of three parts: Dataset preparation, tokenizer creation and model training.
@@ -64,7 +76,7 @@ You need to specify the path to preprocessed dataset, path to yaml file of token
 
 Then, you can launch a Llama run on the preprocessed dataset and tokenizer (using `run.py`):
 ```bash
-python hf_ehr.scripts.run \
+python -m hf_ehr.scripts.run \
 	--config-dir=$config_path \
     +data=$dataset_config_name \
     +trainer=$trainer_config_name \
@@ -82,9 +94,8 @@ python hf_ehr.scripts.run \
 ```
 
 For example, it could be
-
 ```bash
-python hf_ehr.scripts.run \
+python -m hf_ehr.scripts.run \
 	--config-dir="hf_ehr/configs/" \
     +data=meds_mimic4 \
     +trainer=multi_gpu_4 \
@@ -101,19 +112,14 @@ python hf_ehr.scripts.run \
     main.path_to_output_dir="hf_ehr/cache/runs/llamba"
 ```
 
-
-```
-Step 3. Model Evluation of Llama & mamba
+Step 2. Model Evaluation of Llama & Mamba
 ------------------------
-
-After pretraining, we can evaluate our models on downstream tasks. Here we define two types of tasks: phenotype and patient outcome prediction. 
-
-The first step is to extract patients' embeddings with our pretrained model. We provide two .sh files 
-
+After pretraining, we can evaluate our models on downstream tasks. Here we define two types of tasks: phenotype and patient outcome prediction.
+The first step is to extract patients' embeddings with our pretrained model. We provide two .sh files
 If run all tasks at once, you can directly call outcome.sh or phenotype.sh. Eg:
 
 ```bash
-sh $hf_ehr_home_dir/generate_embeddings/outcome.sh \
+sh $LLAMA_MAMBA_HOME/outcome.sh \
     --$model_type="llama" \
     --$model_path=$Model_checkpoint_path \
     --$input_meds=$meds_dir \
@@ -123,7 +129,7 @@ sh $hf_ehr_home_dir/generate_embeddings/outcome.sh \
 Otherwise you can generating embeddings for specific task
 
 ```bash
-python main.py \
+python $LLAMA_MAMBA_HOME/main.py \
     --model_type="mamba"
     --model_path=$Model_checkpoint_path \
     --input_meds=$meds_dir \
@@ -165,7 +171,10 @@ $meds_dir
         ├── results
 ```
 
-After generating patients' embeddings, we use the following script to train logistic regression classifiers with 5-fold cross-validation using scikit-learn. This includes few-shot experiments with varying training set sizes: 100, 1,000, 10,000, and the full training set, evaluated on a fixed test set:
+Step 3. Evaluate the using context clue model features
+------------------------
+After generating patients' embeddings, we use the following script to train logistic regression classifiers with 5-fold cross-validation using scikit-learn. 
+This includes few-shot experiments with varying training set sizes: 100, 1,000, 10,000, and the full training set, evaluated on a fixed test set:
 
 ```bash
 sh $PROJECT_ROOT/src/ehr_foundation_model_benchmark/linear_prob/run_linear_prob_with_few_shots.sh \
