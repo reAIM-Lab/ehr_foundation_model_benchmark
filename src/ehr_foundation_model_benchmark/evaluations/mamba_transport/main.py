@@ -7,7 +7,7 @@ import polars as pl
 import numpy as np
 import torch
 
-from utils import load_task_embeddings
+from ehr_foundation_model_benchmark.evaluations.mamba_transport.utils import load_task_embeddings
 
 warnings.filterwarnings("ignore")
 
