@@ -138,14 +138,7 @@ python $LLAMA_MAMBA_HOME/main.py \
     --seed 123
 ```
 
-The  file structure of MEDS data is 
-- $meds_dir:
-  - `post_transform/data/train/`
-  - `post_transform/data/tuning/`
-  - `post_transform/data/held_out/`
-- Adapt `utils.py` if using a different model (Change global `BATCH_SIZE` and `CONTEXT_LENGTH` parameters).
-
-The file structure of meds_dir is as follows. It includes both original meds datasets and task_labels for downstream evaluation
+The file structure of meds_dir is as follows. It includes both original meds datasets and task_labels for downstream evaluation.
 
 ```
 $meds_dir
@@ -170,6 +163,7 @@ $meds_dir
         ...
         ├── results
 ```
+Note:  You can adapt `utils.py` if using a different model (Change global `BATCH_SIZE` and `CONTEXT_LENGTH` parameters).
 
 Step 3. Evaluate the using context clue model features
 ------------------------
