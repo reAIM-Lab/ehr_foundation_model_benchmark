@@ -1,5 +1,5 @@
-# FoMo: A Framework for EHR Foundation Model Evaluation
-Code repository for FOMO EHR foundation model benchmarks.
+# FoMoH: A Framework for EHR Foundation Model Evaluation
+Code repository for [FoMoH: A clinically meaningful foundation model evaluation for structured electronic health records](https://arxiv.org/abs/2505.16941).
 
 ## Table of Contents
 (Table of contents links may not work due to anonymization)
