@@ -9,7 +9,7 @@ show_help() {
   echo "Options:"
   echo "  --base_dir DIR       Base directory containing cohort folders"
   echo "  --output_dir DIR     Output directory for results"
-  echo "  --meds_dir DIR       Medications directory"
+  echo "  --meds_dir DIR       Medical Event Data Standard data directory"
   echo "  --model_name NAME    Model name to use"
   echo "  -h, --help           Display this help message and exit"
   echo
@@ -72,7 +72,7 @@ if [ ! -d "$OUTPUT_DIR" ]; then
 fi
 
 if [ ! -d "$MEDS_DIR" ]; then
-  echo "Error: Medications directory $MEDS_DIR does not exist."
+  echo "Error: Medical Event Data Standard directory $MEDS_DIR does not exist."
   exit 1
 fi
 
