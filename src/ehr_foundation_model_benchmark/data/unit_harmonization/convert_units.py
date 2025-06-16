@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
     max_processes = 2  # 16 makes the server crash
 
-    files = glob.glob(os.path.join(args.measurement_parquet_folder, "*.parquet"))
+    files = glob.glob(os.path.join(args.source_measurement_dir, "*.parquet"))
 
     # The dry_run mode does not process all the labs, only one for each pipeline step to check the pipeline runs
     if args.demo:
