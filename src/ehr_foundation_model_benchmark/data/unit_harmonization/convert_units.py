@@ -168,6 +168,11 @@ if __name__ == "__main__":
         required=True,
     )
     argparser.add_argument(
+        "--demo",
+        dest="demo",
+        action="store_true"
+    )
+    argparser.add_argument(
         "--dry_run",
         dest="dry_run",
         action="store_true"
@@ -192,7 +197,7 @@ if __name__ == "__main__":
 
     with mp.get_context("spawn").Pool(processes=max_processes) as pool:
         results = pool.map(
-            functools.partial(process_file, demo=args.dry_run), files
+            functools.partial(process_file, dry_run=args.dry_run), files
         )
 
     for result in results:
