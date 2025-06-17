@@ -1,9 +1,7 @@
+import os
 import pandas as pd
 from tqdm import tqdm
-import warnings
-
 import json
-from ehr_foundation_model_benchmark.tools.path import concepts_path
 
 identity = lambda x: x
 
@@ -115,6 +113,7 @@ concepts_df = None
 def convert_to_id(name):
     global concepts_df
 
+    concepts_path = os.environ.get("CONCEPT_PATH")
     # per minute has several ids, depending on the vocabulary, two are units
     if concepts_df is None:
         concepts_df = pd.read_parquet(concepts_path)  # [['concept_id', 'concept_name']]

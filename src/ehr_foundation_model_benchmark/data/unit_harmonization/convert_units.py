@@ -181,10 +181,10 @@ if __name__ == "__main__":
 
     max_processes = 2  # 16 makes the server crash
 
-    files = glob.glob(os.path.join(args.measurement_parquet_folder, "*.parquet"))
+    files = glob.glob(os.path.join(args.source_measurement_dir, "*.parquet"))
 
     # The dry_run mode does not process all the labs, only one for each pipeline step to check the pipeline runs
-    if args.demo:
+    if args.dry_run:
         files = [files[0], files[1]]
 
     if args.one_file:
@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
     with mp.get_context("spawn").Pool(processes=max_processes) as pool:
         results = pool.map(
-            functools.partial(process_file, demo=args.dry_run), files
+            functools.partial(process_file, dry_run=args.dry_run), files
         )
 
     for result in results:
