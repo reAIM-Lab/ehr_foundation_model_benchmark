@@ -159,7 +159,9 @@ def simplify_equivalent_units(df_labs):
 
 def load_data():
     df_labs = pd.read_csv("measurement_unit_counts.csv")
-    df_labs.drop("Unnamed: 0", axis=1, inplace=True)
+    # Do not drop this column if it does not exist
+    if "Unnamed: 0" in df_labs.columns:
+        df_labs.drop("Unnamed: 0", axis=1, inplace=True)
 
     df_labs.fillna({"unit_concept_id": 0}, inplace=True)
     df_labs.fillna({"unit_concept_name": "No matching concept"}, inplace=True)
