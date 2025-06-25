@@ -168,11 +168,6 @@ if __name__ == "__main__":
         required=True,
     )
     argparser.add_argument(
-        "--demo",
-        dest="demo",
-        action="store_true"
-    )
-    argparser.add_argument(
         "--dry_run",
         dest="dry_run",
         action="store_true"
@@ -195,7 +190,7 @@ if __name__ == "__main__":
     files = glob.glob(os.path.join(args.source_measurement_dir, "*.parquet"))
 
     # The dry_run mode does not process all the labs, only one for each pipeline step to check the pipeline runs
-    if args.demo:
+    if args.dry_run:
         files = [files[0], files[1]]
 
     if args.one_file:
