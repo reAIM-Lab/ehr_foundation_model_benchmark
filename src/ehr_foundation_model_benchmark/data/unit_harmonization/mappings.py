@@ -1,9 +1,7 @@
+import os
 import pandas as pd
 from tqdm import tqdm
-import warnings
-
 import json
-from ehr_foundation_model_benchmark.tools.path import concepts_path
 
 identity = lambda x: x
 
@@ -115,6 +113,7 @@ concepts_df = None
 def convert_to_id(name):
     global concepts_df
 
+    concepts_path = os.environ.get("CONCEPT_PATH")
     # per minute has several ids, depending on the vocabulary, two are units
     if concepts_df is None:
         concepts_df = pd.read_parquet(concepts_path)  # [['concept_id', 'concept_name']]
@@ -160,7 +159,9 @@ def simplify_equivalent_units(df_labs):
 
 def load_data():
     df_labs = pd.read_csv("measurement_unit_counts.csv")
-    df_labs.drop("Unnamed: 0", axis=1, inplace=True)
+    # Do not drop this column if it does not exist
+    if "Unnamed: 0" in df_labs.columns:
+        df_labs.drop("Unnamed: 0", axis=1, inplace=True)
 
     df_labs.fillna({"unit_concept_id": 0}, inplace=True)
     df_labs.fillna({"unit_concept_name": "No matching concept"}, inplace=True)
