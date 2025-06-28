@@ -64,7 +64,7 @@ python -u -m cehrgpt.runners.hf_cehrgpt_pretrain_runner \
   --evaluation_strategy epoch --save_strategy epoch \
   --sample_packing --max_tokens_per_batch 16384 \
   --warmup_steps 500 --weight_decay 0.01 \
-  --num_train_epochs 50 --learning_rate 0.002 \
+  --num_train_epochs 50 --learning_rate 0.0002 \
   --use_early_stopping --early_stopping_threshold 0.001
 ```
 
