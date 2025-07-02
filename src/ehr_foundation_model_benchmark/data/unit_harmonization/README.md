@@ -17,6 +17,7 @@ Set up the environment variables
 ```bash
 export SOURCE_OMOP_FOLDER=""
 export HARMONIZED_OMOP_FOLDER=""
+export CONCEPT_PATH=$SOURCE_OMOP_FOLDER/concept
 ```
 
 Step. 1 Run `analyze_labs.py` to create the summary lab csv table
