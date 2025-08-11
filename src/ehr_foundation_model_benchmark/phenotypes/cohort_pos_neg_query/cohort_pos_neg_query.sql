@@ -64,6 +64,9 @@ WITH at_risk_cohort_visit AS (
     JOIN {{database_name}}.results.phenotype_temp_sample pts ON yp.subject_id = pts.subject_id
     WHERE cohort_name = '{{cohort_name}} Cases'
 )
+-- MAX function is for acute phenotypes because acute cases allow multiple occurrences.
+-- If one at risk visit is joined to 2 acute cases, one is within obs_window and another is not, then two labels are generated for one visit.
+-- In this case, we take the maximum which is 1.
 SELECT DISTINCT subject_id, visit_start_datetime as prediction_time, MAX(boolean_value) as boolean_value
 FROM (SELECT *,
              CASE
