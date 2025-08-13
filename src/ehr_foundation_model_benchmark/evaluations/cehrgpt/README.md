@@ -44,7 +44,7 @@ We generate the pretraining data using the following command, you should see a f
 ```bash
 sh $CEHRGPT_HOME/create_cehrgpt_pretraining_data.sh \
   --input_folder $OMOP_DIR \
-  --output_folde $CEHR_GPT_DATA_DIR \
+  --output_folder $CEHR_GPT_DATA_DIR \
   --start_date "1985-01-01"
 ```
 
