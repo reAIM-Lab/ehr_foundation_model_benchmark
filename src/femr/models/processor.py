@@ -582,11 +582,15 @@ class FEMRBatchProcessor:
 
         final_batch_data = []
 
+        # i denote the process id, batch_part is an array of tuples (start_index, end_index) indicating the start and end subject indices of each batch 
+        #eg: batch_part=array([(0,5), (5,12), (12,18)])
         for i, batch_part in enumerate(split_batches):
             if len(batch_part) == 0:
                 continue
             start = batch_part[0][0]
             end = batch_part[-1][-1]
+            # lengths_part is an array of tuples (subject_id, start_index, length, fraction)
+            # here lengths_part = lengths[0:18, :]
             lengths_part = lengths[start:end, :]
 
             for j, (a, b) in enumerate(batch_part):

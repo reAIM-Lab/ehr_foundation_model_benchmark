@@ -194,15 +194,15 @@ class SurvivalCalculator:
             self, ontology: femr.ontology.Ontology, subject: meds_reader.Subject,
             code_whitelist: Optional[Set[str]] = None
     ):
-        self.survival_events = []  # a list of tuples, each tuple is a code and a time (lab/10, 2025-01-01)
+        self.survival_events = []
         self.final_date = subject.events[-1].time
-        self.future_times = collections.defaultdict(list)   # a dictionary of lists, key is the code, value is a list of happened times
+        self.future_times = collections.defaultdict(list)
 
         for event in subject.events:
             if event.time is None:
                 continue
-            # if event.code.split('/')[0] in ('LAB', 'MEDICATION', 'INFUSION_START', 'INFUSION_END'):
-            #     continue
+            if event.code.split('/')[0] in ('LAB', 'MEDICATION', 'INFUSION_START', 'INFUSION_END'):
+                continue
             if event.numeric_value is not None or event.text_value is not None:
                 continue
             codes = set()
@@ -219,7 +219,6 @@ class SurvivalCalculator:
 
         self.survival_events.reverse()
 
-    # Advancing the cursor: removes any past or current events so that only future ones remain in future_times.
     def get_future_events_for_time(
             self, time: datetime.datetime
     ) -> Tuple[datetime.timedelta, Mapping[str, datetime.timedelta]]:
@@ -233,10 +232,6 @@ class SurvivalCalculator:
             self.survival_events.pop()
 
         delta = self.final_date - time
-        # k is the code, v is the list of times
-        # v[-1] is the last time in the list
-        # time is the current time
-        # so v[-1] - time is the time until the next event of the code
         return (delta, {k: v[-1] - time for k, v in self.future_times.items()})
 
 
@@ -246,28 +241,22 @@ def _prefit_motor_map(
     task_time_stats: List[Any] = [[0, 0, femr.stat_utils.OnlineStatistics()] for _ in range(len(tasks))]
     event_times = femr.stat_utils.ReservoirSampler(100_000)
     task_set = set(tasks)
-    print(f"task_set length: {len(task_set)}")
 
-    # print(f"subject has {len(list(subjects))} objects.")
     for subject in subjects:
         calculator = SurvivalCalculator(ontology, subject, task_set)
-        # print(f"calculator: {calculator}")
-        # print(for )
+
         birth = femr.pat_utils.get_subject_birthdate(subject)
 
         for event, next_event in zip(subject.events, subject.events[1:]):
-            # 1) Skip any “birth”‐day events or events with missing times
-            if (event.time is None) or (event.time.date() == birth.date()) or (event.time.date() == next_event.time.date()):
+            if (event.time is None) or (event.time.date() == birth.date()) or (
+                    event.time.date() == next_event.time.date()):
                 continue
-            
-              # 2) Ask the calculator: 
-                #    - `censor_time`: time until end‐of‐record
-                #    - `tte`: dict of per‐code next‐event deltas
+
             censor_time, tte = calculator.get_future_events_for_time(event.time)
 
             if len(tte) == 0:
                 continue
-            
+
             for i, task in enumerate(tasks):
                 if task in tte:
                     time = tte[task]
@@ -282,15 +271,11 @@ def _prefit_motor_map(
                     event_times.add(time.total_seconds(), 1)
                     task_time_stats[i][1] += 1
                 task_time_stats[i][2].add(1, time.total_seconds())
-    # print(f"after subject {subject.subject_id}, task_time_stats: {task_time_stats}")
-    print(f"prefit_motor_map is done")
+
     return (event_times, task_time_stats)
 
 
 def _prefit_motor_agg(first: Any, second: Any) -> Any:
-    # first/second is (event_times, task_time_stats)
-    # for event_times, we use .combine() to add second group of elements to first group
-    # for task_time_stats, we add the number of events/censoring times, and combine the two groups of elements
     for a, b in zip(first[1], second[1]):
         a[0] += b[0]
         a[1] += b[1]
@@ -323,18 +308,10 @@ class MOTORTask(Task):
         if len(tasks) < num_tasks:
             warnings.warn(f"Could not find enough tasks in the provided tokenizer {len(tasks)}")
 
-        # print(f"tasks: {tasks}")
-        # apply _prefit_motor_map(subjects, tasks=tasks, ontology=tokenizer.ontology) and then use _prefit_motor_agg to aggregate the results
-        print("before functools.reduce")
         length_samples, stats = functools.reduce(
             _prefit_motor_agg, db.map(functools.partial(_prefit_motor_map, tasks=tasks, ontology=tokenizer.ontology))
         )
 
-        # print(f"length_samples samples: {length_samples.samples}")
-        # print(f"length_samples mean: {length_samples.mean()}")
-        # print(f"stats: {stats}")
-
-        # percentile of a distribution with mean and std comuted from all time to next event
         time_bins = np.percentile(length_samples.samples, np.linspace(0, 100, num_bins + 1))
         time_bins[0] = 0
         time_bins[-1] = float("inf")
@@ -344,7 +321,7 @@ class MOTORTask(Task):
 
         for task, task_stats in zip(tasks, stats):
             frac_events = task_stats[1] / (task_stats[0] + task_stats[1])
-            rate = frac_events / task_stats[2].mean()  # happening rate of the task num_points/time
+            rate = frac_events / task_stats[2].mean()
 
             if rate == 0:
                 print("Ran into task of rate 0?", task, frac_events, task_stats[0], task_stats[1], task_stats[2].mean())
@@ -366,7 +343,6 @@ class MOTORTask(Task):
 
         self.pretraining_task_codes = set()
         self.task_to_index_map = {}
-        # the self.pretraining_task_info is a list of tuples, each tuple is a task name, rate, num_events, num_censored, mean_time
         for i, task in enumerate(self.pretraining_task_info):
             self.pretraining_task_codes.add(task[0])
             self.task_to_index_map[task[0]] = i
@@ -460,9 +436,6 @@ class MOTORTask(Task):
                 "indptr": np.array(a["indptr"], dtype=np.int32),
             }
 
-        print(f"this batch return censor_time: {np.array(self.censor_time, dtype=np.float32)}")
-        print(f"this batch return time_sparse: {h(self.time_sparse, dtype=np.float32)}")
-
         return {
             "censor_time": np.array(self.censor_time, dtype=np.float32),
             "time_sparse": h(self.time_sparse, dtype=np.float32),
@@ -504,33 +477,3 @@ class MOTORTask(Task):
         is_event = torch.transpose(is_event, 0, 1).contiguous()
 
         return {"is_event": is_event, "log_time": log_time}
-    
-        # Debug: Check for all-false bins during generation
-        # all_bins_false = ~torch.any(is_event, dim=1)  # [prediction_points, tasks]
-        # if torch.any(all_bins_false):
-        #     all_false_count = torch.sum(all_bins_false)
-        #     print(f"DEBUG (Generation): Found {all_false_count} prediction_point×task combinations where all time bins are False")
-            
-        #     # Find specific indices where this happens
-        #     all_false_indices = torch.where(all_bins_false)
-        #     prediction_points = all_false_indices[0]
-        #     task_indices = all_false_indices[1]
-            
-        #     print(f"DEBUG (Generation): First 10 all-false cases:")
-        #     for i in range(min(10, len(prediction_points))):
-        #         pred_idx = prediction_points[i].item()
-        #         task_idx = task_indices[i].item()
-        #         print(f"  Prediction point {pred_idx}, task {task_idx}: {is_event[pred_idx, :, task_idx]}")
-                
-        #         # Also show the corresponding time information
-        #         time_vals = time[pred_idx, task_idx].item()
-        #         censor_time_val = batch["censor_time"][pred_idx].item()
-        #         print(f"    Time: {time_vals}, Censor time: {censor_time_val}")
-        #         print(f"    Time bins: {self.time_bins}")
-                
-        #         # Check which bins this time falls into
-        #         for bin_idx, (start, end) in enumerate(zip(self.time_bins, self.time_bins[1:])):
-        #             if time_vals == 0:
-        #                 print(f"    Time is 0 (no event) - should be censored case")
-        #             elif start <= time_vals < end:
-        #                 print(f"    Time {time_vals} falls in bin {bin_idx} [{start}, {end})")

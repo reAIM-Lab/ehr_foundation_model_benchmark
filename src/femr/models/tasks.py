@@ -21,13 +21,6 @@ import femr.stat_utils
 import random
 import logging
 
-
-logging.basicConfig(
-    level=logging.INFO,
-    filename='prepare_motor_task.log',
-    filemode='w',
-)
-
 class Task(abc.ABC):
     def __init__(self):
         super().__init__()
@@ -649,38 +642,3 @@ class MOTORTask(Task):
 
         return {"is_event": is_event, "is_censored": is_censored, "censor_time_ratio": censor_time_ratio}
 
-
-'''
-  censor_time_ratio = (censor_times_expanded-bin_starts)/(bin_ends-bin_starts) & censor_in_bin
-516 -          is_event = torch.zeros(size=(num_indices, num_time_bins, num_tasks), dtype=torch.bool)
-517 -          is_censored = torch.zeros(size=(num_indices, num_tasks), dtype=torch.bool)
-525            has_future_event = time != 0
-526 -  
-527 -          # Process each prediction point and task combination
-528 -          for pred_idx in range(num_indices):
-529 -              censor_time_val = batch["censor_time"][pred_idx].item()          
-570 -              for task_idx in range(num_tasks):
-571 -                  task_time_bins = self.time_bins[task_idx]
-572 -                  
-573 -                  if has_future_event[pred_idx, task_idx]:
-574 -                      # This task has a future event - find which bin it falls into
-575 -                      event_time_val = time[pred_idx, task_idx].item()
-576 -                      
-577 -                      # Find the bin for this event
-578 -                      for bin_idx in range(num_time_bins):
-579 -                          start, end = task_time_bins[bin_idx], task_time_bins[bin_idx + 1]
-580 -                          if start <= event_time_val < end:
-581 -                              is_event[pred_idx, bin_idx, task_idx] = True
-582 -                              is_censored[pred_idx, task_idx] = False  # This is an event, not censoring
-583 -                              break
-584 -                  else:
-585 -                      # No future event for this task - mark censoring bin
-586 -                      # Find which bin the censor time falls into
-587 -                      for bin_idx in range(num_time_bins):
-588 -                          start, end = task_time_bins[bin_idx], task_time_bins[bin_idx + 1]
-589 -                          if start <= censor_time_val < end:
-590 -                              is_event[pred_idx, bin_idx, task_idx] = True
-591 -                              is_censored[pred_idx, task_idx] = True  # This is censoring
-592 -                              break
-589            return {"is_event": is_event, "is_censored": is_censored}
-'''

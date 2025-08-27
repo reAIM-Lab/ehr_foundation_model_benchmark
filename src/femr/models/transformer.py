@@ -413,14 +413,14 @@ class FEMRModel(transformers.PreTrainedModel):
             with safe_open(model_file, framework="pt", device="cpu") as f:
                 for key in f.keys():
                     state_dict[key] = f.get_tensor(key)
-            model.load_state_dict(state_dict)
+            model.load_state_dict(state_dict,strict=False)
         else:
             # Fallback to pytorch_model.bin if safetensors not available
             model_file = os.path.join(pretrained_model_name_or_path, "pytorch_model.bin")
             if os.path.exists(model_file):
                 import torch
                 state_dict = torch.load(model_file, map_location="cpu")
-                model.load_state_dict(state_dict)
+                model.load_state_dict(state_dict,strict=False)
             else:
                 raise FileNotFoundError(f"No model file found in {pretrained_model_name_or_path}")
         
