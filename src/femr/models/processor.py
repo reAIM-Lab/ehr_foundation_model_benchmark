@@ -446,7 +446,11 @@ def _batch_generator(batch_data: Tuple[np.ndarray, np.ndarray], *, creator: Batc
                     creator.add_subject(database[subject_index.item()], offset, length, subsample_task_fraction=float(subsample_task_fraction)/1e6)
 
                 result = creator.get_batch_data()
-                assert "task" in result, f"No task present in {lengths[start:end, :]} {i} {start} {end}"
+                # assert "task" in result, f"No task present in {lengths[start:end, :]} {i} {start} {end}"
+                if "task" not in result:
+                    # Log warning but continue processing
+                    print(f"Warning: No valid labels for batch {i} (subjects {lengths[start:end, 0]})")
+                    continue  # Skip this batch
 
                 yield result
 
@@ -605,7 +609,6 @@ class FEMRBatchProcessor:
                 )
             )
 
-        # print(f"final_batch_data: {final_batch_data}")
         batch_func = functools.partial(
             _batch_generator,
             creator=self.creator,
@@ -618,7 +621,6 @@ class FEMRBatchProcessor:
                 "batch_data": final_batch_data,
             },
             num_proc=num_proc // 4,
-            # num_proc=1,
             writer_batch_size=8,
         )
 

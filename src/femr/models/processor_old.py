@@ -7,6 +7,7 @@ import random
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 import datasets
+import femr.models.tasks_old
 import meds_reader
 import numpy as np
 import torch.utils.data
@@ -85,7 +86,7 @@ def map_preliminary_batch_stats(
 class BatchCreator:
     """The BatchCreator is designed to generate batches from subject data."""
 
-    def __init__(self, tokenizer: femr.models.tokenizer.FEMRTokenizer, task: Optional[femr.models.tasks.Task] = None):
+    def __init__(self, tokenizer: femr.models.tokenizer.FEMRTokenizer, task: Optional[femr.models.tasks_old.Task] = None):
         """Initialize a BatchCreator, with a tokenizer, and optionally a task."""
         self.tokenizer = tokenizer
         self.task = task
@@ -457,7 +458,7 @@ class FEMRBatchProcessor:
         return {"batch": _add_dimension(self.creator.cleanup_batch(batches[0]))}
 
     def convert_dataset(
-        self, db: meds_reader.SubjectDatabase, tokens_per_batch: int, min_subjects_per_batch: int = 2, num_proc: int = 1
+        self, db: meds_reader.SubjectDatabase, tokens_per_batch: int, min_subjects_per_batch: int = 1, num_proc: int = 1
     ):
         """Convert an entire dataset to batches.
 
@@ -471,6 +472,7 @@ class FEMRBatchProcessor:
             A huggingface dataset object containing batches
         """
 
+        print("Begin convert_dataset")
         max_length = tokens_per_batch // min_subjects_per_batch
 
         length_chunks = tuple(
@@ -531,6 +533,7 @@ class FEMRBatchProcessor:
             _batch_generator,
             creator=self.creator,
             path_to_database=db.path_to_database,
+            cache_dir=None,
         )
 
         batch_dataset = datasets.Dataset.from_generator(

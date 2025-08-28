@@ -28,7 +28,7 @@ export PYTHONUNBUFFERED=1
 if [[ "${USE_PIPELINE_FALLBACK:-0}" -eq 1 ]]; then
   # Portable fallback: pipe stdout+stderr into tee
   python -u prepare_motor.py \
-    --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/cumc/motor_cumc_bin_8 \
+    --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/cumc/bin_8 \
     --athena_path " " \
     --num_bins 8 \
     --num_threads 32 \
@@ -38,9 +38,10 @@ if [[ "${USE_PIPELINE_FALLBACK:-0}" -eq 1 ]]; then
 else
   # Normal path (exec already redirected both stdout/stderr through tee)
   python -u prepare_motor.py \
-    --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/cumc/motor_cumc_bin_8 \
+    --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/cumc/bin_8 \
     --athena_path " " \
     --num_bins 8 \
     --num_threads 32 \
     --meds_reader /data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform_meds_reader
 fi
+

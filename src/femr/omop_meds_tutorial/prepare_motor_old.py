@@ -4,8 +4,8 @@ import meds_reader
 import pickle
 import femr.splits
 from femr.models.tokenizer.hierarchical_tokenizer import HierarchicalTokenizer
-import femr.models.tasks
-import femr.models.processor
+import femr.models.tasks_old
+import femr.models.processor_old
 import pandas as pd
 import polars as pl
 
@@ -72,7 +72,7 @@ def main(args):
             # Second, we need to prefit the MOTOR model. This is necessary because piecewise exponential models are unstable without an initial fit
             print("Train MOTOR task")
 
-            motor_task = femr.models.tasks.MOTORTask.fit_pretraining_task_info(
+            motor_task = femr.models.tasks_old.MOTORTask.fit_pretraining_task_info(
                 main_database, tokenizer,
                 num_tasks=8 * 1024,
                 num_bins=8,
@@ -89,19 +89,19 @@ def main(args):
 
         processor = femr.models.processor.FEMRBatchProcessor(tokenizer, motor_task)
 
-        example_subject_id = list(train_database)[0]
-        example_subject = train_database[example_subject_id]
+        # example_subject_id = list(train_database)[0]
+        # example_subject = train_database[example_subject_id]
 
-        # We can do this one subject at a time
-        print("Convert a single subject")
-        example_batch = processor.collate([processor.convert_subject(example_subject, tensor_type='pt')])
+        # # We can do this one subject at a time
+        # print("Convert a single subject")
+        # example_batch = processor.collate([processor.convert_subject(example_subject, tensor_type='pt')])
 
         train_batches_path = pretraining_data_path / 'train_batches'
 
         if not train_batches_path.exists():
             print("Convert batches")
             # But generally we want to convert entire datasets
-            train_batches = processor.convert_dataset(train_database, tokens_per_batch=args.tokens_per_batch, num_proc=32)
+            train_batches = processor.convert_dataset(train_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
 
             print("Convert batches to pytorch")
             # Convert our batches to pytorch tensors
@@ -112,7 +112,7 @@ def main(args):
 
         if not val_batches_path.exists():
             print("Convert val batches")
-            val_batches = processor.convert_dataset(val_database, tokens_per_batch=args.tokens_per_batch, num_proc=32)
+            val_batches = processor.convert_dataset(val_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
             # Convert our batches to pytorch tensors
             val_batches.set_format("pt")
             val_batches.save_to_disk(val_batches_path)
@@ -160,7 +160,7 @@ def create_omop_meds_tutorial_argparser():
         required=False,
         type=int,
         # this is decided based on the 99% percentile of the number of tokens
-        default=16384,
+        default=8192,
     )
     return parser
 
