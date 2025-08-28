@@ -104,11 +104,7 @@ class FEMREncoderLayer(nn.Module):
         x = self.norm(x)
 
         if self.config.use_normed_ages:
-            # print(f"time_data shape: {time_data.shape}")
-            # print(f"time_data: {time_data}")
             all_time = torch.concatenate((time_data, time_data ** 2), axis=-1)
-            # print(f"all_time shape: {all_time.shape}")
-            # print(f"all_time: {all_time}")
             x[:, -all_time.shape[1]:] = all_time.to(dtype=x.dtype)
 
         transformed = self.input_proj(x)
@@ -170,7 +166,7 @@ class FEMRTransformer(nn.Module):
             x = self.embed(batch["tokens"])
         else:
             x = self.embed_bag(batch["hierarchical_tokens"], batch["token_indices"], batch["hierarchical_weights"])
-        # print(f"embeddings bag shape: {x.shape}")
+
         x = self.in_norm(x)
         time_data = batch["time_data"]
         pos_embed = fixed_pos_embedding(batch["ages"], self.config.hidden_size // self.config.n_heads, x.dtype)
@@ -183,7 +179,6 @@ class FEMRTransformer(nn.Module):
             x = x + layer(x, time_data, pos_embed, attn_bias, s)
 
         final = self.out_norm(x)
-        # print(f"final returned from transformer: {final.shape}")
 
         return final
 
@@ -238,20 +233,12 @@ class MOTORTaskHead(nn.Module):
         self.norm = femr.models.rmsnorm.RMSNorm(self.final_layer_size)
 
     def forward(self, features: torch.Tensor, batch: Mapping[str, torch.Tensor], return_logits=False):
-        # self.num_time_bins = 8, number of time pieces
-        #  self.final_layer_size = 512, hidden size
         time_independent_features = self.final_layer(features).reshape(
             features.shape[0], self.num_time_bins, self.final_layer_size
         )
 
         time_dependent_logits = self.task_layer(self.norm(time_independent_features)) + self.task_time_bias
         # time_dependent_logits = self.task_layer(time_independent_features)
-        # print(f"features in motor head: {features.shape}")
-        # print(f"time_independent_features: {time_independent_features.shape}")
-        # print(f"time_dependent_logits: {time_dependent_logits.shape}")
-        # print(f"batch['log_time']: {batch['log_time'].shape}")
-        # print(f"batch['is_event']: {batch['is_event'].shape}")
-        # print()
 
         assert (
                 batch["log_time"].shape == time_dependent_logits.shape
@@ -341,7 +328,6 @@ class MOTORTaskHead(nn.Module):
         # print(self.task_layer.bias.unsqueeze(0).unsqueeze(0) + batch["log_time"])
 
         loss = survival_loss + event_loss
-        print(f"loss: {loss}")
 
         if not return_logits:
             time_dependent_logits = None
@@ -405,7 +391,6 @@ class FEMRModel(transformers.PreTrainedModel):
         if "task" in batch and self.config.task_config is not None:
             features = features.reshape(-1, features.shape[-1])
             features = features[batch["transformer"]["label_indices"], :]
-            # print(f"features before forward: {features.shape}")
             loss, result = self.task_model(features, batch["task"], return_logits=return_logits)
             if return_reprs:
                 result["representations"] = features

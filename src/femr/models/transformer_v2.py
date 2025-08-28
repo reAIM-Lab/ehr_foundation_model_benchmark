@@ -185,7 +185,7 @@ class FEMRTransformer(nn.Module):
 
 
 class LabeledSubjectTaskHead(nn.Module):
-    def __init__(self, hidden_size: int, **kwargs):
+    def __init__(self, hidden_size: int):
         super().__init__()
 
     def forward(self, features: torch.Tensor, batch: Mapping[str, torch.Tensor], return_logits=False):
@@ -193,7 +193,7 @@ class LabeledSubjectTaskHead(nn.Module):
 
 
 class CLMBRTaskHead(nn.Module):
-    def __init__(self, hidden_size: int, clmbr_vocab_size: int, **kwargs):
+    def __init__(self, hidden_size: int, clmbr_vocab_size: int):
         super().__init__()
 
         self.final_layer = nn.Linear(hidden_size, clmbr_vocab_size)
@@ -217,19 +217,7 @@ class MOTORTaskHead(nn.Module):
             pretraining_task_info: List[Tuple[str, float]],
             time_bins: np.ndarray,
             final_layer_size: int,
-            **kwargs
     ):
-        """
-        MOTOR Task Head with improved linear interpolation support.
-        
-        Args:
-            hidden_size: Size of the input features
-            linear_interpolation: Whether to use linear interpolation for censoring adjustment
-            pretraining_task_info: List of (task_name, task_weight) tuples
-            time_bins: Time bins array for discretization
-            final_layer_size: Size of the final layer before task prediction
-            **kwargs: Additional arguments for flexibility
-        """
         super().__init__()
 
         # Handle both numpy array and list (from config deserialization)
@@ -247,121 +235,127 @@ class MOTORTaskHead(nn.Module):
         start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info], dtype=torch.float32))
         self.task_layer.bias.data = start_bias
 
+      
         self.norm = femr.models.rmsnorm.RMSNorm(self.final_layer_size)
         self.linear_interpolation = linear_interpolation
 
     def forward(self, features: torch.Tensor, batch: Mapping[str, torch.Tensor], return_logits=False):
         """
-        MOTOR Task Head Forward Pass with Enhanced Linear Interpolation
+        MOTOR Task Head Forward Pass with Event-Specific Time Bins
         
-        Key improvements:
-        1. More robust numerical stability with better clamping
-        2. Clearer linear interpolation logic
-        3. Better error handling and debugging information
-        4. Improved parameter validation
+        Key design principles:
+        1. Each event type has its own time discretization (task-specific time bins)
+        2. For each prediction point and task: exactly ONE time bin is marked as True in is_event
+        3. The marked bin represents either:
+           - An event occurring in that interval (is_censored=False): use f() = time_dependent_logits
+           - Censoring occurring in that interval (is_censored=True): use 1-F() = integrated_logits
+        4. Loss is calculated only for marked bins using appropriate likelihood function
         """
-        # Transform features to time-dependent representations
         # (num_predictions, hidden_size) -> (num_predictions, num_time_bins, final_layer_size)
         time_independent_features = self.final_layer(features).reshape(
             features.shape[0], self.num_time_bins, self.final_layer_size
         )
 
-        # Generate task predictions for each time bin
-        # Apply normalization for better stability
-        normalized_features = self.norm(time_independent_features)
-        task_logits = self.task_layer(normalized_features)
+        # take the softmaxof the logits over the time bins, assume indenpendence between different event types conditional previous embeddings
+        # time_dependent_logits: prediction_points*time_bins *event_types  [716, 8, 6100]
         
-        # Apply softmax to get probability distribution over time for each task
-        # Clamp to prevent numerical overflow
-        task_logits = torch.clamp(task_logits, min=-50, max=50)
+        # OPTION 1: Original approach without sigmoid (recommended)
+        # This is numerically more stable than sigmoid + softmax
+        task_logits = self.task_layer(self.norm(time_independent_features))
+        
+        # Clamp logits to prevent overflow in softmax
+        # task_logits = torch.clamp(task_logits, min=-50, max=50)
+        
         time_dependent_logits = self.softmax(task_logits)
         
-        # Numerical stability check
-        eps = 1e-8
-        time_dependent_logits = torch.clamp(time_dependent_logits, min=eps, max=1.0-eps)
+        # OPTION 2: If you want sigmoid, use it INSTEAD of softmax, not both
+        # Uncomment this block and comment out the above if you prefer sigmoid approach
+        # task_logits = self.task_layer(self.norm(time_independent_features))
+        # task_logits = torch.clamp(task_logits, min=-50, max=50)  # prevent overflow
+        # time_dependent_logits = torch.sigmoid(task_logits)
+        # # Normalize along time dimension to ensure probabilities sum to 1 over time
+        # time_dependent_logits = time_dependent_logits / torch.sum(time_dependent_logits, dim=1, keepdim=True)
         
-        # Validate probability distribution
-        prob_sums = torch.sum(time_dependent_logits, dim=1)  # Sum over time bins
-        if not torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-2):
-            print(f"WARNING: Probability sums not close to 1.0: {prob_sums[0:3]}")
-        
-        # Calculate cumulative distribution function (CDF)
+        # Debug: Check for NaN/inf values
+        if torch.any(torch.isnan(time_dependent_logits)) or torch.any(torch.isinf(time_dependent_logits)):
+            print(f"ERROR: NaN/inf detected in time_dependent_logits")
+            print(f"  NaN count: {torch.sum(torch.isnan(time_dependent_logits))}")
+            print(f"  Inf count: {torch.sum(torch.isinf(time_dependent_logits))}")
+            print(f"  Raw logits stats - min: {torch.min(task_logits)}, max: {torch.max(task_logits)}")
+            raise ValueError("NaN/inf detected in time_dependent_logits")
+            
+        assert torch.allclose(sum(time_dependent_logits[0,:,0]), torch.tensor(1.0), atol=1e-1), f" time_dependent_logits: {time_dependent_logits[0,:,0]}"
+        #
+        # integrated_logits = 1 - torch.cumsum(time_dependent_logits, dim=1)
         cdf = torch.cumsum(time_dependent_logits, dim=1)
+        integrated_logits = torch.cat([torch.ones_like(time_dependent_logits[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
+        # Verify input shapes match our expectations
+        assert (
+                batch["is_event"].shape == time_dependent_logits.shape
+        ), f"Shape mismatch: time_dependent_logits {time_dependent_logits.shape} vs is_event {batch['is_event'].shape}"
         
-        # Calculate survival function: S(t) = 1 - F(t)
-        # For discrete bins: S(t_i) = 1 - F(t_{i-1})
-        integrated_logits = torch.cat([
-            torch.ones_like(time_dependent_logits[:, :1, :]), 
-            1.0 - cdf[:, :-1, :]
-        ], dim=1)
+        # Add numerical stability - clamp values to prevent log(0)
+        eps = 1e-8
+        time_dependent_logits_stable = torch.clamp(time_dependent_logits, min=eps, max=1.0-eps)
+        integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
         
-        # Apply numerical stability to survival probabilities
-        integrated_logits = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
 
-        # Validate input shapes
-        assert batch["is_event"].shape == time_dependent_logits.shape, \
-            f"Shape mismatch: time_dependent_logits {time_dependent_logits.shape} vs is_event {batch['is_event'].shape}"
-
-        # Linear interpolation adjustment for censoring
-        if self.linear_interpolation and "censor_time_ratio" in batch:
-            # Get censoring ratios and expand to match tensor dimensions
-            censor_time_ratio = batch["censor_time_ratio"]  # [pred_points, time_bins, tasks]
-            is_censored_expanded = batch["is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)
+        # Validate that exactly one bin per prediction-task combination is True
+        labels_sum = torch.sum(batch["is_event"], dim=1)  # Sum along time bins dimension [prediction_points, tasks]
+        if not torch.all(labels_sum == 1):
+            print(f"ERROR: Expected exactly 1 True bin per prediction-task combination")
+            print(f"  Found {torch.sum(labels_sum != 1)} invalid combinations")
+            print(f"  Labels sum range: {torch.min(labels_sum)} to {torch.max(labels_sum)}")
             
-            # Apply linear interpolation adjustment where censoring occurs
-            # Adjust survival probability: S(t) -> S(t) - ratio * f(t)
-            # This accounts for partial observation within the censoring bin
-            linear_adjustment = censor_time_ratio * time_dependent_logits
-            adjusted_integrated_logits = torch.where(
-                is_censored_expanded,
-                integrated_logits - linear_adjustment,
-                integrated_logits  # No adjustment where not censored
-            )
-            
-            # Ensure adjusted probabilities remain valid
-            integrated_logits = torch.clamp(adjusted_integrated_logits, min=eps, max=1.0-eps)
+        # Calculate loss only for the marked bins
+        # For each prediction point and task, exactly one bin should be True
+        # Use f() for events, 1-F() for censoring
         
-        # Expand censoring indicator to match tensor dimensions
-        is_censored_expanded = batch["is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)
-        
-        # Select appropriate probability based on event vs censoring
-        selected_probs = torch.where(
-            is_censored_expanded,
-            integrated_logits,      # Use S(t) = 1-F(t) for censoring (survival probability)
-            time_dependent_logits   # Use f(t) for events (density)
-        )
-        
-        # Calculate negative log-likelihood loss
+        # Get the marked bins: where is_event is True
         marked_bins = batch["is_event"]  # [prediction_points, time_bins, tasks]
         
-        # Validate exactly one bin per prediction-task combination
-        labels_sum = torch.sum(marked_bins, dim=1)  # Sum along time bins
-        if not torch.all(labels_sum == 1):
-            invalid_count = torch.sum(labels_sum != 1)
-            print(f"WARNING: {invalid_count} prediction-task combinations don't have exactly 1 bin marked")
-            print(f"Labels sum range: {torch.min(labels_sum)} to {torch.max(labels_sum)}")
+        # For event cases: use f() = time_dependent_logits
+        # For censoring cases: use 1-F() = integrated_logits  
+        # is_censored has shape [prediction_points, tasks], need to expand to match marked_bins
+        is_censored_expanded = batch["is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)  # [prediction_points, time_bins, tasks]
         
-        # Calculate loss only for marked bins
-        log_probs = torch.log(selected_probs)
-        loss_values = torch.where(
-            marked_bins,
-            log_probs,
-            torch.zeros_like(log_probs)  # No contribution from unmarked bins
+        if self.linear_interpolation:
+            censor_time_ratio = batch["censor_time_ratio"]
+            integrated_logits_stable = torch.where(
+                is_censored_expanded,
+                integrated_logits_stable - (censor_time_ratio * time_dependent_logits_stable),
+                integrated_logits_stable  # No adjustment where not censored
+            )
+            integrated_logits_stable = torch.clamp(integrated_logits_stable, min=eps, max=1.0-eps)
+
+        # Select the appropriate probability based on event vs censoring
+        selected_probs = torch.where(
+            is_censored_expanded,
+            integrated_logits_stable,  # Use 1-F() for censoring
+            time_dependent_logits_stable  # Use f() for events
         )
         
-        # Compute final loss as negative log-likelihood
+        # Calculate loss only for marked bins
+        loss_values = torch.where(
+            marked_bins,
+            torch.log(selected_probs),
+            torch.zeros_like(selected_probs)  # No contribution from unmarked bins
+        )
+        
+        # Average over all marked bins (should be exactly one per prediction-task combination)
         num_marked_bins = torch.sum(marked_bins)
         if num_marked_bins > 0:
-            loss = -torch.sum(loss_values) / num_marked_bins
+            loss = -torch.sum(loss_values) / num_marked_bins  # Negative log likelihood
         else:
             loss = torch.tensor(0.0, device=marked_bins.device)
         
-        # Final validation
+        # Debug: Check for issues
         if torch.isnan(loss) or torch.isinf(loss):
-            print(f"ERROR: Invalid loss detected: {loss}")
+            print(f"WARNING: NaN/inf detected in final loss: {loss}")
             print(f"  num_marked_bins: {num_marked_bins}")
-            print(f"  selected_probs range: {torch.min(selected_probs)} to {torch.max(selected_probs)}")
-            raise ValueError("Invalid loss detected")
+            print(f"  time_dependent_logits range: {torch.min(time_dependent_logits_stable)} to {torch.max(time_dependent_logits_stable)}")
+            print(f"  integrated_logits range: {torch.min(integrated_logits_stable)} to {torch.max(integrated_logits_stable)}")
+            print(f"  selected_probs range: {torch.min(selected_probs[marked_bins])} to {torch.max(selected_probs[marked_bins])}")
 
         if not return_logits:
             time_dependent_logits = None
@@ -388,13 +382,13 @@ class FEMRModel(transformers.PreTrainedModel):
     config_class = femr.models.config.FEMRModelConfig
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path, linear_interpolation: bool = False, **kwargs):
+    def from_pretrained(cls, pretrained_model_name_or_path, use_linear_interpolation=False, **kwargs):
         """
-        Enhanced from_pretrained method with proper linear_interpolation parameter handling.
+        Custom from_pretrained method to handle linear_interpolation parameter.
         
         Args:
             pretrained_model_name_or_path: Path to the pretrained model
-            linear_interpolation: Whether to use linear interpolation for censoring
+            use_linear_interpolation: Whether to use linear interpolation
             **kwargs: Additional arguments passed to the parent from_pretrained method
         """
         # Extract task_config from kwargs if provided
@@ -408,7 +402,7 @@ class FEMRModel(transformers.PreTrainedModel):
             config.task_config = task_config
             
         # Create model instance with linear_interpolation parameter
-        model = cls(linear_interpolation=linear_interpolation, config=config)
+        model = cls(linear_interpolation=use_linear_interpolation, config=config)
         
         # Load the state dict
         import os
@@ -419,29 +413,21 @@ class FEMRModel(transformers.PreTrainedModel):
             with safe_open(model_file, framework="pt", device="cpu") as f:
                 for key in f.keys():
                     state_dict[key] = f.get_tensor(key)
-            model.load_state_dict(state_dict, strict=False)
+            model.load_state_dict(state_dict,strict=False)
         else:
             # Fallback to pytorch_model.bin if safetensors not available
             model_file = os.path.join(pretrained_model_name_or_path, "pytorch_model.bin")
             if os.path.exists(model_file):
                 import torch
                 state_dict = torch.load(model_file, map_location="cpu")
-                model.load_state_dict(state_dict, strict=False)
+                model.load_state_dict(state_dict,strict=False)
             else:
                 raise FileNotFoundError(f"No model file found in {pretrained_model_name_or_path}")
         
         return model
 
     def __init__(self, linear_interpolation: bool, config: femr.models.config.FEMRModelConfig, **kwargs):
-        """
-        Enhanced FEMRModel initialization with improved parameter handling.
-        
-        Args:
-            linear_interpolation: Whether to use linear interpolation for censoring adjustment
-            config: Model configuration
-            **kwargs: Additional keyword arguments for flexibility
-        """
-        # Allow the task config to be overwritten
+        # Allow the task config to be ovewritten
         if "task_config" in kwargs:
             config.task_config = kwargs["task_config"]
 
@@ -449,57 +435,43 @@ class FEMRModel(transformers.PreTrainedModel):
 
         self.linear_interpolation = linear_interpolation
         self.transformer = FEMRTransformer(self.config.transformer_config)
-        
-        # Create task model if task config is provided
         if self.config.task_config is not None:
             self.task_model = self.create_task_head()
 
-    def create_task_head(self) -> nn.Module:
-        """
-        Enhanced task head creation with proper parameter passing.
         
-        The linear_interpolation parameter is passed directly to the MOTOR task head,
-        while other task-specific parameters are passed via **task_kwargs.
-        """
+
+    def create_task_head(self) -> nn.Module:
         hidden_size = self.config.transformer_config.hidden_size
         task_type = self.config.task_config.task_type
-        task_kwargs = self.config.task_config.task_kwargs.copy()  # Make a copy to avoid modifying original
-        
+        task_kwargs = self.config.task_config.task_kwargs
         if task_type == "clmbr":
             return CLMBRTaskHead(hidden_size, **task_kwargs)
         elif task_type == "labeled_subjects":
             return LabeledSubjectTaskHead(hidden_size, **task_kwargs)
         elif task_type == "motor":
-            # Pass linear_interpolation explicitly to MOTOR task head
-            return MOTORTaskHead(
-                hidden_size=hidden_size, 
-                linear_interpolation=self.linear_interpolation,
-                **task_kwargs
-            )
+            return MOTORTaskHead(hidden_size, self.linear_interpolation, **task_kwargs)
         else:
-            raise RuntimeError(f"Could not determine head for task type: {task_type}")
+            raise RuntimeError("Could not determine head for task " + task_type)
 
     def forward(self, batch: Mapping[str, Any], return_loss=True, return_logits=False, return_reprs=False):
-        """Enhanced forward pass with better error handling."""
         # Need a return_loss parameter for transformers.Trainer to work properly
         assert return_loss
 
         batch = remove_first_dimension(batch)
         input_device = batch['subject_ids'].device
         s = torch.zeros_like(batch['subject_ids'], device=input_device)
+        # s = torch.zeros_like(batch['subject_ids'])
         s[1:] = batch['subject_ids'][1:] != batch['subject_ids'][:-1]
         s = torch.cumsum(s, dim=0).type(torch.uint8)
 
-        # Generate transformer features
+        # (time_steps, hidden_size)
         features = self.transformer(batch["transformer"], s)
-        
         if "task" in batch and self.config.task_config is not None:
             features = features.reshape(-1, features.shape[-1])
             features = features[batch["transformer"]["label_indices"], :]
+            # print(f"features before forward: {features.shape}")
             
-            # Forward through task model
             loss, result = self.task_model(features, batch["task"], return_logits=return_logits)
-            
             if return_reprs:
                 result["representations"] = features
             if return_logits or return_reprs:
@@ -507,7 +479,6 @@ class FEMRModel(transformers.PreTrainedModel):
                 result["subject_ids"] = batch["subject_ids"][batch["transformer"]["label_indices"]]
             return loss, result
         else:
-            # Inference mode or representation extraction
             loss = 0
             features = features.reshape(-1, features.shape[-1])
             if "task" in batch:
@@ -551,13 +522,12 @@ def compute_features(
         observation_window: Optional[int] = None,
         min_subjects_per_batch: int = 1,
         total_flops: TotalFlops = None,
-        linear_interpolation: bool = False,
+        use_linear_interpolation: bool = False,
 ) -> Dict[str, np.ndarray]:
-    """
-    Enhanced compute_features function with proper linear interpolation support.
+    """ "Compute features for a set of labels given a dataset and a model.
 
     Arguments:
-        db: A MEDS reader subject database
+        dataset: A HuggingFace dataset containing MEDS subjects
         model_path: A path to a saved pretrained model, including a saved tokenizer
         labels: MEDS labels to compute features for
         num_proc: The number of processors to use
@@ -565,9 +535,7 @@ def compute_features(
         device: Which type of compute to use
         ontology: A FEMR ontology object, which is necessary for models that use a hierarchical tokenizer
         observation_window: The observation window in which the features are extracted
-        min_subjects_per_batch: Minimum subjects per batch
         total_flops: TotalFlops to record the total number of flops
-        linear_interpolation: Whether to use linear interpolation for censoring
 
     Returns:
         A dictionary of numpy arrays, with three keys, "subject_ids", "feature_times" and "features"
@@ -577,13 +545,13 @@ def compute_features(
     task = femr.models.tasks.LabeledSubjectTask(labels, observation_window)
 
     print(f"Loading model from {model_path}")
-    print(f"Linear interpolation enabled: {linear_interpolation}")
+    print(f"use_linear_interpolation: {use_linear_interpolation}")
     
-    # Use the enhanced from_pretrained method that supports linear_interpolation
-    model = FEMRModel.from_pretrained(
+    # Use the new from_pretrained method that supports linear_interpolation
+    model = femr.models.transformer.FEMRModel.from_pretrained(
         model_path, 
         task_config=task.get_task_config(),
-        linear_interpolation=linear_interpolation
+        use_linear_interpolation=use_linear_interpolation
     )
 
     tokenizer = femr.models.tokenizer.HierarchicalTokenizer.from_pretrained(model_path, ontology=ontology)
@@ -596,7 +564,7 @@ def compute_features(
 
     cpu_device = torch.device("cpu")
 
-    print(f"The maximum context length is {tokens_per_batch/min_subjects_per_batch}, {min_subjects_per_batch} subjects and {tokens_per_batch} tokens per batch")
+    print(f"The maximum context length is {tokens_per_batch/min_subjects_per_batch},  {min_subjects_per_batch} subjects and {tokens_per_batch} tokens per batch")
     batches = processor.convert_dataset(
         filtered_data, tokens_per_batch=tokens_per_batch, min_subjects_per_batch=min_subjects_per_batch, num_proc=num_proc
     )
