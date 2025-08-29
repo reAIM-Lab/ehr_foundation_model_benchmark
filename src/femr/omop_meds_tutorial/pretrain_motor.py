@@ -156,7 +156,7 @@ def main():
     )
 
     # print(f"Transformer config: {transformer_config}")
-    model = femr.models.transformer.FEMRModel(args.linear_interpolation,config,attn_implementation="flash_attention_2")
+    model = femr.models.transformer.FEMRModel(config,attn_implementation="flash_attention_2",linear_interpolation=args.linear_interpolation)
     model = model.to(torch.device("cuda:0"))
 
 

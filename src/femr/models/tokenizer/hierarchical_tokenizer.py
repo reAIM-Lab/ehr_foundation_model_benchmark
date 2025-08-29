@@ -7,14 +7,13 @@ import functools
 import math
 import os
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Set, Tuple, Union
-import meds
 
 import meds_reader
 import msgpack
 import numpy as np
 import transformers
 import pyarrow as pa
-
+import meds
 import femr.ontology
 import femr.stat_utils
 import femr.pat_utils
