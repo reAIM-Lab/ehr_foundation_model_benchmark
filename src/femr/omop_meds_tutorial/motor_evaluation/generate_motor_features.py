@@ -79,9 +79,11 @@ def create_arg_parser():
     return args
 
 
-
+# look inside root_dir and all its subfolders for files ending with .parquet
 def read_recursive_parquet(root_dir):
     all_files = glob.glob(os.path.join(root_dir, '**', '*.parquet'), recursive=True)
+    for file_path in all_files:
+        print(file_path)
     df = pd.concat((pd.read_parquet(f) for f in all_files), ignore_index=True)
     return df
 
@@ -111,6 +113,7 @@ def main():
             if os.path.isdir(args.cohort_dir):
                 label_name = os.path.basename(os.path.normpath(args.cohort_dir))
                 print(f"label_name of cohort_dir: {label_name}")
+                # concatenate all parquet files into a whole and store
                 cohort = read_recursive_parquet(args.cohort_dir)
             else:
                 label_name = os.path.basename(os.path.splitext(args.cohort_dir)[0])
@@ -132,6 +135,7 @@ def main():
             )
             labels = [label_name]
 
+        # eg: label_name=inhospital_mortality
         for label_name in labels:
             motor_features_name = get_motor_features_name(label_name, args.observation_window)
             feature_output_path = features_path / f"{motor_features_name}.pkl"
@@ -149,6 +153,7 @@ def main():
                 pretraining_data / "labels" / (label_name + '.parquet')
             )
             print(f"labels: {labels.head()}")
+            # 
             typed_labels = [
                 meds.Label(
                     subject_id=label["subject_id"],
@@ -160,19 +165,37 @@ def main():
             print(f"typed_labels length: {len(typed_labels)}")
             total_flops = femr.models.transformer.TotalFlops()
             start_time: datetime.datetime = datetime.datetime.now()
-            features = femr.models.transformer.compute_features(
-                db=database,
-                model_path=args.model_path,
-                labels=typed_labels,
-                ontology=ontology,
-                device=torch.device(args.device),
-                tokens_per_batch=args.tokens_per_batch,
-                num_proc=args.num_proc,
-                observation_window=args.observation_window,
-                min_subjects_per_batch=args.min_subjects_per_batch,
-                use_linear_interpolation=args.use_linear_interpolation,
-                # total_flops=None
-            )
+            if os.path.basename(pretraining_data) == "motor_mimic_bin_8_start_idx_corrected" or  os.path.basename(pretraining_data) == "motor_mimic_bin_8_linear_interpolation":
+                print("load from start_idx or interpolation")
+                features = femr.models.transformer_linear_interpolation.compute_features(
+                    db=database,
+                    model_path=args.model_path,
+                    labels=typed_labels,
+                    ontology=ontology,
+                    device=torch.device(args.device),
+                    tokens_per_batch=args.tokens_per_batch,
+                    num_proc=args.num_proc,
+                    observation_window=args.observation_window,
+                    min_subjects_per_batch=args.min_subjects_per_batch,
+                    use_linear_interpolation=args.use_linear_interpolation,
+                    # total_flops=None
+                )
+            else:
+                print("load from normal model")
+                features = femr.models.transformer.compute_features(
+                    db=database,
+                    model_path=args.model_path,
+                    labels=typed_labels,
+                    ontology=ontology,
+                    device=torch.device(args.device),
+                    tokens_per_batch=args.tokens_per_batch,
+                    num_proc=args.num_proc,
+                    observation_window=args.observation_window,
+                    min_subjects_per_batch=args.min_subjects_per_batch,
+                    use_linear_interpolation=args.use_linear_interpolation,
+                    # total_flops=None
+                )
+
             with open(feature_output_path, 'wb') as f:
                 pickle.dump(features, f)
 

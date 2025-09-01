@@ -1,0 +1,19 @@
+Using configuration:
+  COHORT_BASE_DIR: /data/processed_datasets/processed_datasets/mimic/phenotype_task/
+  PRETRAINING_DATA: /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8_start_idx_corrected
+  OMOP_MEDS_READER: /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader
+  NUM_PROC: 100
+  TOKENS_PER_BATCH: 65536
+  OBSERVATION_WINDOW: Not specified
+  USE_LINEAR_INTERPOLATION: false
+
+Discovering prediction tasks...
+[1] Found task: celiac
+[2] Found task: masld
+[3] Found task: stroke
+Found 3 prediction tasks.
+[1/3] Processing task: celiac
+cohort_base_dir: /data/processed_datasets/processed_datasets/mimic/phenotype_task/
+Task directory: /data/processed_datasets/processed_datasets/mimic/phenotype_task/celiac/
+Running MOTOR feature generation for celiac...
+Executing command: python -u -m femr.omop_meds_tutorial.motor_evaluation.generate_motor_features       --pretraining_data "/data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8_start_idx_corrected"       --model_path "/data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8_start_idx_corrected/output/best_321968"       --meds_reader "/data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader"       --num_proc "100"       --tokens_per_batch "65536"       --device "cuda:0"       --min_subjects_per_batch "8"       --cohort_dir "/data/processed_datasets/processed_datasets/mimic/phenotype_task/celiac/"       --ontology_path "/data/processed_datasets/processed_datasets/zj2398/femr/mimic/ontology.pkl"

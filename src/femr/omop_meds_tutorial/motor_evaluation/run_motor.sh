@@ -202,7 +202,7 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     echo "Running MOTOR feature generation for $TASK_NAME..."
 
     # Build the command with conditional observation_window parameter
-    GENERATE_CMD="python -u -m femr.omop_meds_tutorial.generate_motor_features \
+    GENERATE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.generate_motor_features \
       --pretraining_data \"$PRETRAINING_DATA\" \
       --model_path \"$MODEL_PATH\" \
       --meds_reader \"$OMOP_MEDS_READER\" \
@@ -239,7 +239,7 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     echo "Running MOTOR fine-tuning for $TASK_NAME..."
 
     # Build the command with conditional observation_window parameter
-    FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.finetune_motor \
+    FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.finetune_motor \
       --pretraining_data \"$PRETRAINING_DATA\" \
       --meds_reader \"$OMOP_MEDS_READER\" \
       --cohort_label \"$TASK_NAME\" \
@@ -319,5 +319,19 @@ echo "All tasks processed."
 #   --ontology_path       /data/processed_datasets/processed_datasets/zj2398/femr/mimic/ontology.pkl \
 #   --main_split_path     /data/processed_datasets/processed_datasets/zj2398/femr/mimic/main_split.csv \
 #   /data/processed_datasets/processed_datasets/mimic/mimic_3.1/patient_outcome_tasks/
+
+#phenotype
+# export CUDA_VISIBLE_DEVICES=0
+# bash run_motor.sh \
+#   --pretraining_data   /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8_start_idx_corrected \
+#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --num_proc           100 \
+#   --model_path         /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8_start_idx_corrected/output/best_321968 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /data/processed_datasets/processed_datasets/zj2398/femr/mimic/ontology.pkl \
+#   --main_split_path     /data/processed_datasets/processed_datasets/zj2398/femr/mimic/main_split.csv \
+#   /data/processed_datasets/processed_datasets/mimic/phenotype_task/
 
 

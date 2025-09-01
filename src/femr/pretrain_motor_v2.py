@@ -12,7 +12,7 @@ import wandb
 import femr.models.tokenizer
 import femr.models.processor
 import femr.transformer_v2 as femr_transformer  # Use the new transformer module
-from femr.omop_meds_tutorial.generate_labels import create_omop_meds_tutorial_arg_parser
+from src.femr.omop_meds_tutorial.motor_evaluation.generate_labels import create_omop_meds_tutorial_arg_parser
 
 
 class CustomEarlyStoppingCallback(transformers.EarlyStoppingCallback):
