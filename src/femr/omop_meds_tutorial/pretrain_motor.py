@@ -232,7 +232,7 @@ if __name__ == "__main__":
 
 '''
 40 hours
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=6
 
 python pretrain_motor.py \
   --pretraining_data /user/zj2398/cache/motor_mimic \

@@ -11,7 +11,7 @@ import meds_reader
 import numpy as np
 import torch.utils.data
 
-import femr.models.tokenizer
+import femr.models_tpp.tokenizer
 import femr.pat_utils
 import logging
 logger = logging.getLogger(__name__)
@@ -88,7 +88,7 @@ def map_preliminary_batch_stats(
 class BatchCreator:
     """The BatchCreator is designed to generate batches from subject data."""
 
-    def __init__(self, tokenizer: femr.models.tokenizer.FEMRTokenizer, task: Optional[femr.models.tasks.Task] = None):
+    def __init__(self, tokenizer: femr.models_tpp.tokenizer.FEMRTokenizer, task: Optional[femr.models_tpp.tasks.Task] = None):
         """Initialize a BatchCreator, with a tokenizer, and optionally a task."""
         self.tokenizer = tokenizer
         self.task = task
@@ -101,7 +101,7 @@ class BatchCreator:
 
         if False:
             self.tokens = []
-        elif isinstance(self.tokenizer, femr.models.tokenizer.HierarchicalTokenizer):
+        elif isinstance(self.tokenizer, femr.models_tpp.tokenizer.HierarchicalTokenizer):
             self.hierarchical_tokens = []
             self.hierarchical_weights = []
             self.token_indices = [0]
@@ -238,7 +238,7 @@ class BatchCreator:
             if False:
                 assert len(features) == 1
                 per_subject_tokens.append(features[0])
-            elif isinstance(self.tokenizer, femr.models.tokenizer.HierarchicalTokenizer):
+            elif isinstance(self.tokenizer, femr.models_tpp.tokenizer.HierarchicalTokenizer):
                 assert weights is not None
                 per_subject_hierarchical_tokens.extend(features)
                 per_subject_hierarchical_weights.extend(weights)
@@ -300,7 +300,7 @@ class BatchCreator:
         if False: #not self.tokenizer.is_hierarchical:
             # Easy for simple tokenizer
             self.tokens.extend(per_subject_tokens[offset : offset + length_to_add])
-        elif isinstance(self.tokenizer, femr.models.tokenizer.HierarchicalTokenizer):
+        elif isinstance(self.tokenizer, femr.models_tpp.tokenizer.HierarchicalTokenizer):
             # Hierarchical tokenizer is more complex since we have to shift the indices as well
             # Remember, these arrays are all designed for PyTorch EmbeddingBag
 
@@ -376,7 +376,7 @@ class BatchCreator:
         if False: #not self.tokenizer.is_hierarchical:
             # For a single tokenizer, these are simple the token indices
             transformer["tokens"] = np.array(self.tokens, dtype=token_dtype)
-        elif isinstance(self.tokenizer, femr.models.tokenizer.HierarchicalTokenizer):
+        elif isinstance(self.tokenizer, femr.models_tpp.tokenizer.HierarchicalTokenizer):
             # See PyTorch's EmbeddingBag for what these numpy arrays mean.
             transformer["hierarchical_tokens"] = np.array(self.hierarchical_tokens, dtype=token_dtype)
             transformer["hierarchical_weights"] = np.array(self.hierarchical_weights, dtype=np.float16)

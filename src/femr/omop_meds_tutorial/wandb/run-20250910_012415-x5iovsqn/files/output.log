@@ -1,0 +1,109 @@
+[34m[1mwandb[0m: [33mWARNING[0m Serializing object of type ndarray that is 102560 bytes
+[34m[1mwandb[0m: [33mWARNING[0m Serializing object of type ndarray that is 423632 bytes
+  0%|                                                                                                                                             | 0/670750 [00:00<?, ?it/s]Could not estimate the number of tokens of the input, floating-point operations will not be computed
+  2%|██▌                                                                                                                          | 13415/670750 [36:11<216:47:32,  1.19s/it]Traceback (most recent call last):
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.2442, 'grad_norm': 0.07032450288534164, 'learning_rate': 9.807325624766879e-06, 'epoch': 1.0}
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor_tpp.py", line 227, in <module>                                                             
+{'eval_loss': 0.2209392637014389, 'eval_runtime': 139.1724, 'eval_samples_per_second': 14.91, 'eval_steps_per_second': 4.972, 'epoch': 1.0}
+    main()
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor_tpp.py", line 220, in main
+    train_result = trainer.train(resume_from_checkpoint=args.checkpoint_dir)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 2237, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 2694, in _inner_training_loop
+    self._maybe_log_save_evaluate(
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 3140, in _maybe_log_save_evaluate
+    self._save_checkpoint(model, trial)
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 3237, in _save_checkpoint
+    self.save_model(output_dir, _internal_call=True)
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 3980, in save_model
+    self._save(output_dir)
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 4084, in _save
+    self.model.save_pretrained(
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/modeling_utils.py", line 3864, in save_pretrained
+    model_to_save.config.save_pretrained(save_directory)
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/configuration_utils.py", line 477, in save_pretrained
+    self.to_json_file(output_config_file, use_diff=True)
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/configuration_utils.py", line 980, in to_json_file
+    writer.write(self.to_json_string(use_diff=use_diff))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/configuration_utils.py", line 966, in to_json_string
+    return json.dumps(config_dict, indent=2, sort_keys=True) + "\n"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type ndarray is not JSON serializable
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor_tpp.py", line 227, in <module>
+[rank0]:     main()
+[rank0]:   File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor_tpp.py", line 220, in main
+[rank0]:     train_result = trainer.train(resume_from_checkpoint=args.checkpoint_dir)
+[rank0]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 2237, in train
+[rank0]:     return inner_training_loop(
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 2694, in _inner_training_loop
+[rank0]:     self._maybe_log_save_evaluate(
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 3140, in _maybe_log_save_evaluate
+[rank0]:     self._save_checkpoint(model, trial)
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 3237, in _save_checkpoint
+[rank0]:     self.save_model(output_dir, _internal_call=True)
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 3980, in save_model
+[rank0]:     self._save(output_dir)
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 4084, in _save
+[rank0]:     self.model.save_pretrained(
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/modeling_utils.py", line 3864, in save_pretrained
+[rank0]:     model_to_save.config.save_pretrained(save_directory)
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/configuration_utils.py", line 477, in save_pretrained
+[rank0]:     self.to_json_file(output_config_file, use_diff=True)
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/configuration_utils.py", line 980, in to_json_file
+[rank0]:     writer.write(self.to_json_string(use_diff=use_diff))
+[rank0]:                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/configuration_utils.py", line 966, in to_json_string
+[rank0]:     return json.dumps(config_dict, indent=2, sort_keys=True) + "\n"
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/__init__.py", line 238, in dumps
+[rank0]:     **kw).encode(obj)
+[rank0]:           ^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 202, in encode
+[rank0]:     chunks = list(chunks)
+[rank0]:              ^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 432, in _iterencode
+[rank0]:     yield from _iterencode_dict(o, _current_indent_level)
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+[rank0]:     yield from chunks
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+[rank0]:     yield from chunks
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+[rank0]:     yield from chunks
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 439, in _iterencode
+[rank0]:     o = _default(o)
+[rank0]:         ^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/json/encoder.py", line 180, in default
+[rank0]:     raise TypeError(f'Object of type {o.__class__.__name__} '
+[rank0]: TypeError: Object of type ndarray is not JSON serializable

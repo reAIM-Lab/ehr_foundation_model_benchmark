@@ -27,7 +27,7 @@ export PYTHONUNBUFFERED=1
 
 if [[ "${USE_PIPELINE_FALLBACK:-0}" -eq 1 ]]; then
   # Portable fallback: pipe stdout+stderr into tee
-  python -u prepare_motor_old.py \
+  python -u prepare_motor.py \
     --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/cumc/bin_8_chao \
     --athena_path " " \
     --num_threads 32 \
@@ -36,7 +36,7 @@ if [[ "${USE_PIPELINE_FALLBACK:-0}" -eq 1 ]]; then
   exit ${PIPESTATUS[0]}
 else
   # Normal path (exec already redirected both stdout/stderr through tee)
-  python -u prepare_motor_old.py \
+  python -u prepare_motor.py \
     --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/cumc/bin_8_chao \
     --athena_path " " \
     --num_threads 32 \

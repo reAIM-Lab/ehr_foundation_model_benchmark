@@ -3,7 +3,7 @@ from __future__ import annotations
 import collections
 import math
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 from dataclasses import dataclass
 
 import meds
@@ -17,12 +17,12 @@ from torch import nn
 from tqdm import tqdm
 from torch.profiler import ProfilerActivity, profile
 
-import femr.models.config
-import femr.models.processor
-import femr.models.rmsnorm
-import femr.models.tasks
-import femr.models.tokenizer
-import femr.models.xformers
+import femr.models_tpp.config
+import femr.models_tpp.processor
+import femr.models_tpp.rmsnorm
+import femr.models_tpp.tasks
+import femr.models_tpp.tokenizer
+import femr.models_tpp.xformers
 
 
 @dataclass(frozen=False)
@@ -81,10 +81,10 @@ def apply_rotary_pos_emb(x, sincos):
 
 
 class FEMREncoderLayer(nn.Module):
-    def __init__(self, config: femr.models.config.FEMRTransformerConfig):
+    def __init__(self, config: femr.models_tpp.config.FEMRTransformerConfig):
         super().__init__()
         self.config = config
-        self.norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
         if self.config.hidden_act == "swiglu":
             hidden_mult = 2
         else:
@@ -121,7 +121,7 @@ class FEMREncoderLayer(nn.Module):
         k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
         v = qkv[:, 2, :, :]
 
-        attn = femr.models.xformers.memory_efficient_attention_wrapper(
+        attn = femr.models_tpp.xformers.memory_efficient_attention_wrapper(
             q.unsqueeze(0),
             k.unsqueeze(0),
             v.unsqueeze(0),
@@ -143,12 +143,12 @@ class FEMREncoderLayer(nn.Module):
 
 
 class FEMRTransformer(nn.Module):
-    def __init__(self, config: femr.models.config.FEMRTransformerConfig):
+    def __init__(self, config: femr.models_tpp.config.FEMRTransformerConfig):
         super().__init__()
         self.config = config
 
-        self.in_norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
-        self.out_norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.in_norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.out_norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
 
         if not self.config.is_hierarchical:
             self.embed = nn.Embedding(self.config.vocab_size, self.config.hidden_size)
@@ -215,120 +215,138 @@ class MOTORTaskHead(nn.Module):
             hidden_size: int,
             linear_interpolation: bool,
             pretraining_task_info: List[Tuple[str, float]],
-            time_bins: np.ndarray,
+            non_numerical_task: List[str],
+            numerical_task: List[str],
+            value_bins: Union[np.ndarray, List],
+            non_numerical_task_time_bins: Union[np.ndarray, List],
+            numerical_task_time_bins: Union[np.ndarray, List],
             final_layer_size: int,
+            # num_value_bins: int = 10,
     ):
         super().__init__()
 
         # Handle both numpy array and list (from config deserialization)
-        if not isinstance(time_bins, np.ndarray):
-            time_bins = np.array(time_bins)
-        self.num_time_bins = time_bins.shape[1] - 1  # Each task has same number of bins
-        self.num_tasks = len(pretraining_task_info)
-        self.time_bins = time_bins  # Store time bins for potential debugging
+        if not isinstance(value_bins, np.ndarray):
+            value_bins = np.array(value_bins)
+        if not isinstance(non_numerical_task_time_bins, np.ndarray):
+            non_numerical_task_time_bins = np.array(non_numerical_task_time_bins)
+        if not isinstance(numerical_task_time_bins, np.ndarray):
+            numerical_task_time_bins = np.array(numerical_task_time_bins)
+            
+        assert value_bins.shape[0] == numerical_task_time_bins.shape[0], "no matching dimension for number of numerical tasks"
+        assert non_numerical_task_time_bins.shape[1] == numerical_task_time_bins.shape[1], "no matching dimension for time bins"
+
+        self.num_time_bins = numerical_task_time_bins.shape[1] - 1  # Each task has same number of bins
+        # self.time_bins = time_bins  # Store time bins for potential debugging
+        self.non_numerical_task_time_bins = non_numerical_task_time_bins
+        self.numerical_task_time_bins = numerical_task_time_bins
+        self.num_value_bins = value_bins.shape[1] - 1
+        self.value_bins = value_bins
+        
+        # Get task counts from input data structure - we'll determine from batch data
+        # For now, assume we'll get the correct task counts from the batch
+        self.numerical_tasks = numerical_task
+        self.non_numerical_tasks = non_numerical_task
 
         self.final_layer_size = final_layer_size
-        self.final_layer = nn.Linear(hidden_size, self.num_time_bins * final_layer_size)
 
-        self.task_layer = nn.Linear(self.final_layer_size, self.num_tasks)
+        # print(f"non_numerical_task: {len(non_numerical_task)}")
+        # print(f"numerical_task: {len(numerical_task)}")
+        # print(f"value_bins: {value_bins.shape}")
+        # print(f"non_numerical_task_time_bins: {non_numerical_task_time_bins.shape}")
+        # print(f"numerical_task_time_bins: {numerical_task_time_bins.shape}")
+        
+        # Original layer for non-numerical codes: time prediction only
+        self.non_numerical_final_layer = nn.Linear(hidden_size, self.num_time_bins * final_layer_size)
+        self.non_numerical_task_layer = nn.Linear(self.final_layer_size, len(self.non_numerical_tasks))  # All tasks initially
+
+        
+        # Additional layer for numerical codes: time × value prediction
+        self.numerical_final_layer = nn.Linear(hidden_size, self.num_time_bins * self.num_value_bins * final_layer_size)
+        self.numerical_task_layer = nn.Linear(self.final_layer_size, len(self.numerical_tasks))
+        # We'll determine the actual number of numerical tasks from batch data
+        # self.numerical_task_layer = nn.Linear(self.final_layer_size, num_numerical_tasks).to(features.device)
+        
         self.softmax = nn.Softmax(dim=1)
-        start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info], dtype=torch.float32))
-        self.task_layer.bias.data = start_bias
-
-      
-        self.norm = femr.models.rmsnorm.RMSNorm(self.final_layer_size)
+        self.norm = femr.models_tpp.rmsnorm.RMSNorm(self.final_layer_size)
         self.linear_interpolation = linear_interpolation
+        self.H_t  = math.log(self.num_time_bins)
+        self.H_tv = math.log(self.num_time_bins * self.num_value_bins)
+        
+        # Set initial biases
+        non_numerical_start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info if a[0] in self.non_numerical_tasks], dtype=torch.float32))
+        numerical_start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info if a[0] in self.numerical_tasks], dtype=torch.float32))
+        assert len(non_numerical_start_bias)+len(numerical_start_bias) == len(pretraining_task_info), f"the length of non_numerical, numerical and all are: {len(non_numerical_start_bias)},{len(numerical_start_bias)},{len(pretraining_task_info)}"
+
+        self.non_numerical_task_layer.bias.data = non_numerical_start_bias
+        self.numerical_task_layer.bias.data = numerical_start_bias
 
     def forward(self, features: torch.Tensor, batch: Mapping[str, torch.Tensor], return_logits=False):
         """
-        MOTOR Task Head Forward Pass with Event-Specific Time Bins
+        Efficient MOTOR Task Head Forward Pass
         
-        Key design principles:
-        1. Each event type has its own time discretization (task-specific time bins)
-        2. For each prediction point and task: exactly ONE time bin is marked as True in is_event
-        3. The marked bin represents either:
-           - An event occurring in that interval (is_censored=False): use f() = time_dependent_logits
-           - Censoring occurring in that interval (is_censored=True): use 1-F() = integrated_logits
-        4. Loss is calculated only for marked bins using appropriate likelihood function
+        Architecture follows original approach:
+        1. Non-numerical codes: prediction_points × time_bins × non_numerical_tasks  
+        2. Numerical codes: prediction_points × time_bins × value_bins × numerical_tasks
+        3. Probability sum over time_bins × value_bins = 1 for numerical codes
+        4. New loss = mean loss for non-numerical + mean loss for numerical codes
         """
-        # (num_predictions, hidden_size) -> (num_predictions, num_time_bins, final_layer_size)
-        time_independent_features = self.final_layer(features).reshape(
+        eps = 1e-8
+        total_loss = torch.tensor(0.0, device=features.device)
+        loss_count = 0
+        result = {}
+        
+        # ========== NON-NUMERICAL CODES (Original Logic) ==========
+            # Time-dependent features for non-numerical codes
+        time_independent_features = self.non_numerical_final_layer(features).reshape(
             features.shape[0], self.num_time_bins, self.final_layer_size
         )
-
-        # take the softmaxof the logits over the time bins, assume indenpendence between different event types conditional previous embeddings
-        # time_dependent_logits: prediction_points*time_bins *event_types  [716, 8, 6100]
         
-        # OPTION 1: Original approach without sigmoid (recommended)
-        # This is numerically more stable than sigmoid + softmax
-        task_logits = self.task_layer(self.norm(time_independent_features))
-        
-        # Clamp logits to prevent overflow in softmax
-        # task_logits = torch.clamp(task_logits, min=-50, max=50)
-        
+        # Non-numerical task logits: [prediction_points, time_bins, non_numerical_tasks]
+        task_logits = self.non_numerical_task_layer(self.norm(time_independent_features))
         time_dependent_logits = self.softmax(task_logits)
         
-        # OPTION 2: If you want sigmoid, use it INSTEAD of softmax, not both
-        # Uncomment this block and comment out the above if you prefer sigmoid approach
-        # task_logits = self.task_layer(self.norm(time_independent_features))
-        # task_logits = torch.clamp(task_logits, min=-50, max=50)  # prevent overflow
-        # time_dependent_logits = torch.sigmoid(task_logits)
-        # # Normalize along time dimension to ensure probabilities sum to 1 over time
-        # time_dependent_logits = time_dependent_logits / torch.sum(time_dependent_logits, dim=1, keepdim=True)
-        
-        # Debug: Check for NaN/inf values
+        # Debug: Check for NaN/inf values  
         if torch.any(torch.isnan(time_dependent_logits)) or torch.any(torch.isinf(time_dependent_logits)):
             print(f"ERROR: NaN/inf detected in time_dependent_logits")
-            print(f"  NaN count: {torch.sum(torch.isnan(time_dependent_logits))}")
-            print(f"  Inf count: {torch.sum(torch.isinf(time_dependent_logits))}")
-            print(f"  Raw logits stats - min: {torch.min(task_logits)}, max: {torch.max(task_logits)}")
             raise ValueError("NaN/inf detected in time_dependent_logits")
-            
-        assert torch.allclose(sum(time_dependent_logits[0,:,0]), torch.tensor(1.0), atol=1e-1), f" time_dependent_logits: {time_dependent_logits[0,:,0]}"
-        #
-        # integrated_logits = 1 - torch.cumsum(time_dependent_logits, dim=1)
+        
+        # Verify probability sums to 1 over time bins
+        prob_sums = torch.sum(time_dependent_logits, dim=1)  # Sum over time bins
+        assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-2), f"Probability sums: {prob_sums[0]}"
+        
+        # Calculate CDF for survival analysis
         cdf = torch.cumsum(time_dependent_logits, dim=1)
         integrated_logits = torch.cat([torch.ones_like(time_dependent_logits[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
-        # Verify input shapes match our expectations
-        assert (
-                batch["is_event"].shape == time_dependent_logits.shape
-        ), f"Shape mismatch: time_dependent_logits {time_dependent_logits.shape} vs is_event {batch['is_event'].shape}"
         
-        # Add numerical stability - clamp values to prevent log(0)
-        eps = 1e-8
+        # Add numerical stability
         time_dependent_logits_stable = torch.clamp(time_dependent_logits, min=eps, max=1.0-eps)
         integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
         
-
-        # Validate that exactly one bin per prediction-task combination is True
-        labels_sum = torch.sum(batch["is_event"], dim=1)  # Sum along time bins dimension [prediction_points, tasks]
-        if not torch.all(labels_sum == 1):
-            print(f"ERROR: Expected exactly 1 True bin per prediction-task combination")
-            print(f"  Found {torch.sum(labels_sum != 1)} invalid combinations")
-            print(f"  Labels sum range: {torch.min(labels_sum)} to {torch.max(labels_sum)}")
-            
-        # Calculate loss only for the marked bins
-        # For each prediction point and task, exactly one bin should be True
-        # Use f() for events, 1-F() for censoring
-        
-        # Get the marked bins: where is_event is True
-        marked_bins = batch["is_event"]  # [prediction_points, time_bins, tasks]
-        
-        # For event cases: use f() = time_dependent_logits
-        # For censoring cases: use 1-F() = integrated_logits  
-        # is_censored has shape [prediction_points, tasks], need to expand to match marked_bins
-        is_censored_expanded = batch["is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)  # [prediction_points, time_bins, tasks]
-        
+        # Linear interpolation adjustment if enabled
         if self.linear_interpolation:
-            censor_time_ratio = batch["censor_time_ratio"]
+            censor_time_ratio = batch["non_numerical_censor_time_ratio"]
+            is_censored_expanded = batch["non_numerical_is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)
             integrated_logits_stable = torch.where(
                 is_censored_expanded,
                 integrated_logits_stable - (censor_time_ratio * time_dependent_logits_stable),
-                integrated_logits_stable  # No adjustment where not censored
+                integrated_logits_stable
             )
             integrated_logits_stable = torch.clamp(integrated_logits_stable, min=eps, max=1.0-eps)
-
-        # Select the appropriate probability based on event vs censoring
+        
+        # Verify input shapes match expectations
+        assert batch["non_numerical_is_event"].shape == time_dependent_logits.shape, \
+            f"Shape mismatch: time_dependent_logits {time_dependent_logits.shape} vs is_event {batch['non_numerical_is_event'].shape}"
+        
+        # Validate exactly one bin per prediction-task combination
+        labels_sum = torch.sum(batch["non_numerical_is_event"], dim=1)
+        assert torch.all(labels_sum == 1), f"Expected exactly 1 True bin per prediction-task combination"
+        
+        # Loss calculation for non-numerical codes
+        marked_bins = batch["non_numerical_is_event"]
+        is_censored_expanded = batch["non_numerical_is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)
+        
+        # Select appropriate probabilities
         selected_probs = torch.where(
             is_censored_expanded,
             integrated_logits_stable,  # Use 1-F() for censoring
@@ -339,28 +357,121 @@ class MOTORTaskHead(nn.Module):
         loss_values = torch.where(
             marked_bins,
             torch.log(selected_probs),
-            torch.zeros_like(selected_probs)  # No contribution from unmarked bins
+            torch.zeros_like(selected_probs)
         )
         
-        # Average over all marked bins (should be exactly one per prediction-task combination)
         num_marked_bins = torch.sum(marked_bins)
         if num_marked_bins > 0:
-            loss = -torch.sum(loss_values) / num_marked_bins  # Negative log likelihood
+            non_numerical_loss = -torch.sum(loss_values) / (num_marked_bins*self.H_t)
+            total_loss += non_numerical_loss
+            loss_count += 1
         else:
-            loss = torch.tensor(0.0, device=marked_bins.device)
+            print("No non-numerical codes found in batch")
+        
+        if return_logits:
+            result["time_dependent_logits"] = time_dependent_logits
+        
+        # ========== NUMERICAL CODES (New Matrix-wise Logic) ==========  
+        if "numerical_time_event_bin" in batch:
+            # Get dimensions from batch data 
+            # print(batch.keys())
+            time_event_in_bin = batch["numerical_time_event_bin"]  # [pred_points, time_bins, numerical_tasks]
+            time_censor_in_bin = batch["numerical_time_censor_bin"]  # [pred_points, time_bins, numerical_tasks]  
+            value_event_in_bin = batch["numerical_value_event_bin"]  # [pred_points, value_bins, numerical_tasks]
+            numerical_is_censored = batch["numerical_is_censored"]  # [pred_points, numerical_tasks]
+            
+            batch_size, _, num_numerical_tasks = time_event_in_bin.shape
+            # _, value_bins, _ = value_event_in_bin.shape
+            
+            # print(f"time bins is {self.num_time_bins}")
+            # print(f"value bins is {self.num_value_bins}")
+            # Time-value features: [pred_points, time_bins, value_bins, final_layer_size]
+            numerical_features = self.numerical_final_layer(features).reshape(
+                batch_size, self.num_time_bins*self.num_value_bins, self.final_layer_size
+            )
+            
+            # Numerical task logits: [pred_points, time_bins, value_bins, numerical_tasks]
+            numerical_task_logits = self.numerical_task_layer(self.norm(numerical_features))
+            
+            # Normalize over time_bins × value_bins to ensure probability sum = 1
+            # numerical_logits_flat = numerical_task_logits.reshape(batch_size, time_bins * value_bins, num_numerical_tasks)
+            numerical_probs_flat = self.softmax(numerical_task_logits)
+            numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
+            numerical_probs = torch.clamp(numerical_probs, min=eps, max=1.0-eps)
+            
+            # Verify probability sums to 1 over time_bins × value_bins
+            prob_sums = torch.sum(numerical_probs, dim=(1, 2))  # Sum over time and value bins
+            assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-2), f"Numerical probability sums: {prob_sums[0]}"
+            
+            # === MATRIX-WISE LOSS COMPUTATION (NO NESTED LOOPS) ===
+            
+            # Case 1: Censored cases - sum over value bins, only predict time
+            # Use time_censor_in_bin directly for censored events
+            numerical_loss = torch.tensor(0.0, device=features.device)
+            num_numerical_losses = 0
+
+            if torch.any(time_censor_in_bin):
+                # Sum probabilities over value bins: [pred_points, time_bins, numerical_tasks]
+                time_only_probs = torch.sum(numerical_probs, dim=2)
+                cdf = torch.cumsum(time_only_probs, dim=1)
+                integrated_logits = torch.cat([torch.ones_like(time_only_probs[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
+                integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
+
+                # Censored loss using matrix operations
+                # it is 1-F at censor positions otherwise
+                censored_loss_values = torch.where(
+                    time_censor_in_bin,
+                    torch.log(integrated_logits_stable),
+                    torch.zeros_like(time_only_probs)
+                )
+                
+                censored_count = torch.sum(time_censor_in_bin)
+                if censored_count > 0:
+                    censored_loss = -torch.sum(censored_loss_values) / (censored_count*self.H_t)
+                    numerical_loss += censored_loss
+                    num_numerical_losses += 1
+            # Case 2: Event cases - predict both time and value using outer product
+            # Construct event_bins = time_event_in_bin ⊗ value_event_in_bin (outer product)  
+            if torch.any(time_event_in_bin) and torch.any(value_event_in_bin):
+                # Matrix-wise outer product: [pred_points, time_bins, numerical_tasks] ⊗ [pred_points, value_bins, numerical_tasks]
+                # Result: [pred_points, time_bins, value_bins, numerical_tasks]
+                event_bins = time_event_in_bin.unsqueeze(2) & value_event_in_bin.unsqueeze(1)
+                
+                # Event loss using matrix operations  
+                event_loss_values = torch.where(
+                    event_bins,
+                    torch.log(numerical_probs),
+                    torch.zeros_like(numerical_probs)
+                )
+                
+                event_count = torch.sum(event_bins)
+                if event_count > 0:
+                    event_loss = -torch.sum(event_loss_values) / (event_count*self.H_tv)
+                    numerical_loss += event_loss
+                    num_numerical_losses += 1
+            
+            if return_logits:
+                result["value_dependent_logits"] = numerical_probs
+            if num_numerical_losses < 2:
+                print(f"censor cases are {torch.any(time_censor_in_bin)}")
+                print(f"event cases are {torch.any(time_event_in_bin) and torch.any(value_event_in_bin)}")
+
+            loss_count += 1
+            numerical_loss_mean = numerical_loss / num_numerical_losses
+            total_loss += numerical_loss_mean
+        else:
+            print("No numerical codes found in batch")
+        # Final loss: mean of non-numerical and numerical losses
+        # print(f"ratio {non_numerical_loss/numerical_loss}, non_numerical_loss is {non_numerical_loss} : numerical loss is {numerical_loss}, censor {censored_loss}, event {event_loss}")
+        loss = total_loss / loss_count
         
         # Debug: Check for issues
         if torch.isnan(loss) or torch.isinf(loss):
             print(f"WARNING: NaN/inf detected in final loss: {loss}")
-            print(f"  num_marked_bins: {num_marked_bins}")
-            print(f"  time_dependent_logits range: {torch.min(time_dependent_logits_stable)} to {torch.max(time_dependent_logits_stable)}")
-            print(f"  integrated_logits range: {torch.min(integrated_logits_stable)} to {torch.max(integrated_logits_stable)}")
-            print(f"  selected_probs range: {torch.min(selected_probs[marked_bins])} to {torch.max(selected_probs[marked_bins])}")
+            print(f"  num_losses: {loss_count}")
+            print(f"  total_loss: {total_loss}")
 
-        if not return_logits:
-            time_dependent_logits = None
-
-        return loss, {"time_dependent_logits": time_dependent_logits}
+        return loss, result
 
 
 def remove_first_dimension(data: Any) -> Any:
@@ -379,9 +490,9 @@ def remove_first_dimension(data: Any) -> Any:
 
 
 class FEMRModel(transformers.PreTrainedModel):
-    config_class = femr.models.config.FEMRModelConfig
+    config_class = femr.models_tpp.config.FEMRModelConfig
     
-    def __init__(self, config: femr.models.config.FEMRModelConfig, **kwargs):
+    def __init__(self, config: femr.models_tpp.config.FEMRModelConfig, **kwargs):
         # Extract linear_interpolation from kwargs, default to False
         self.linear_interpolation = kwargs.pop('linear_interpolation', False)
         
@@ -479,7 +590,6 @@ def compute_features(
         observation_window: Optional[int] = None,
         min_subjects_per_batch: int = 1,
         total_flops: TotalFlops = None,
-        use_linear_interpolation: bool = False,
 ) -> Dict[str, np.ndarray]:
     """ "Compute features for a set of labels given a dataset and a model.
 
@@ -499,20 +609,19 @@ def compute_features(
          -  "subject_ids" and "feature_times" define the subject and time each feature refers to
          -  "features" provides the representations at each subject id and feature time
     """
-    task = femr.models.tasks.LabeledSubjectTask(labels, observation_window)
+    task = femr.models_tpp.tasks.LabeledSubjectTask(labels, observation_window)
 
     print(f"Loading model from {model_path}")
-    print(f"use_linear_interpolation: {use_linear_interpolation}")
+    # print(f"use_linear_interpolation: {use_linear_interpolation}")
     
     # Use the new from_pretrained method that supports linear_interpolation
-    model = femr.models.transformer.FEMRModel.from_pretrained(
+    model = femr.models_tpp.transformer.FEMRModel.from_pretrained(
         model_path, 
         task_config=task.get_task_config(),
-        linear_interpolation=use_linear_interpolation
     )
 
-    tokenizer = femr.models.tokenizer.HierarchicalTokenizer.from_pretrained(model_path, ontology=ontology)
-    processor = femr.models.processor.FEMRBatchProcessor(tokenizer, task=task)
+    tokenizer = femr.models_tpp.tokenizer.HierarchicalTokenizer.from_pretrained(model_path, ontology=ontology)
+    processor = femr.models_tpp.processor.FEMRBatchProcessor(tokenizer, task=task)
 
     filtered_data = db.filter(list(task.label_map.keys()))
 

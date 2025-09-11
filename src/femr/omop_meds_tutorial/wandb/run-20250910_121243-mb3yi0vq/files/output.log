@@ -1,0 +1,177 @@
+  0%|                                                                                                                                                               | 0/670750 [00:00<?, ?it/s]Could not estimate the number of tokens of the input, floating-point operations will not be computed
+  5%|██████▉                                                                                                                                       | 32956/670750 [1:27:18<37:47:47,  4.69it/s]
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.2442, 'grad_norm': 0.0781257227063179, 'learning_rate': 9.807325624766879e-06, 'epoch': 1.0}
+                                                                                                                                                                                               
+{'eval_loss': 0.22099703550338745, 'eval_runtime': 137.9643, 'eval_samples_per_second': 15.04, 'eval_steps_per_second': 5.016, 'epoch': 1.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.2147, 'grad_norm': 0.09947632998228073, 'learning_rate': 9.607176426706453e-06, 'epoch': 2.0}
+{'eval_loss': 0.21150390803813934, 'eval_runtime': 143.9647, 'eval_samples_per_second': 14.413, 'eval_steps_per_second': 4.807, 'epoch': 2.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.2068, 'grad_norm': 0.0888502225279808, 'learning_rate': 9.407027228646028e-06, 'epoch': 3.0}
+{'eval_loss': 0.20459264516830444, 'eval_runtime': 127.672, 'eval_samples_per_second': 16.253, 'eval_steps_per_second': 5.42, 'epoch': 3.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.2015, 'grad_norm': 0.08128245174884796, 'learning_rate': 9.206878030585604e-06, 'epoch': 4.0}
+{'eval_loss': 0.20077604055404663, 'eval_runtime': 140.7617, 'eval_samples_per_second': 14.741, 'eval_steps_per_second': 4.916, 'epoch': 4.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.1974, 'grad_norm': 0.14877869188785553, 'learning_rate': 9.006728832525178e-06, 'epoch': 5.0}
+{'eval_loss': 0.19766481220722198, 'eval_runtime': 172.577, 'eval_samples_per_second': 12.024, 'eval_steps_per_second': 4.01, 'epoch': 5.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.1942, 'grad_norm': 0.18339328467845917, 'learning_rate': 8.806579634464753e-06, 'epoch': 6.0}
+{'eval_loss': 0.19556625187397003, 'eval_runtime': 135.1008, 'eval_samples_per_second': 15.359, 'eval_steps_per_second': 5.122, 'epoch': 6.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.1916, 'grad_norm': 0.1240287646651268, 'learning_rate': 8.606430436404327e-06, 'epoch': 7.0}
+{'eval_loss': 0.19394268095493317, 'eval_runtime': 138.3388, 'eval_samples_per_second': 14.999, 'eval_steps_per_second': 5.002, 'epoch': 7.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.1895, 'grad_norm': 0.12705552577972412, 'learning_rate': 8.406281238343902e-06, 'epoch': 8.0}
+{'eval_loss': 0.19254517555236816, 'eval_runtime': 148.49, 'eval_samples_per_second': 13.974, 'eval_steps_per_second': 4.66, 'epoch': 8.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.1876, 'grad_norm': 0.19365490972995758, 'learning_rate': 8.206132040283476e-06, 'epoch': 9.0}
+{'eval_loss': 0.19176991283893585, 'eval_runtime': 138.8133, 'eval_samples_per_second': 14.948, 'eval_steps_per_second': 4.985, 'epoch': 9.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.1857, 'grad_norm': 0.21715566515922546, 'learning_rate': 8.005982842223052e-06, 'epoch': 10.0}
+{'eval_loss': 0.19148631393909454, 'eval_runtime': 132.1457, 'eval_samples_per_second': 15.702, 'eval_steps_per_second': 5.237, 'epoch': 10.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.184, 'grad_norm': 0.17436330020427704, 'learning_rate': 7.805833644162626e-06, 'epoch': 11.0}
+{'eval_loss': 0.1911413073539734, 'eval_runtime': 137.1457, 'eval_samples_per_second': 15.13, 'eval_steps_per_second': 5.046, 'epoch': 11.0}
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+censor cases are True
+event cases are False
+{'loss': 0.1823, 'grad_norm': 0.2917858958244324, 'learning_rate': 7.605684446102202e-06, 'epoch': 12.0}
+{'eval_loss': 0.19115681946277618, 'eval_runtime': 141.4167, 'eval_samples_per_second': 14.673, 'eval_steps_per_second': 4.893, 'epoch': 12.0}
+{'train_runtime': 25928.2555, 'train_samples_per_second': 77.608, 'train_steps_per_second': 25.869, 'train_loss': 0.19830207611436593, 'epoch': 12.0}
+***** train metrics *****
+  epoch                    =       12.0
+  total_flos               =        0GF
+  train_loss               =     0.1983
+  train_runtime            = 7:12:08.25
+  train_samples_per_second =     77.608
+  train_steps_per_second   =     25.869

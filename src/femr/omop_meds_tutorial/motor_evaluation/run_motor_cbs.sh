@@ -86,6 +86,10 @@ while [ $# -gt 0 ]; do
             USE_LINEAR_INTERPOLATION=true
             shift
             ;;
+        --task)
+            TASK_LIST="$2"
+            shift 2
+            ;;
         --min_subjects_per_batch)
             MIN_SUBJECTS_PER_BATCH="$2"
             shift 2
@@ -161,25 +165,25 @@ echo
 echo "Discovering prediction tasks..."
 TASK_COUNT=0
 
-for TASK_DIR in "$COHORT_BASE_DIR"*/; do
-    # Skip if not a directory
-    if [ ! -d "$TASK_DIR" ]; then
-        continue
-    fi
+# for TASK_DIR in "$COHORT_BASE_DIR"*/; do
+#     # Skip if not a directory
+#     if [ ! -d "$TASK_DIR" ]; then
+#         continue
+#     fi
 
-    # Extract task name (directory name)
-    TASK_NAME=$(basename "$TASK_DIR")
-    TASK_COUNT=$((TASK_COUNT + 1))
+#     # Extract task name (directory name)
+#     TASK_NAME=$(basename "$TASK_DIR")
+#     TASK_COUNT=$((TASK_COUNT + 1))
 
-    echo "[$TASK_COUNT] Found task: $TASK_NAME"
-done
+#     echo "[$TASK_COUNT] Found task: $TASK_NAME"
+# done
 
-if [ "$TASK_COUNT" -eq 0 ]; then
-    echo "No prediction tasks found in $COHORT_BASE_DIR"
-    exit 0
-fi
+# if [ "$TASK_COUNT" -eq 0 ]; then
+#     echo "No prediction tasks found in $COHORT_BASE_DIR"
+#     exit 0
+# fi
 
-echo "Found $TASK_COUNT prediction tasks."
+# echo "Found $TASK_COUNT prediction tasks."
 # echo
 
 # Process tasks
@@ -192,11 +196,24 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
 
     # Extract task name (directory name)
     TASK_NAME=$(basename "$TASK_DIR")
+
+    # Check if task list is specified and if current task is in the list
+    if [ -n "$TASK_LIST" ]; then
+        # Convert comma-separated list to array and check if task is in it
+        if ! echo ",$TASK_LIST," | grep -q ",$TASK_NAME,"; then
+            SKIPPED=$((SKIPPED + 1))
+            echo "[$SKIPPED skipped] Skipping task: $TASK_NAME (not in specified task list)"
+            continue
+        fi
+    fi
+
     CURRENT=$((CURRENT + 1))
 
     echo "[$CURRENT/$TASK_COUNT] Processing task: $TASK_NAME"
     echo "cohort_base_dir: $COHORT_BASE_DIR"
     echo "Task directory: $TASK_DIR"
+
+
 
     # Run the first command: generate MOTOR features
     echo "Running MOTOR feature generation for $TASK_NAME..."
@@ -308,4 +325,18 @@ echo "All tasks processed."
 #   --main_split_path     /user/zj2398/cache/motor_mimic_8k/main_split.csv \
 #   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
 
+
+# export CUDA_VISIBLE_DEVICES=5
+# bash run_motor_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           100 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output/best_160980 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --task "masld" \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
 

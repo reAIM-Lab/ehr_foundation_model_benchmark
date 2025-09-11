@@ -315,6 +315,7 @@ class MOTORTask(Task):
             codes_to_skip: List[str] = None,
     ) -> MOTORTask:
         tasks = []
+        # the vocab is ordered by entropy, the first codes has highest entropy
         for dict_entry in tokenizer.dictionary["vocab"]:
             if dict_entry["type"] == "code":
                 # Skip the codes that are in the codes_to_skip
@@ -642,4 +643,6 @@ class MOTORTask(Task):
         # sys.exit()
 
         return {"is_event": is_event, "is_censored": is_censored, "censor_time_ratio": censor_time_ratio}
+    
+    
 

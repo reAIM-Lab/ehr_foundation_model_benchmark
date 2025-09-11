@@ -1,0 +1,101 @@
+[34m[1mwandb[0m: [33mWARNING[0m Serializing object of type ndarray that is 102560 bytes
+[34m[1mwandb[0m: [33mWARNING[0m Serializing object of type ndarray that is 423632 bytes
+  0%|                                                                                                                                              | 0/670750 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor_tpp.py", line 227, in <module>
+    main()
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor_tpp.py", line 220, in main
+    train_result = trainer.train(resume_from_checkpoint=args.checkpoint_dir)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 2237, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 2532, in _inner_training_loop
+    batch_samples, num_items_in_batch = self.get_batch_samples(epoch_iterator, num_batches, args.device)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 5343, in get_batch_samples
+    batch_samples.append(next(epoch_iterator))
+                         ^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/accelerate/data_loader.py", line 567, in __iter__
+    current_batch = next(dataloader_iter)
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 701, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 1465, in _next_data
+    return self._process_data(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 1491, in _process_data
+    data.reraise()
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/_utils.py", line 715, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/_utils/worker.py", line 351, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/_utils/fetch.py", line 55, in fetch
+    return self.collate_fn(data)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models_tpp/processor.py", line 521, in collate
+    return {"batch": _add_dimension(self.creator.cleanup_batch(batches[0]))}
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models_tpp/processor.py", line 434, in cleanup_batch
+    batch["task"] = self.task.cleanup(batch["task"])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models_tpp/tasks.py", line 736, in cleanup
+    bins_dict = self._create_time_value_bins(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models_tpp/tasks.py", line 891, in _create_time_value_bins
+    assert torch.allclose(time_event_in_bin.sum(dim=1), torch.ones(time_event_in_bin.shape[0], time_event_in_bin.shape[2])), \
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Long did not match Float
+
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor_tpp.py", line 227, in <module>
+[rank0]:     main()
+[rank0]:   File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor_tpp.py", line 220, in main
+[rank0]:     train_result = trainer.train(resume_from_checkpoint=args.checkpoint_dir)
+[rank0]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 2237, in train
+[rank0]:     return inner_training_loop(
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 2532, in _inner_training_loop
+[rank0]:     batch_samples, num_items_in_batch = self.get_batch_samples(epoch_iterator, num_batches, args.device)
+[rank0]:                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/transformers/trainer.py", line 5343, in get_batch_samples
+[rank0]:     batch_samples.append(next(epoch_iterator))
+[rank0]:                          ^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/accelerate/data_loader.py", line 567, in __iter__
+[rank0]:     current_batch = next(dataloader_iter)
+[rank0]:                     ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 701, in __next__
+[rank0]:     data = self._next_data()
+[rank0]:            ^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 1465, in _next_data
+[rank0]:     return self._process_data(data)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 1491, in _process_data
+[rank0]:     data.reraise()
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/_utils.py", line 715, in reraise
+[rank0]:     raise exception
+[rank0]: RuntimeError: Caught RuntimeError in DataLoader worker process 0.
+[rank0]: Original Traceback (most recent call last):
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/_utils/worker.py", line 351, in _worker_loop
+[rank0]:     data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/.conda/envs/motor_chao/lib/python3.11/site-packages/torch/utils/data/_utils/fetch.py", line 55, in fetch
+[rank0]:     return self.collate_fn(data)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/femr_chao_meds_v3/src/femr/models_tpp/processor.py", line 521, in collate
+[rank0]:     return {"batch": _add_dimension(self.creator.cleanup_batch(batches[0]))}
+[rank0]:                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/femr_chao_meds_v3/src/femr/models_tpp/processor.py", line 434, in cleanup_batch
+[rank0]:     batch["task"] = self.task.cleanup(batch["task"])
+[rank0]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/femr_chao_meds_v3/src/femr/models_tpp/tasks.py", line 736, in cleanup
+[rank0]:     bins_dict = self._create_time_value_bins(
+[rank0]:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/user/zj2398/femr_chao_meds_v3/src/femr/models_tpp/tasks.py", line 891, in _create_time_value_bins
+[rank0]:     assert torch.allclose(time_event_in_bin.sum(dim=1), torch.ones(time_event_in_bin.shape[0], time_event_in_bin.shape[2])), \
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]: RuntimeError: Long did not match Float
