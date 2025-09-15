@@ -403,10 +403,10 @@ class MOTORTask(Task):
             # Create value bins for numerical tasks (tasks with value samples)
             if value_sample_count > 0:
                 # Generate robust bins from the collected value samples
-                non_numerical_task_time_bins = np.percentile(task_length_samples[i].samples, np.linspace(0, 100, num_bins + 1))
-                non_numerical_task_time_bins[0] = 0
-                non_numerical_task_time_bins[-1] = float("inf")
-                numerical_time_bins.append(list(non_numerical_task_time_bins))
+                numerical_task_time_bins = np.percentile(task_length_samples[i].samples, np.linspace(0, 100, num_bins + 1))
+                numerical_task_time_bins[0] = 0
+                numerical_task_time_bins[-1] = float("inf")
+                numerical_time_bins.append(list(numerical_task_time_bins))
             
                 task_value_bins = np.percentile(task_value_samples[i].samples, np.linspace(0, 100, num_value_bins + 1))
                 task_value_bins[0] = float("-inf")
@@ -421,10 +421,10 @@ class MOTORTask(Task):
             
             else:
                 # Create time bins
-                numerical_task_time_bins = np.percentile(task_length_samples[i].samples, np.linspace(0, 100, num_bins + 1))
-                numerical_task_time_bins[0] = 0
-                numerical_task_time_bins[-1] = float("inf")
-                non_numerical_time_bins.append(list(numerical_task_time_bins))
+                non_numerical_task_time_bins = np.percentile(task_length_samples[i].samples, np.linspace(0, 100, num_bins + 1))
+                non_numerical_task_time_bins[0] = 0
+                non_numerical_task_time_bins[-1] = float("inf")
+                non_numerical_time_bins.append(list(non_numerical_task_time_bins))
 
 
         non_numerical_time_bins = np.array(non_numerical_time_bins)
@@ -741,7 +741,8 @@ class MOTORTask(Task):
                 "numerical_time_censor_bin": bins_dict['time_censor_in_bin'],    # For censor loss computation  
                 "numerical_value_event_bin": bins_dict['value_event_in_bin'],    # For value binning
                 # "numerical_is_event": bins_dict['time_is_event'],         # Combined time events
-                "numerical_is_censored": bins_dict['time_is_censored']    # Censoring status
+                "numerical_is_censored": bins_dict['time_is_censored'],    # Censoring status
+                "value_valid_mask": self.value_valid_mask
             })
         
         return result

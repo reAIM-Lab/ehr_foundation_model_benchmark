@@ -47,7 +47,7 @@ class FEMRMambaConfig(transformers.PretrainedConfig):
             n_layers: The number of Mamba layers
             use_normed_ages: Whether to provide normalized ages as a feature
             use_bias: Whether to use bias terms
-            hidden_act: Activation function (silu recommended for Mamba)
+            hidden_act: Unused for Mamba (kept for compatibility)
             hf_name: HuggingFace model name for Mamba configuration
             d_state: State dimension for Mamba
             d_conv: Convolution dimension for Mamba
@@ -63,7 +63,7 @@ class FEMRMambaConfig(transformers.PretrainedConfig):
         self.n_layers = n_layers
         self.use_normed_ages = use_normed_ages
         self.use_bias = use_bias
-        self.hidden_act = hidden_act
+        # hidden_act is intentionally unused in Mamba; kept for API compatibility
 
         # Mamba-specific parameters
         self.hf_name = hf_name
@@ -93,11 +93,10 @@ class FEMRMamba(nn.Module):
             )
 
         # Configure HuggingFace Mamba model
-        kwargs = {"trust_remote_code": True}
+        # Load base HF config and allow remote code (required by Mamba HF refs)
         model_config = transformers.AutoConfig.from_pretrained(
-            self.config.hf_name, 
-            trust_remote_code=True, 
-            **kwargs
+            self.config.hf_name,
+            trust_remote_code=True,
         )
         
         # Override configuration parameters
@@ -110,18 +109,19 @@ class FEMRMamba(nn.Module):
         
         # Apply additional config overrides
         for key, val in self.config.config_kwargs.items():
-            if hasattr(model_config, key):
-                setattr(model_config, key, val)
-            else:
-                print(f"Warning: Config attribute {key} not found in {self.config.hf_name}")
+            assert hasattr(model_config, key), (
+                f"Config for HF model {self.config.hf_name if hasattr(self.config, 'hf_name') else ''} "
+                f"does not have attribute {key}"
+            )
+            setattr(model_config, key, val)
         
         self.model_config = model_config
         self.hidden_size = model_config.d_model
 
         # Initialize Mamba model without pre-trained weights
         self.mamba_model = transformers.AutoModelForCausalLM.from_config(
-            model_config, 
-            **kwargs
+            model_config,
+            trust_remote_code=True,
         )
         print(f"mamba config is {model_config}")
         
@@ -151,39 +151,37 @@ class FEMRMamba(nn.Module):
             all_time = torch.concatenate((time_data, time_data ** 2), axis=-1)
             x[:, -all_time.shape[1]:] = all_time.to(dtype=x.dtype)
 
-        # Pass through Mamba model
-        # Note: Mamba expects input of shape (batch_size, seq_len, hidden_size)
-        # but our input is (seq_len, hidden_size), so we need to add batch dimension
-        x_batched = x.unsqueeze(0)  # Add batch dimension
-        
-        # Get Mamba outputs
-        if hasattr(self.mamba_backbone, 'forward'):
-            # Some Mamba models expect different input format
-            try:
-                outputs = self.mamba_backbone(inputs_embeds=x_batched)
-                if hasattr(outputs, 'last_hidden_state'):
-                    mamba_output = outputs.last_hidden_state
-                elif isinstance(outputs, tuple):
-                    mamba_output = outputs[0]
-                else:
-                    mamba_output = outputs
-            except Exception:
-                # Fallback: try direct call
-                mamba_output = self.mamba_backbone(x_batched)
-                if hasattr(mamba_output, 'last_hidden_state'):
-                    mamba_output = mamba_output.last_hidden_state
-                elif isinstance(mamba_output, tuple):
-                    mamba_output = mamba_output[0]
-        else:
-            # Direct model call
-            mamba_output = self.mamba_backbone(x_batched)
-            if hasattr(mamba_output, 'last_hidden_state'):
-                mamba_output = mamba_output.last_hidden_state
-            elif isinstance(mamba_output, tuple):
-                mamba_output = mamba_output[0]
-        
-        # Remove batch dimension to match original format
-        final = mamba_output.squeeze(0)
+        # Process each subject independently to avoid cross-subject leakage
+        lengths = batch["subject_lengths"].tolist()
+        assert sum(lengths) == x.shape[0], (
+            f"Sum of subject_lengths {sum(lengths)} != token len {x.shape[0]}"
+        )
+        outputs = []
+        start = 0
+        for L in lengths:
+            end = start + L
+            seg = x[start:end, :]
+            seg_batched = seg.unsqueeze(0)  # (1, L, D)
+            # Run through the HF Mamba backbone using inputs_embeds
+            if hasattr(self.mamba_backbone, 'forward'):
+                try:
+                    seg_out = self.mamba_backbone(inputs_embeds=seg_batched)
+                except Exception:
+                    seg_out = self.mamba_backbone(seg_batched)
+            else:
+                seg_out = self.mamba_backbone(seg_batched)
+
+            if hasattr(seg_out, 'last_hidden_state'):
+                seg_hidden = seg_out.last_hidden_state  # (1, L, D)
+            elif isinstance(seg_out, tuple):
+                seg_hidden = seg_out[0]
+            else:
+                seg_hidden = seg_out
+
+            outputs.append(seg_hidden.squeeze(0))  # (L, D)
+            start = end
+
+        final = torch.cat(outputs, dim=0) if len(outputs) > 1 else outputs[0]
         
         # Output normalization
         final = self.out_norm(final)
@@ -216,7 +214,7 @@ class FEMRMambaModel(transformers.PreTrainedModel):
         # Extract Mamba-specific parameters from kwargs
         mamba_model_name = kwargs.pop('mamba_model_name', 'state-spaces/mamba-130m-hf')
         d_state = kwargs.pop('d_state', 16)
-        mamba_config_overrides = kwargs.pop('mamba_config_overrides', {})
+        # mamba_config_overrides = kwargs.pop('mamba_config_overrides', {})
         
         # Allow the task config to be overwritten
         if "task_config" in kwargs:
@@ -238,7 +236,7 @@ class FEMRMambaModel(transformers.PreTrainedModel):
             # Mamba-specific parameters
             hf_name=mamba_model_name,
             d_state=d_state,
-            config_kwargs=mamba_config_overrides,
+            # config_kwargs=mamba_config_overrides,
         )
         
         self.mamba = FEMRMamba(mamba_config)

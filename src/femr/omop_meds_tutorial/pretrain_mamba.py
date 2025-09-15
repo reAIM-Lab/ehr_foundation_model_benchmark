@@ -93,13 +93,13 @@ def create_arg_parser():
         default=16,
         help="Mamba state dimension"
     )
-    arg_parser.add_argument(
-        "--mamba_config_overrides",
-        dest="mamba_config_overrides",
-        type=str,
-        default="{}",
-        help="JSON string of additional Mamba config overrides"
-    )
+    # arg_parser.add_argument(
+    #     "--mamba_config_overrides",
+    #     dest="mamba_config_overrides",
+    #     type=str,
+    #     default="{}",
+    #     help="JSON string of additional Mamba config overrides"
+    # )
     
     return arg_parser
 
@@ -166,6 +166,9 @@ def main():
     # Parse Mamba config overrides
     # try:
     #     mamba_config_overrides = json.loads(args.mamba_config_overrides)
+    #     if not isinstance(mamba_config_overrides, dict):
+    #         print("Warning: mamba_config_overrides is not a dict; ignoring.")
+    #         mamba_config_overrides = {}
     # except json.JSONDecodeError as e:
     #     print(f"Error parsing mamba_config_overrides JSON: {e}")
     #     mamba_config_overrides = {}
@@ -175,8 +178,8 @@ def main():
     transformer_config = femr.models.config.FEMRTransformerConfig(
         vocab_size=tokenizer.vocab_size,
         is_hierarchical=isinstance(tokenizer, femr.models.tokenizer.HierarchicalTokenizer),
-        hidden_size=768,  # Default size, can be overridden via mamba_config_overrides
-        intermediate_size=3072,  # Will be ignored by Mamba
+        hidden_size=768,  # Default; can be aligned with HF d_model
+        intermediate_size=3072,  # Ignored by Mamba, kept for compatibility
         n_layers=args.n_layers,
         use_normed_ages=True,
         use_bias=False,
@@ -190,7 +193,7 @@ def main():
     mamba_specific_config = {
         'mamba_model_name': args.mamba_model_name,
         'd_state': args.d_state,
-        # 'mamba_config_overrides': mamba_config_overrides
+        # 'mamba_config_overrides': mamba_config_overrides,
     }
 
     # Create model config using the same structure as transformer version
@@ -261,7 +264,7 @@ def main():
         logging_steps=10,
 
         save_strategy='epoch',
-        eval_strategy='epoch',
+        evaluation_strategy='epoch',
 
         dataloader_num_workers=64,
 

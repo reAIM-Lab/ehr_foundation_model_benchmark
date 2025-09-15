@@ -37,6 +37,13 @@ def create_arg_parser():
         default=None, 
         help="The path to the main split file",
     )
+
+    args.add_argument(
+        "--model_name",
+        dest="model_name",
+        required=True,
+        help="The model name",
+    )
     return args
 
 
@@ -58,9 +65,9 @@ def main():
     with meds_reader.SubjectDatabase(args.meds_reader, num_threads=6) as database:
         for label_name in labels:
             if args.observation_window:
-                label_output_dir = output_dir / label_name / f"motor_{args.observation_window}"
+                label_output_dir = output_dir / label_name / f"{args.model_name}_{args.observation_window}"
             else:
-                label_output_dir = output_dir / label_name / f"motor"
+                label_output_dir = output_dir / label_name / f"{args.model_name}"
             label_output_dir.mkdir(exist_ok=True, parents=True)
             test_result_file = label_output_dir / 'metrics.json'
             features_label_data = label_output_dir / 'features_with_label'
@@ -70,7 +77,7 @@ def main():
                 continue
             labels = pd.read_parquet(pretraining_data / "labels" / (label_name + '.parquet'))
 
-            motor_features_name = get_motor_features_name(label_name, args.observation_window)
+            motor_features_name = get_motor_features_name(label_name, args.model_name, args.observation_window)
             with open(pretraining_data / 'features' / f"{motor_features_name}.pkl", 'rb') as f:
                 features = pickle.load(f)
 

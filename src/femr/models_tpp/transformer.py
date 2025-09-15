@@ -225,6 +225,10 @@ class MOTORTaskHead(nn.Module):
     ):
         super().__init__()
 
+        self.use_uncertainty = True
+        self.logvars = nn.Parameter(torch.zeros(2))   # [non, num]
+        self._logvar_clamp = (-3.0, 3.0)   
+
         # Handle both numpy array and list (from config deserialization)
         if not isinstance(value_bins, np.ndarray):
             value_bins = np.array(value_bins)
@@ -274,12 +278,14 @@ class MOTORTaskHead(nn.Module):
         self.H_tv = math.log(self.num_time_bins * self.num_value_bins)
         
         # Set initial biases
-        non_numerical_start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info if a[0] in self.non_numerical_tasks], dtype=torch.float32))
-        numerical_start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info if a[0] in self.numerical_tasks], dtype=torch.float32))
-        assert len(non_numerical_start_bias)+len(numerical_start_bias) == len(pretraining_task_info), f"the length of non_numerical, numerical and all are: {len(non_numerical_start_bias)},{len(numerical_start_bias)},{len(pretraining_task_info)}"
+        self.non_numerical_task_layer.bias.data.zero_()
+        self.numerical_task_layer.bias.data.zero_()
+        # non_numerical_start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info if a[0] in self.non_numerical_tasks], dtype=torch.float32))
+        # numerical_start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info if a[0] in self.numerical_tasks], dtype=torch.float32))
+        # assert len(non_numerical_start_bias)+len(numerical_start_bias) == len(pretraining_task_info), f"the length of non_numerical, numerical and all are: {len(non_numerical_start_bias)},{len(numerical_start_bias)},{len(pretraining_task_info)}"
 
-        self.non_numerical_task_layer.bias.data = non_numerical_start_bias
-        self.numerical_task_layer.bias.data = numerical_start_bias
+        # self.non_numerical_task_layer.bias.data = non_numerical_start_bias
+        # self.numerical_task_layer.bias.data = numerical_start_bias
 
     def forward(self, features: torch.Tensor, batch: Mapping[str, torch.Tensor], return_logits=False):
         """
@@ -295,6 +301,7 @@ class MOTORTaskHead(nn.Module):
         total_loss = torch.tensor(0.0, device=features.device)
         loss_count = 0
         result = {}
+
         
         # ========== NON-NUMERICAL CODES (Original Logic) ==========
             # Time-dependent features for non-numerical codes
@@ -306,6 +313,7 @@ class MOTORTaskHead(nn.Module):
         task_logits = self.non_numerical_task_layer(self.norm(time_independent_features))
         time_dependent_logits = self.softmax(task_logits)
         
+        # print(f"time_dependent_logits is {time_dependent_logits}")
         # Debug: Check for NaN/inf values  
         if torch.any(torch.isnan(time_dependent_logits)) or torch.any(torch.isinf(time_dependent_logits)):
             print(f"ERROR: NaN/inf detected in time_dependent_logits")
@@ -362,11 +370,10 @@ class MOTORTaskHead(nn.Module):
         
         num_marked_bins = torch.sum(marked_bins)
         if num_marked_bins > 0:
-            non_numerical_loss = -torch.sum(loss_values) / (num_marked_bins*self.H_t)
-            total_loss += non_numerical_loss
-            loss_count += 1
+            L_non = -torch.sum(loss_values) / (num_marked_bins)  # normalized by log B_t
         else:
-            print("No non-numerical codes found in batch")
+            L_non = torch.tensor(0.0, device=features.device)
+
         
         if return_logits:
             result["time_dependent_logits"] = time_dependent_logits
@@ -376,9 +383,9 @@ class MOTORTaskHead(nn.Module):
             # Get dimensions from batch data 
             # print(batch.keys())
             time_event_in_bin = batch["numerical_time_event_bin"]  # [pred_points, time_bins, numerical_tasks]
-            time_censor_in_bin = batch["numerical_time_censor_bin"]  # [pred_points, time_bins, numerical_tasks]  
+            time_censor_in_bin = batch["numerical_time_censor_bin"]  # [pred_points, time_bins, numerical_tasks]
             value_event_in_bin = batch["numerical_value_event_bin"]  # [pred_points, value_bins, numerical_tasks]
-            numerical_is_censored = batch["numerical_is_censored"]  # [pred_points, numerical_tasks]
+            # numerical_is_censored = batch["numerical_is_censored"]  # [pred_points, numerical_tasks]
             
             batch_size, _, num_numerical_tasks = time_event_in_bin.shape
             # _, value_bins, _ = value_event_in_bin.shape
@@ -390,25 +397,82 @@ class MOTORTaskHead(nn.Module):
                 batch_size, self.num_time_bins*self.num_value_bins, self.final_layer_size
             )
             
-            # Numerical task logits: [pred_points, time_bins, value_bins, numerical_tasks]
+            # Numerical task logits: [pred_points, time_bins*value_bins, numerical_tasks]
             numerical_task_logits = self.numerical_task_layer(self.norm(numerical_features))
+
+            # Apply value_valid_mask to mask out invalid value bins before softmax
+            # value_valid_mask: [numerical_tasks, value_bins] -> need to expand to [time_bins*value_bins, numerical_tasks]
+            device = numerical_task_logits.device
+            value_valid_mask = torch.tensor(batch["value_valid_mask"],device=device,dtype=torch.bool)
+
+            if value_valid_mask.shape[1] - value_event_in_bin.shape[1] == 1:
+                value_valid_mask = value_valid_mask[:,1:]
             
-            # Normalize over time_bins × value_bins to ensure probability sum = 1
-            # numerical_logits_flat = numerical_task_logits.reshape(batch_size, time_bins * value_bins, num_numerical_tasks)
-            numerical_probs_flat = self.softmax(numerical_task_logits)
+            # Expand valid mask to match value_event_in_bin shape: [1, value_bins, numerical_tasks]
+            valid_mask_expanded = value_valid_mask.T.unsqueeze(0) 
+            # Check that events only occur in valid bins: invalid events = events & ~valid_mask
+            invalid_events = value_event_in_bin & (~valid_mask_expanded)  # [pred_points, value_bins, numerical_tasks]
+            assert not torch.any(invalid_events), f"Events in bin found in invalid value bins {invalid_events}"
+
+
+
+            mask_tv = valid_mask_expanded.expand(self.num_time_bins,-1,-1) #[num_time_bins,value_bins, numerical_tasks]
+            expanded_mask = mask_tv.reshape(1,self.num_time_bins * self.num_value_bins, num_numerical_tasks)
+
+            # Use large negative value instead of -inf
+            mask_value = -1e10  # This effectively zeros out in softmax but avoids -inf
+            numerical_task_logits = numerical_task_logits.masked_fill(~expanded_mask, mask_value)
+
+            # # Normalize over time_bins × value_bins to ensure probability sum = 1 (only over valid bins)
+            # numerical_probs_flat = self.softmax(numerical_task_logits)
+
+            numerical_log_probs_flat = F.log_softmax(numerical_task_logits, dim=1)
+            numerical_probs_flat = torch.exp(numerical_log_probs_flat)
+
+            # # numerical_logits_f32 = (numerical_task_logits - numerical_task_logits.amax(dim=1, keepdim=True)).to(torch.float32)
+            # # numerical_probs_flat = F.softmax(numerical_logits_f32, dim=1).to(numerical_task_logits.dtype)
+            # # print(numerical_probs_flat.shape,numerical_probs_flat)
+
+            # numerical_log_probs = numerical_log_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
             numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
-            numerical_probs = torch.clamp(numerical_probs, min=eps, max=1.0-eps)
-            
-            # Verify probability sums to 1 over time_bins × value_bins
+
+            # numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
+
+            numerical_probs = numerical_probs.clamp_min(eps)
+
+            # # assert check
+            expanded_valid_mask_assert = mask_tv.unsqueeze(0).expand(batch_size,-1,-1,-1)
+            assert torch.all(numerical_probs[~expanded_valid_mask_assert] <= eps), \
+            "Non-zero probabilities found in invalid bins."
+            assert torch.all(numerical_probs[expanded_valid_mask_assert] >= eps), \
+            "zero probabilities found in valid bins."
+
+            # # Probability should sum to 1 over valid (T,V) for each (B,N)
+            # prob_sums = (numerical_probs * expanded_valid_mask_assert).sum(dim=(1, 2))  # [B, N]
+            # assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-6), \
+            #     f"Numerical probability sums off; example: {prob_sums[0]}"
+
+            # numerical_probs = torch.where(expanded_valid_mask_assert, numerical_probs.clamp_min(eps), numerical_probs)
             prob_sums = torch.sum(numerical_probs, dim=(1, 2))  # Sum over time and value bins
-            assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-2), f"Numerical probability sums: {prob_sums[0]}"
+            assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-6), f"Numerical probability sums: {prob_sums[0]}"
+            # print(f"numerical_probs is {numerical_probs}")
+            
+            #original one
+            # numerical_probs_flat = self.softmax(numerical_task_logits)
+            # numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
             
             # === MATRIX-WISE LOSS COMPUTATION (NO NESTED LOOPS) ===
             
             # Case 1: Censored cases - sum over value bins, only predict time
             # Use time_censor_in_bin directly for censored events
             numerical_loss = torch.tensor(0.0, device=features.device)
-            num_numerical_losses = 0
+            total_num_count = 0
+            # event_count = torch.tensor(0.0,device=features.device)
+            # censored_count = torch.tensor(0.0,device=features.device)
+            L_num = torch.tensor(0.0, device=features.device)
+            L_num_event = torch.tensor(0.0, device=features.device)
+            L_num_cens  = torch.tensor(0.0, device=features.device)
+
 
             if torch.any(time_censor_in_bin):
                 # Sum probabilities over value bins: [pred_points, time_bins, numerical_tasks]
@@ -427,9 +491,10 @@ class MOTORTaskHead(nn.Module):
                 
                 censored_count = torch.sum(time_censor_in_bin)
                 if censored_count > 0:
-                    censored_loss = -torch.sum(censored_loss_values) / (censored_count*self.H_t)
-                    numerical_loss += censored_loss
-                    num_numerical_losses += 1
+                    L_num_cens = -torch.sum(censored_loss_values) 
+                    numerical_loss += L_num_cens
+                    total_num_count += censored_count
+
             # Case 2: Event cases - predict both time and value using outer product
             # Construct event_bins = time_event_in_bin ⊗ value_event_in_bin (outer product)  
             if torch.any(time_event_in_bin) and torch.any(value_event_in_bin):
@@ -446,24 +511,63 @@ class MOTORTaskHead(nn.Module):
                 
                 event_count = torch.sum(event_bins)
                 if event_count > 0:
-                    event_loss = -torch.sum(event_loss_values) / (event_count*self.H_tv)
-                    numerical_loss += event_loss
-                    num_numerical_losses += 1
+                    # Normalize by the number of valid value bins for each task
+                    valid_bin_counts = torch.sum(value_valid_mask, dim=1)  # [numerical_tasks]
+                    # print(f"the min value in valid_bin_counts is {torch.min(valid_bin_counts)}")
+                    # Expand to match event_bins shape: [pred_points, time_bins, value_bins, numerical_tasks]
+                    valid_bin_counts_expanded = valid_bin_counts.unsqueeze(0).unsqueeze(1).unsqueeze(2)  # [1, 1, 1, numerical_tasks]
+                    # Apply normalization only where events occur
+                    normalization = torch.where(event_bins, torch.log(valid_bin_counts_expanded), torch.ones_like(event_bins))
+                    # print(f"before event-loss-value, {torch.sum(event_loss_values)}")
+                    # event_loss_values = torch.div(event_loss_values,normalization)
+                    event_loss_values = event_loss_values / normalization
+                    # print(f"after normalization event-loss-vaues {event_loss_values}")
+                    L_num_event = -torch.sum(event_loss_values) / event_count
+                    numerical_loss += L_num_event
+                    total_num_count += event_count
             
-            if return_logits:
-                result["value_dependent_logits"] = numerical_probs
-            if num_numerical_losses < 2:
-                print(f"censor cases are {torch.any(time_censor_in_bin)}")
-                print(f"event cases are {torch.any(time_event_in_bin) and torch.any(value_event_in_bin)}")
+            # ne  = event_count.float()
+            # nc  = censored_count.float()
+            # den = ne + nc
+            if total_num_count > 0:
+                L_num = numerical_loss/total_num_count
+            else:
+                L_num = torch.tensor(0.0, device=features.device)
 
-            loss_count += 1
-            numerical_loss_mean = numerical_loss / num_numerical_losses
-            total_loss += numerical_loss_mean
+            # if den > 0:
+            #     w_evt = ne / den
+            #     w_cen = nc / den
+            #     L_num = w_evt * L_num_event + w_cen * L_num_cens
+            # else:
+            #     L_num = torch.tensor(0.0, device=features.device)
+
+            if return_logits:
+                result["loss_components"] = {
+                    "L_non_num":       L_non.detach(),
+                    "L_num_event":   L_num_event.detach(),
+                    "L_num_censor":  L_num_cens.detach(),
+                }
+                result["value_dependent_logits"] = numerical_probs
+            # if num_numerical_losses < 2:
+            #     print(f"censor cases are {torch.any(time_censor_in_bin)}")
+            #     print(f"event cases are {torch.any(time_event_in_bin) and torch.any(value_event_in_bin)}")
+            # L_num = numerical_loss / (total_count*self.H_tv)
         else:
             print("No numerical codes found in batch")
         # Final loss: mean of non-numerical and numerical losses
         # print(f"ratio {non_numerical_loss/numerical_loss}, non_numerical_loss is {non_numerical_loss} : numerical loss is {numerical_loss}, censor {censored_loss}, event {event_loss}")
-        loss = total_loss / loss_count
+        # loss = total_loss / loss_count
+        # loss = non_numerical_loss*0.75+numerical_loss_mean*0.25
+        # print(f"l_non {L_non}, L_num {L_num}")
+
+        logvars = torch.clamp(self.logvars, *self._logvar_clamp)
+        w = torch.exp(-self.logvars)  # [w_non, w_num] = [exp(-s1), exp(-s2)]
+
+        # if self.use_uncertainty:
+        #     loss = w[0] * L_non + self.logvars[0] + w[1] * L_num + self.logvars[1]
+        # else:
+        #     # simple fallback (e.g., warmup for first epoch)
+        loss = 0.5 * (L_non + L_num)
         
         # Debug: Check for issues
         if torch.isnan(loss) or torch.isinf(loss):

@@ -14,6 +14,9 @@ import torch.nn as nn
 from transformers import TrainerCallback
 import wandb
 
+from transformers.modeling_utils import unwrap_model
+
+
 class CustomEarlyStoppingCallback(transformers.EarlyStoppingCallback):
     def check_metric_value(self, args, state, control, metric_value):
         # best_metric is set by code for load_best_model
@@ -27,6 +30,23 @@ class CustomEarlyStoppingCallback(transformers.EarlyStoppingCallback):
         else:
             self.early_stopping_patience_counter += 1
 
+class UncertaintyWarmupCallback(TrainerCallback):
+    def __init__(self, warmup_epochs=1):
+        self.warmup_epochs = warmup_epochs
+    def on_epoch_begin(self, args, state, control, **kwargs):
+        m = unwrap_model(kwargs["model"])   # <— unwrap DDP/FSDP if needed
+        use_uncertainty = state.epoch >= self.warmup_epochs
+        m.task_model.use_uncertainty = use_uncertainty
+        m.task_model.logvars.requires_grad = use_uncertainty
+
+# class UncertaintyWarmupCallback(TrainerCallback):
+#     def __init__(self, warmup_epochs=1):
+#         self.warmup_epochs = warmup_epochs
+#     def on_epoch_begin(self, args, state, control, **kwargs):
+#         model = kwargs["model"]
+#         use_uncertainty = state.epoch >= self.warmup_epochs
+#         model.task_model.use_uncertainty = use_uncertainty
+#         model.task_model.logvars.requires_grad = use_uncertainty
 
 def create_arg_parser():
     arg_parser = create_omop_meds_tutorial_arg_parser()
@@ -170,7 +190,7 @@ def main():
     trainer_config = transformers.TrainingArguments(
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
-
+        ddp_find_unused_parameters=True,
         learning_rate=learning_rate,
         output_dir=output_dir,
         remove_unused_columns=False,
@@ -180,10 +200,10 @@ def main():
         adam_beta2=0.95,
         # report_to="none",
         report_to=["wandb"],
-        run_name="mtpp_mimic_bin_8",
+        run_name="mtpp_mimic_8_nouq_divide_value_bin_mean_over_m_u_masked",
         # run_name="motor_pretrain_mimic",
         num_train_epochs=args.n_epochs,
-        ddp_find_unused_parameters=False,
+        # ddp_find_unused_parameters=False,
 
         warmup_steps=500,
 
@@ -214,7 +234,7 @@ def main():
         train_dataset=train_batches,
         eval_dataset=val_batches,
         args=trainer_config,
-        callbacks=[CustomEarlyStoppingCallback(early_stopping_patience=1, early_stopping_threshold=0.001)],
+        callbacks=[CustomEarlyStoppingCallback(early_stopping_patience=1, early_stopping_threshold=0.001),UncertaintyWarmupCallback(warmup_epochs=1)],
     )
 
     train_result = trainer.train(resume_from_checkpoint=args.checkpoint_dir)
@@ -233,26 +253,26 @@ if __name__ == "__main__":
 
 '''
 40 hours
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=1
 
 python pretrain_motor_tpp.py \
   --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output
+  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_add_mask
 
   17.5
 
 gsb
-CUDA_VISIBLE_DEVICES=1,3,5 accelerate launch \
+CUDA_VISIBLE_DEVICES=1,4,5 accelerate launch \
   --num_processes 3 \
   --mixed_precision bf16 \
-  --gpu_ids "1,3,5" \
-  pretrain_motor_tpp.py \
+  --gpu_ids "1,4,5" \
+  pretrain_motor_tpp2.py \
   --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output
+  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_add_mask_divide_mean_all
 
 CUDA_VISIBLE_DEVICES=1 accelerate launch \
   --num_processes 1 \
@@ -262,7 +282,7 @@ CUDA_VISIBLE_DEVICES=1 accelerate launch \
   --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output
+  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_new
 
 kuvira
 CUDA_VISIBLE_DEVICES=0 accelerate launch \

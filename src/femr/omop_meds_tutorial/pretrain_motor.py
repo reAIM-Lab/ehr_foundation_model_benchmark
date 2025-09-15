@@ -8,7 +8,7 @@ import pickle
 import datasets
 import femr.models.tokenizer
 import femr.models.processor
-from src.femr.omop_meds_tutorial.motor_evaluation.generate_labels import create_omop_meds_tutorial_arg_parser
+from femr.omop_meds_tutorial.motor_evaluation.generate_labels import create_omop_meds_tutorial_arg_parser
 import torch.nn as nn
 from transformers import TrainerCallback
 import wandb
@@ -177,8 +177,8 @@ def main():
 
         weight_decay=0.1,
         adam_beta2=0.95,
-        # report_to="none",
-        report_to=["wandb"],
+        report_to="none",
+        # report_to=["wandb"],
         run_name="deephit_mimic_bin_8_corrected",
         # run_name="motor_pretrain_mimic",
         num_train_epochs=args.n_epochs,
@@ -232,15 +232,25 @@ if __name__ == "__main__":
 
 '''
 40 hours
-export CUDA_VISIBLE_DEVICES=6
+export CUDA_VISIBLE_DEVICES=5
 
 python pretrain_motor.py \
-  --pretraining_data /user/zj2398/cache/motor_mimic \
+  --pretraining_data /user/zj2398/cache/motor_mimic_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/motor_mimic/output
+  --output_dir /user/zj2398/cache/motor_mimic_8k/output_separate
 
   17.5
+
+CUDA_VISIBLE_DEVICES=4,5,1 accelerate launch \
+  --num_processes 3 \
+  --mixed_precision bf16 \
+  --gpu_ids "4,5,1" \
+  pretrain_motor.py \
+  --pretraining_data //user/zj2398/cache/motor_mimic_8k \
+  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
+  --per_device_train_batch_size 1 \
+  --output_dir /user/zj2398/cache/motor_mimic_8k/output_separate
 
 gsb
 CUDA_VISIBLE_DEVICES=0,1,2 accelerate launch \

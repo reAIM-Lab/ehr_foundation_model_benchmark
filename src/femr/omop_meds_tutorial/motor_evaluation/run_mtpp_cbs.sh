@@ -102,6 +102,10 @@ while [ $# -gt 0 ]; do
             MAIN_SPLIT_PATH="$2"
             shift 2
             ;;
+        --model_name)
+            MODEL_NAME="$2"
+            shift 2
+            ;;
         -*)
             echo "Error: Unknown option: $1" >&2
             echo "Try '$SCRIPT_NAME --help' for more information." >&2
@@ -216,7 +220,7 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
 
 
     # Run the first command: generate MOTOR features
-    echo "Running MOTOR feature generation for $TASK_NAME..."
+    echo "Running $MODEL_NAME feature generation for $TASK_NAME..."
 
     # Build the command with conditional observation_window parameter
     GENERATE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.generate_mtpp_features \
@@ -248,19 +252,20 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
 
     # Check if the first command succeeded
     if [ $? -ne 0 ]; then
-        echo "Error: MOTOR feature generation failed for task $TASK_NAME"
+        echo "Error: $MODEL_NAME feature generation failed for task $TASK_NAME"
         continue
     fi
 
     # Run the second command: fine-tune MOTOR
-    echo "Running MOTOR fine-tuning for $TASK_NAME..."
+    echo "Running $MODEL_NAME fine-tuning for $TASK_NAME..."
 
     # Build the command with conditional observation_window parameter
     FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.finetune_motor \
       --pretraining_data \"$PRETRAINING_DATA\" \
       --meds_reader \"$OMOP_MEDS_READER\" \
       --cohort_label \"$TASK_NAME\" \
-      --main_split_path \"$MAIN_SPLIT_PATH\""
+      --main_split_path \"$MAIN_SPLIT_PATH\" \
+      --model_name \"$MODEL_NAME\""
 
     # Add observation_window parameter if specified
     if [ -n "$OBSERVATION_WINDOW" ]; then
@@ -275,17 +280,17 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
 
     # Check if the second command succeeded
     if [ $? -ne 0 ]; then
-        echo "Error: MOTOR fine-tuning failed for task $TASK_NAME"
+        echo "Error: $MODEL_NAME fine-tuning failed for task $TASK_NAME"
         continue
     fi
 
     # Determine the MOTOR prediction folder path based on observation window
     if [ -n "$OBSERVATION_WINDOW" ]; then
-        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/motor_$OBSERVATION_WINDOW/test_predictions"
-        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/motor_$OBSERVATION_WINDOW/"
+        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
+        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
     else
-        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/motor/test_predictions"
-        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/motor/"
+        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/test_predictions"
+        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/"
     fi
 
     # Build the evaluation command
@@ -312,42 +317,48 @@ echo "All tasks processed."
 
 
 # phenotype
-# export CUDA_VISIBLE_DEVICES=7
+# export CUDA_VISIBLE_DEVICES=5
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           100 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output/best_160980 \
-#   --tokens_per_batch   65536 \
-#   --device             cuda:0 \
-#   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --task "masld" \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
-
-
-# bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           100 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output/best_160980 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_add_mask_divide_mean_all/best_160980 \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
 #   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
 #   --task "stroke" \
+#   --model_name deephit_add_mask_divide_num_mean_all \
 #   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
 
+# export CUDA_VISIBLE_DEVICES=3
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           100 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output/best_160980 \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_add_mask_divide_mean_all/best_160980 \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
 #   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --task "in_hospital_mortality" \
+#   --model_name deephit_add_mask_divide_num_mean_all \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
+
+
+
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           100 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/ratio_0.75_output/best_110682 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --task "in_hospital_mortality" \
+#   --model_name deephit_mtpp_8 \
 #   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/

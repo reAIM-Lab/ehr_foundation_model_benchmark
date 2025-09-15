@@ -194,7 +194,7 @@ if __name__ == "__main__":
 mimic
 gsb
 python prepare_motor.py \
-  --pretraining_data /user/zj2398/cache/motor_mimic \
+  --pretraining_data /user/zj2398/cache/motor_mimic_8k \
   --athena_path " " \
   --num_bins 8 \
   --num_threads 100 \

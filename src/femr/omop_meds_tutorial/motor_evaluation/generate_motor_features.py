@@ -88,10 +88,10 @@ def read_recursive_parquet(root_dir):
     return df
 
 
-def get_motor_features_name(label_name: str, observation_window: Optional[int] = None) -> str:
+def get_motor_features_name(label_name: str, model_name: str, observation_window: Optional[int] = None) -> str:
     if observation_window:
-        return label_name + '_motor_' + str(observation_window)
-    return label_name + '_motor'
+        return label_name + f'_motor_' + str(observation_window)
+    return label_name + f'_motor'
 
 
 def main():

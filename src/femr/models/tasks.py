@@ -616,7 +616,7 @@ class MOTORTask(Task):
         # Validation: ensure exactly one bin per prediction-task combination
         bins_per_pred_task = torch.sum(is_event, dim=1)  # [pred_points, task_points]
 
-
+        assert torch.all(bins_per_pred_task == 1), f"sum of all bins per task is {torch.all(bins_per_pred_task == 1)}"
         if not torch.all(bins_per_pred_task == 1):
             # Handle edge cases where time falls exactly on bin boundary or outside all bins
             logging.info(f"Warning: {torch.sum(bins_per_pred_task != 1)}, bins_per_pred_task: {bins_per_pred_task}, prediction-task combinations don't have exactly 1 bin marked")
@@ -642,7 +642,7 @@ class MOTORTask(Task):
                 logging.info(f"Fixed {len(pred_indices)} cases by keeping only first marked bin")
         # sys.exit()
 
-        return {"is_event": is_event, "is_censored": is_censored, "censor_time_ratio": censor_time_ratio}
+        return {"event_in_bin":event_in_bin, "censor_in_bin":censor_in_bin, "is_event": is_event, "is_censored": is_censored, "censor_time_ratio": censor_time_ratio}
     
     
 

@@ -313,6 +313,9 @@ class MOTORTaskHead(nn.Module):
         
         # Get the marked bins: where is_event is True
         marked_bins = batch["is_event"]  # [prediction_points, time_bins, tasks]
+        event_in_bins = batch["event_in_bin"]
+        censor_in_bins = batch["censor_in_bin"]
+
         
         # For event cases: use f() = time_dependent_logits
         # For censoring cases: use 1-F() = integrated_logits  
@@ -328,6 +331,19 @@ class MOTORTaskHead(nn.Module):
             )
             integrated_logits_stable = torch.clamp(integrated_logits_stable, min=eps, max=1.0-eps)
 
+        # event probability
+        event_probs = torch.where(
+            event_in_bins,
+            time_dependent_logits_stable,
+            torch.zeros_like(event_in_bins)
+        )
+
+        censor_probs = torch.where(
+            is_censored_expanded,
+            integrated_logits_stable,
+            torch.zeros_like(is_censored_expanded)
+        )
+
         # Select the appropriate probability based on event vs censoring
         selected_probs = torch.where(
             is_censored_expanded,
@@ -341,7 +357,16 @@ class MOTORTaskHead(nn.Module):
             torch.log(selected_probs),
             torch.zeros_like(selected_probs)  # No contribution from unmarked bins
         )
+
+        assert event_in_bins+censor_in_bins==marked_bins, f" event {event_in_bins} censor {censor_in_bins} take & {marked_bins}"
+        assert event_in_bins.shape == censor_in_bins.shape
+        assert marked_bins.shape == censor_in_bins.shape
+        assert torch.sum(loss_values) == torch.sum(event_probs) + torch.sum(censor_probs), f"the loss for all, event, censor are {torch.sum(loss_values)}, {torch.sum(event_probs)},{torch.sum(censor_probs)}"
         
+        print(f"total loss {-torch.sum(loss_values) / num_marked_bins}")
+        print(f"event loss {-torch.sum(event_probs) / event_in_bins}")
+        print(f"censor loss {-torch.sum(censor_in_bins) / censor_in_bins}")
+
         # Average over all marked bins (should be exactly one per prediction-task combination)
         num_marked_bins = torch.sum(marked_bins)
         if num_marked_bins > 0:
