@@ -264,6 +264,7 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
       --pretraining_data \"$PRETRAINING_DATA\" \
       --meds_reader \"$OMOP_MEDS_READER\" \
       --cohort_label \"$TASK_NAME\" \
+      --model_path \"$MODEL_PATH\" \
       --main_split_path \"$MAIN_SPLIT_PATH\" \
       --model_name \"$MODEL_NAME\""
 
@@ -317,35 +318,68 @@ echo "All tasks processed."
 
 
 # phenotype
-# export CUDA_VISIBLE_DEVICES=5
-# bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           100 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_add_mask_divide_mean_all/best_160980 \
-#   --tokens_per_batch   65536 \
-#   --device             cuda:0 \
-#   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --task "stroke" \
-#   --model_name deephit_add_mask_divide_num_mean_all \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
-
-# export CUDA_VISIBLE_DEVICES=3
+# export CUDA_VISIBLE_DEVICES=0
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_add_mask_divide_mean_all/best_160980 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_L_num/best_120735 \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
 #   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --task "in_hospital_mortality" \
-#   --model_name deephit_add_mask_divide_num_mean_all \
+#   --model_name deephit_no_divide_mask_L_num \
+#   --task in_hospital_mortality \
 #   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
+
+# export CUDA_VISIBLE_DEVICES=5
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_L_num/best_120735 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --model_name deephit_no_divide_mask_L_num \
+#   --task readmission \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
+
+
+# export CUDA_VISIBLE_DEVICES=5
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_all/best_134150 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --model_name deephit_no_divide_mask_mean_all \
+#   --task readmission \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
+
+# export CUDA_VISIBLE_DEVICES=5
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_L_num/best_120735 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --model_name deephit_no_divide_mask_mean_all \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
+
+
+
 
 
 

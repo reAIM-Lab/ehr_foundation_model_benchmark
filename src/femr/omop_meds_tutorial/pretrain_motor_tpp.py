@@ -13,6 +13,8 @@ from femr.omop_meds_tutorial.motor_evaluation.generate_labels import create_omop
 import torch.nn as nn
 from transformers import TrainerCallback
 import wandb
+import datasets
+datasets.disable_caching()
 
 from transformers.modeling_utils import unwrap_model
 
@@ -198,9 +200,9 @@ def main():
 
         weight_decay=0.1,
         adam_beta2=0.95,
-        # report_to="none",
-        report_to=["wandb"],
-        run_name="mtpp_mimic_8_nouq_divide_value_bin_mean_over_m_u_masked",
+        report_to="none",
+        # report_to=["wandb"],
+        run_name="mtpp_mimic_8_mask_no_divide_mean_um",
         # run_name="motor_pretrain_mimic",
         num_train_epochs=args.n_epochs,
         # ddp_find_unused_parameters=False,
@@ -259,7 +261,7 @@ python pretrain_motor_tpp.py \
   --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_add_mask
+  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_test
 
   17.5
 
@@ -268,21 +270,21 @@ CUDA_VISIBLE_DEVICES=1,4,5 accelerate launch \
   --num_processes 3 \
   --mixed_precision bf16 \
   --gpu_ids "1,4,5" \
-  pretrain_motor_tpp2.py \
-  --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
-  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
-  --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_add_mask_divide_mean_all
-
-CUDA_VISIBLE_DEVICES=1 accelerate launch \
-  --num_processes 1 \
-  --mixed_precision bf16 \
-  --gpu_ids "1" \
   pretrain_motor_tpp.py \
   --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_new
+  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um
+
+CUDA_VISIBLE_DEVICES=0,3,5 accelerate launch \
+  --num_processes 3 \
+  --mixed_precision bf16 \
+  --gpu_ids "0,3,5" \
+  pretrain_motor_tpp2.py \
+  --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
+  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
+  --per_device_train_batch_size 1 \
+  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_add_mask_divide_mean_all_L_num
 
 kuvira
 CUDA_VISIBLE_DEVICES=0 accelerate launch \

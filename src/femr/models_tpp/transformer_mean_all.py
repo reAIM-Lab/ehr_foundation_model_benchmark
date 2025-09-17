@@ -297,7 +297,7 @@ class MOTORTaskHead(nn.Module):
         3. Probability sum over time_bins × value_bins = 1 for numerical codes
         4. New loss = mean loss for non-numerical + mean loss for numerical codes
         """
-        eps = 1e-8
+        eps = 1e-9
         total_loss = torch.tensor(0.0, device=features.device)
         total_count = 0
         result = {}
@@ -478,7 +478,7 @@ class MOTORTaskHead(nn.Module):
 
             if torch.any(time_censor_in_bin):
                 # Sum probabilities over value bins: [pred_points, time_bins, numerical_tasks]
-                time_only_probs = torch.sum(numerical_probs, dim=2)
+                time_only_probs = torch.sum(numerical_probs*expanded_valid_mask_assert, dim=2)
                 cdf = torch.cumsum(time_only_probs, dim=1)
                 integrated_logits = torch.cat([torch.ones_like(time_only_probs[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
                 integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
@@ -519,12 +519,12 @@ class MOTORTaskHead(nn.Module):
                     # Expand to match event_bins shape: [pred_points, time_bins, value_bins, numerical_tasks]
                     valid_bin_counts_expanded = valid_bin_counts.unsqueeze(0).unsqueeze(1).unsqueeze(2)  # [1, 1, 1, numerical_tasks]
                     # Apply normalization only where events occur
-                    normalization = torch.where(event_bins, torch.log(valid_bin_counts_expanded), torch.zeros_like(event_bins))
+                    # normalization = torch.where(event_bins, torch.log(valid_bin_counts_expanded), torch.zeros_like(event_bins))
                     # print(f"before event-loss-value, {torch.sum(event_loss_values)}")
                     # event_loss_values = torch.div(event_loss_values,normalization)
-                    event_loss_values = event_loss_values - normalization
+                    # event_loss_values = event_loss_values - normalization
                     # print(f"after normalization event-loss-vaues {event_loss_values}")
-                    L_num_event = -torch.sum(event_loss_values) / event_count
+                    L_num_event = -torch.sum(event_loss_values)
                     numerical_loss += L_num_event
                     total_num_count += event_count
             
@@ -564,8 +564,8 @@ class MOTORTaskHead(nn.Module):
         # loss = non_numerical_loss*0.75+numerical_loss_mean*0.25
         # print(f"l_non {L_non}, L_num {L_num}")
 
-        logvars = torch.clamp(self.logvars, *self._logvar_clamp)
-        w = torch.exp(-self.logvars)  # [w_non, w_num] = [exp(-s1), exp(-s2)]
+        # logvars = torch.clamp(self.logvars, *self._logvar_clamp)
+        # w = torch.exp(-self.logvars)  # [w_non, w_num] = [exp(-s1), exp(-s2)]
 
         # if self.use_uncertainty:
         #     loss = w[0] * L_non + self.logvars[0] + w[1] * L_num + self.logvars[1]
@@ -573,8 +573,8 @@ class MOTORTaskHead(nn.Module):
         #     # simple fallback (e.g., warmup for first epoch)
 
         loss = total_loss / total_count
-        error = -torch.sum(loss_values) + numerical_loss - total_loss
-        assert error< 10, f"total_non is {-torch.sum(loss_values)}, total_num is {numerical_loss}, total_loss is {total_loss}"
+        # error = -torch.sum(loss_values) + numerical_loss - total_loss
+        # assert error< 10, f"total_non is {-torch.sum(loss_values)}, total_num is {numerical_loss}, total_loss is {total_loss}"
         # print(f"per bin loss is {loss},total count is {total_count}")
         # loss = 0.5 * (L_non + L_num)
         # print(f"mean loss is {loss}, L_non is {L_non}, total non {num_marked_bins},  L_num is {L_num}, total num {total_num_count}")

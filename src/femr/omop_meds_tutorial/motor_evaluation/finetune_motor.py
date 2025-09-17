@@ -8,6 +8,7 @@ import polars as pl
 import femr.featurizers
 import pickle
 import pathlib
+import os
 import numpy as np
 import sklearn
 from sklearn.linear_model import LogisticRegressionCV
@@ -44,6 +45,13 @@ def create_arg_parser():
         required=True,
         help="The model name",
     )
+    args.add_argument(
+        "--model_path",
+        dest="model_path",
+        required=True,
+        help="The model path"
+    )
+
     return args
 
 
@@ -78,7 +86,8 @@ def main():
             labels = pd.read_parquet(pretraining_data / "labels" / (label_name + '.parquet'))
 
             motor_features_name = get_motor_features_name(label_name, args.model_name, args.observation_window)
-            with open(pretraining_data / 'features' / f"{motor_features_name}.pkl", 'rb') as f:
+            features_path = pathlib.Path(os.path.dirname(args.model_path)) / "features"
+            with open(features_path / f"{motor_features_name}.pkl", 'rb') as f:
                 features = pickle.load(f)
 
             # Find labels that have no features

@@ -13,6 +13,8 @@ from femr.omop_meds_tutorial.motor_evaluation.generate_labels import create_omop
 import torch.nn as nn
 from transformers import TrainerCallback
 import wandb
+import datasets
+datasets.disable_caching()
 
 from transformers.modeling_utils import unwrap_model
 
@@ -200,7 +202,7 @@ def main():
         adam_beta2=0.95,
         # report_to="none",
         report_to=["wandb"],
-        run_name="mtpp_mimic_8_nouq_divide_value_bin_mean_over_allmasked",
+        run_name="mtpp_mimic_8_mask_nodivide_mean_over_all",
         # run_name="motor_pretrain_mimic",
         num_train_epochs=args.n_epochs,
         # ddp_find_unused_parameters=False,
@@ -263,47 +265,14 @@ python pretrain_motor_tpp2.py \
 
   17.5
 
-gsb
-CUDA_VISIBLE_DEVICES=1,4,6,7 accelerate launch \
-  --num_processes 4 \
+
+CUDA_VISIBLE_DEVICES=1,4,5 accelerate launch \
+  --num_processes 3 \
   --mixed_precision bf16 \
-  --gpu_ids "1,4,6,7" \
-  pretrain_motor_tpp.py \
+  --gpu_ids "1,4,5" \
+  pretrain_motor_tpp2.py \
   --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_add_mask_divide_all
-
-CUDA_VISIBLE_DEVICES=1 accelerate launch \
-  --num_processes 1 \
-  --mixed_precision bf16 \
-  --gpu_ids "1" \
-  pretrain_motor_tpp.py \
-  --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
-  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
-  --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_new
-
-kuvira
-CUDA_VISIBLE_DEVICES=0 accelerate launch \
-  --num_processes 1 \
-  --mixed_precision bf16 \
-  --gpu_ids "0" \
-  pretrain_motor.py \
-  --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8 \
-  --meds_reader /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
-  --per_device_train_batch_size 1 \
-  --output_dir /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8/output_exlude_corrected 
-
-
-CUDA_VISIBLE_DEVICES=3 accelerate launch \
-  --num_processes 1 \
-  --mixed_precision bf16 \
-  --gpu_ids "3" \
-  pretrain_motor.py \
-  --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8 \
-  --meds_reader /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
-  --per_device_train_batch_size 1 \
-  --output_dir /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8/output_linear_interpolation \
-  --linear_interpolation True
+  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um
 '''

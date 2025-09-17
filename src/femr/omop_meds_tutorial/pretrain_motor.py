@@ -4,14 +4,19 @@ import pathlib
 import torch
 import sys
 import femr.models.transformer
+import femr.models.mamba
 import pickle
 import datasets
 import femr.models.tokenizer
 import femr.models.processor
+from hydra import initialize_config_dir, compose
+from omegaconf import OmegaConf
 from femr.omop_meds_tutorial.motor_evaluation.generate_labels import create_omop_meds_tutorial_arg_parser
 import torch.nn as nn
 from transformers import TrainerCallback
 import wandb
+import datasets
+datasets.disable_caching()
 
 class CustomEarlyStoppingCallback(transformers.EarlyStoppingCallback):
     def check_metric_value(self, args, state, control, metric_value):
@@ -71,6 +76,14 @@ def create_arg_parser():
         dest="per_device_eval_batch_size",
         type=int,
         default=1
+    )
+    arg_parser.add_argument(
+        "--model",
+        dest="model",
+        type=str,
+        choices=["transformer", "mamba"],
+        default="transformer",
+        required=True,
     )
     arg_parser.add_argument(
         "--linear_interpolation",
@@ -139,24 +152,51 @@ def main():
     val_batches_path = pretraining_data / 'val_batches'
     val_batches = datasets.Dataset.load_from_disk(str(val_batches_path))
 
-    # Finally, given the batches, we can train CLMBR.
-    # We can use huggingface's trainer to do this.
-    transformer_config = femr.models.config.FEMRTransformerConfig(
-        vocab_size=tokenizer.vocab_size,
-        is_hierarchical=isinstance(tokenizer, femr.models.tokenizer.HierarchicalTokenizer),
-        n_layers=args.n_layers,
-        use_normed_ages=True,
-        use_bias=False,
-        hidden_act='swiglu',
-    )
+    # Use Hydra to load model hyperparameters and keep tokenizer-derived fields runtime-bound
+    conf_dir = pathlib.Path(__file__).parent / "conf"
+    with initialize_config_dir(version_base=None, config_dir=str(conf_dir)):
+        hydra_cfg = compose(config_name="config", overrides=[f"model={args.model}"])
 
-    config = femr.models.config.FEMRModelConfig.from_transformer_task_configs(
-        transformer_config,
-        motor_task.get_task_config()
-    )
+    model_cfg_dict = OmegaConf.to_container(hydra_cfg.model, resolve=True)
 
-    # print(f"Transformer config: {transformer_config}")
-    model = femr.models.transformer.FEMRModel(config,attn_implementation="flash_attention_2",linear_interpolation=args.linear_interpolation)
+    # Build architecture config from Hydra, then override vocab_size and is_hierarchical from tokenizer
+    if args.model == "transformer":
+        # Apply optional CLI override for n_layers
+        if args.n_layers is not None:
+            model_cfg_dict["n_layers"] = args.n_layers
+        model_config = femr.models.config.FEMRTransformerConfig(
+            vocab_size=tokenizer.vocab_size,
+            is_hierarchical=isinstance(tokenizer, femr.models.tokenizer.HierarchicalTokenizer),
+            hidden_size=model_cfg_dict.get("hidden_size"),
+            intermediate_size=model_cfg_dict.get("intermediate_size"),
+            n_heads=model_cfg_dict.get("n_heads"),
+            n_layers=model_cfg_dict.get("n_layers"),
+            attention_width=model_cfg_dict.get("attention_width"),
+            use_normed_ages=model_cfg_dict.get("use_normed_ages"),
+            use_bias=model_cfg_dict.get("use_bias"),
+            hidden_act=model_cfg_dict.get("hidden_act"),
+        )
+    else:  # mamba
+        # Apply optional CLI override for n_layers
+        if args.n_layers is not None:
+            model_cfg_dict["n_layers"] = args.n_layers
+        model_config = femr.models.config.FEMRMambaConfig(
+            vocab_size=tokenizer.vocab_size,
+            is_hierarchical=isinstance(tokenizer, femr.models.tokenizer.HierarchicalTokenizer),
+            hf_name=model_cfg_dict.get("hf_name"),
+            hidden_size=model_cfg_dict.get("hidden_size"),
+            intermediate_size=model_cfg_dict.get("intermediate_size"),
+            n_layers=model_cfg_dict.get("n_layers"),
+            d_state=model_cfg_dict.get("d_state"),
+            use_normed_ages=model_cfg_dict.get("use_normed_ages"),
+            use_bias=model_cfg_dict.get("use_bias"),
+            config_kwargs=model_cfg_dict.get("config_kwargs") or {},
+        )
+
+    config = femr.models.config.FEMRModelConfig.from_task_configs(model_config, motor_task.get_task_config())
+
+    # Unified model wrapper supports both architectures
+    model = femr.models.mamba.FEMRModel(config, linear_interpolation=args.linear_interpolation)
     model = model.to(torch.device("cuda:0"))
 
 
@@ -234,11 +274,19 @@ if __name__ == "__main__":
 40 hours
 export CUDA_VISIBLE_DEVICES=5
 
+python pretrain_motor_old.py \
+  --pretraining_data /user/zj2398/cache/motor_mimic_8k \
+  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
+  --per_device_train_batch_size 1 \
+  --output_dir /user/zj2398/cache/motor_mimic_8k/output_test
+
 python pretrain_motor.py \
   --pretraining_data /user/zj2398/cache/motor_mimic_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/motor_mimic_8k/output_separate
+  --output_dir /user/zj2398/cache/motor_mimic_8k/output_test
+  --model transformer
+  --n_layers 24
 
   17.5
 

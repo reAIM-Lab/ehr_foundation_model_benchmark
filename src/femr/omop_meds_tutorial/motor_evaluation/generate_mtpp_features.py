@@ -100,7 +100,7 @@ def main():
         pretraining_data = pathlib.Path(args.pretraining_data)
         ontology_path = args.ontology_path
 
-        features_path = pretraining_data / "features"
+        features_path = pathlib.Path(os.path.dirname(args.model_path)) / "features"
         features_path.mkdir(exist_ok=True, parents=True)
         flops_path = pretraining_data / "flops"
         flops_path.mkdir(exist_ok=True, parents=True)

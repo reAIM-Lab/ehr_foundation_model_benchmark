@@ -1,0 +1,12 @@
+type: transformer
+vocab_size: null  # set from tokenizer at runtime
+is_hierarchical: null  # set from tokenizer at runtime
+hidden_size: 768
+intermediate_size: 3072
+n_heads: 12
+n_layers: 11
+attention_width: 496
+use_normed_ages: true
+use_bias: false
+hidden_act: swiglu
+
