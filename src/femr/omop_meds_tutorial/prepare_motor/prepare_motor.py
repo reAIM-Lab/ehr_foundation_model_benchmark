@@ -9,6 +9,10 @@ import femr.models.processor
 import pandas as pd
 import polars as pl
 import logging
+from femr.models.tasks.motor import MOTOR_Task as MOTOR_Task
+from femr.models.tasks.tpp import TPP_Task as TPP_Task
+from femr.models.tasks.mtpp import MTPP_Task as MTPP_Task
+
 # logging.basicConfig(
 #     level=logging.INFO,
 #     filename='motor.log',
@@ -75,29 +79,46 @@ def main(args):
             print("Loading tokenizer")
             tokenizer = HierarchicalTokenizer.from_pretrained(tokenizer_path, ontology=ontology)
 
-        task_path = pretraining_data_path / 'motor_task.pkl'
+        task_path = pretraining_data_path / f'{args.loss_type}_task.pkl'
 
         if not task_path.exists():
             # Second, we need to prefit the MOTOR model. This is necessary because piecewise exponential models are unstable without an initial fit
-            print("Train MOTOR task")
+            print(f"Train {args.loss_type} task")
 
-            motor_task = femr.models.tasks.MOTORTask.fit_pretraining_task_info(
-                main_database, tokenizer,
-                num_tasks=8 * 1024,
-                num_bins=args.num_bins,
-                final_layer_size=512,
-                codes_to_skip=codes_to_skip
-            )
+            if args.loss_type == "motor":
+                task = MOTOR_Task.fit_pretraining_task_info(
+                    main_database, tokenizer,
+                    num_tasks=8 * 1024,
+                    num_bins=args.num_bins,
+                    final_layer_size=512,
+                    codes_to_skip=codes_to_skip
+                )
+            elif args.loss_type == "tpp":
+                task = TPP_Task.fit_pretraining_task_info(
+                    main_database, tokenizer,
+                    num_tasks=8 * 1024,
+                    num_bins=args.num_bins,
+                    final_layer_size=512,
+                    codes_to_skip=codes_to_skip
+                )
+            if args.loss_type == "mtpp":
+                task = MTPP_Task.fit_pretraining_task_info(
+                    main_database, tokenizer,
+                    num_tasks=8 * 1024,
+                    num_bins=args.num_bins,
+                    final_layer_size=512,
+                    codes_to_skip=codes_to_skip
+                )
 
             with open(task_path, 'wb') as f:
-                pickle.dump(motor_task, f)
+                pickle.dump(task, f)
 
         else:
             with open(task_path, 'rb') as f:
-                motor_task = pickle.load(f)
+                task = pickle.load(f)
 
         # print(f"Motor task length: {len(motor_task.pretraining_task_codes)}")
-        processor = femr.models.processor.FEMRBatchProcessor(tokenizer, motor_task)
+        processor = femr.models.processor.FEMRBatchProcessor(tokenizer, task)
 
         # example_subject_id = list(train_database)[0]
         # example_subject = train_database[example_subject_id]
@@ -110,26 +131,26 @@ def main(args):
         # for key in example_batch['batch'].keys():
         #     print(f"example_batch[{key}], shape: {example_batch['batch'][key].shape}, values: {example_batch['batch'][key]}")
 
-        train_batches_path = pretraining_data_path / 'train_batches'
+        # train_batches_path = pretraining_data_path / 'train_batches'
 
-        if not train_batches_path.exists():
-            print("Convert batches")
-            # But generally we want to convert entire datasets
-            train_batches = processor.convert_dataset(train_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
+        # if not train_batches_path.exists():
+        #     print("Convert batches")
+        #     # But generally we want to convert entire datasets
+        #     train_batches = processor.convert_dataset(train_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
 
-            print("Convert batches to pytorch")
-            # Convert our batches to pytorch tensors
-            train_batches.set_format("pt")
-            train_batches.save_to_disk(train_batches_path)
+        #     print("Convert batches to pytorch")
+        #     # Convert our batches to pytorch tensors
+        #     train_batches.set_format("pt")
+        #     train_batches.save_to_disk(train_batches_path)
 
-        val_batches_path = pretraining_data_path / 'val_batches'
+        # val_batches_path = pretraining_data_path / 'val_batches'
 
-        if not val_batches_path.exists():
-            print("Convert val batches")
-            val_batches = processor.convert_dataset(val_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
-            # Convert our batches to pytorch tensors
-            val_batches.set_format("pt")
-            val_batches.save_to_disk(val_batches_path)
+        # if not val_batches_path.exists():
+        #     print("Convert val batches")
+        #     val_batches = processor.convert_dataset(val_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
+        #     # Convert our batches to pytorch tensors
+        #     val_batches.set_format("pt")
+        #     val_batches.save_to_disk(val_batches_path)
 
 
 def create_omop_meds_tutorial_argparser():
@@ -184,6 +205,18 @@ def create_omop_meds_tutorial_argparser():
         type=int,
         default=8,
     )
+    parser.add_argument(
+        "--loss_type",
+        dest="loss_type",
+        action="store",
+        required=True,
+        choices=["motor","tpp","mtpp"],
+        type=str,
+        default=8,
+    )
+    
+    
+
     return parser
 
 
@@ -197,8 +230,10 @@ python prepare_motor.py \
   --pretraining_data /user/zj2398/cache/motor_mimic_8k \
   --athena_path " " \
   --num_bins 8 \
+  --loss_type motor \
   --num_threads 100 \
   --meds_reader /user/zj2398/cache/mimic/meds_v0.6_reader 
+
 #   > out.log 2>&1  
 
 kuvira

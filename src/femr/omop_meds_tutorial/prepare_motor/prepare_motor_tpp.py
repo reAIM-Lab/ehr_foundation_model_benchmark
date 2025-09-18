@@ -4,7 +4,7 @@ import meds_reader
 import pickle
 import femr.splits
 from femr.models_tpp.tokenizer.hierarchical_tokenizer import HierarchicalTokenizer
-import femr.models_tpp.tasks
+import src.femr.models_tpp.tasks_mtpp
 import femr.models_tpp.processor
 import pandas as pd
 import polars as pl
@@ -82,7 +82,7 @@ def main(args):
             # Second, we need to prefit the MOTOR model. This is necessary because piecewise exponential models_tpp are unstable without an initial fit
             print("Train MOTOR task")
 
-            motor_task = femr.models_tpp.tasks.MOTORTask.fit_pretraining_task_info(
+            motor_task = femr.models_tpp.tasks_mtpp.MOTORTask.fit_pretraining_task_info(
                 main_database, tokenizer,
                 num_tasks=8 * 1024,
                 num_bins=args.num_bins,

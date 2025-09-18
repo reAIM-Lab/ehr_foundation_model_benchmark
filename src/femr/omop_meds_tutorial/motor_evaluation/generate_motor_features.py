@@ -6,7 +6,7 @@ from typing import Optional
 
 import femr.transforms
 import meds_reader
-import femr.models.transformer
+import femr.models.architecture.transformer
 import pandas as pd
 import pickle
 import meds

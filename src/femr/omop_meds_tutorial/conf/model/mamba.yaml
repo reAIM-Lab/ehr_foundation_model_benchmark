@@ -3,8 +3,8 @@ vocab_size: null  # set from tokenizer at runtime
 is_hierarchical: null  # set from tokenizer at runtime
 hf_name: state-spaces/mamba-130m-hf
 hidden_size: 768  # use HF default d_model unless overridden
-intermediate_size: null
-n_layers: null     # use HF default n_layer unless overridden
+intermediate_size: 3072
+n_layers: 12     # use HF default n_layer unless overridden
 d_state: 24
 use_normed_ages: true
 use_bias: false

@@ -3,8 +3,8 @@ import transformers
 import pathlib
 import torch
 import sys
-import femr.models.transformer
-import femr.models.mamba
+import femr.models.architecture.transformer
+import femr.models.architecture.embedding
 import pickle
 import datasets
 import femr.models.tokenizer
@@ -17,6 +17,10 @@ from transformers import TrainerCallback
 import wandb
 import datasets
 datasets.disable_caching()
+
+from femr.models.tasks.motor import MOTOR_Task as MOTOR_Task
+from femr.models.tasks.tpp import TPP_Task as TPP_Task
+from femr.models.tasks.mtpp import MTPP_Task as MTPP_Task
 
 class CustomEarlyStoppingCallback(transformers.EarlyStoppingCallback):
     def check_metric_value(self, args, state, control, metric_value):
@@ -86,6 +90,14 @@ def create_arg_parser():
         required=True,
     )
     arg_parser.add_argument(
+        "--loss_type",
+        dest="loss_type",
+        type=str,
+        choices=["motor", "tpp","mtpp"],
+        default="motor",
+        required=True,
+    )
+    arg_parser.add_argument(
         "--linear_interpolation",
         dest="linear_interpolation",
         type=bool,
@@ -138,16 +150,35 @@ def main():
     )
     print(f"Tokenizer vocab size: {tokenizer.vocab_size}")
 
-    task_path = pretraining_data / 'motor_task.pkl'
+    # # if args.loss_type == 'motor':
+    # #     from femr.models.tasks.motor import MOTORTask as MOTORTask
+    # #     # print("loss motor")
+    # # elif args.loss_type == 'tpp':
+    # #     from femr.models.tasks.tpp import MOTORTask as MOTORTask
+    # # elif args.loss_type == 'mtpp':
+    # #     from femr.models.tasks.mtpp import MOTORTask as MOTORTask
+    # if args.loss_type == "motor":
+    #     from femr.models.tasks.motor import MOTORTask as _MOTORImpl
+    # elif args.loss_type == "tpp":
+    #     from femr.models.tasks.tpp import MOTORTask as _MOTORImpl
+    # elif args.loss_type == "mtpp":
+    #     from femr.models.tasks.mtpp import MOTORTask as _MOTORImpl
+    # else:
+    #     raise ValueError(f"Unknown loss_type: {args.loss_type}")
+
+    # # <-- critical alias for pickle backward-compatibility
+    # import femr.models.tasks as _tasks_mod
+    # _tasks_mod.MOTORTask = _MOTORImpl
+
+    task_path = pretraining_data / f'{args.loss_type}_task.pkl'
     with open(task_path, 'rb') as f:
-        motor_task = pickle.load(f)
-    print(f"Motor task: {motor_task}")
-    print(f"Motor task length: {len(motor_task.pretraining_task_codes)}")
-    processor = femr.models.processor.FEMRBatchProcessor(tokenizer, motor_task)
+        task = pickle.load(f)
+    # print(f"{args.loss_type} task: {task}")
+    print(f"{args.loss_type} task length: {len(task.pretraining_task_codes)}")
+    processor = femr.models.processor.FEMRBatchProcessor(tokenizer, task)
 
     train_batches_path = pretraining_data / 'train_batches'
     train_batches = datasets.Dataset.load_from_disk(str(train_batches_path))
-    print(f"Train batches length: {len(train_batches)}, batch : {train_batches}")
 
     val_batches_path = pretraining_data / 'val_batches'
     val_batches = datasets.Dataset.load_from_disk(str(val_batches_path))
@@ -161,6 +192,7 @@ def main():
 
     # Build architecture config from Hydra, then override vocab_size and is_hierarchical from tokenizer
     if args.model == "transformer":
+        print("using transformer as the model")
         # Apply optional CLI override for n_layers
         if args.n_layers is not None:
             model_cfg_dict["n_layers"] = args.n_layers
@@ -178,6 +210,7 @@ def main():
         )
     else:  # mamba
         # Apply optional CLI override for n_layers
+        print("using mamba as the model")
         if args.n_layers is not None:
             model_cfg_dict["n_layers"] = args.n_layers
         model_config = femr.models.config.FEMRMambaConfig(
@@ -193,14 +226,16 @@ def main():
             config_kwargs=model_cfg_dict.get("config_kwargs") or {},
         )
 
-    config = femr.models.config.FEMRModelConfig.from_task_configs(model_config, motor_task.get_task_config())
+    config = femr.models.config.FEMRModelConfig.from_task_configs(model_config, task.get_task_config())
+    # print(f"The config is {config}")
 
     # Unified model wrapper supports both architectures
-    model = femr.models.mamba.FEMRModel(config, linear_interpolation=args.linear_interpolation)
+    model = femr.models.architecture.embedding.FEMRModel(config, loss_type=args.loss_type,linear_interpolation=args.linear_interpolation)
     model = model.to(torch.device("cuda:0"))
 
 
     print(f"Model param count: {count_parameters(model)}")
+    # print(f"model config is {model_config}") d
 
     learning_rate = args.learning_rate
     # output_dir = 'tmp_trainer_' + sys.argv[1]
@@ -272,13 +307,16 @@ if __name__ == "__main__":
 
 '''
 40 hours
-export CUDA_VISIBLE_DEVICES=5
+export CUDA_VISIBLE_DEVICES=4
 
-python pretrain_motor_old.py \
+python pretrain_motor.py \
   --pretraining_data /user/zj2398/cache/motor_mimic_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/motor_mimic_8k/output_test
+  --output_dir /user/zj2398/cache/motor_mimic_8k/output_test \
+  --model mamba \
+  --loss_type motor \
+  --n_layers 12
 
 python pretrain_motor.py \
   --pretraining_data /user/zj2398/cache/motor_mimic_8k \
@@ -286,7 +324,7 @@ python pretrain_motor.py \
   --per_device_train_batch_size 1 \
   --output_dir /user/zj2398/cache/motor_mimic_8k/output_test
   --model transformer
-  --n_layers 24
+
 
   17.5
 

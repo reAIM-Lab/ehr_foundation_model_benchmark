@@ -222,17 +222,17 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     # Run the first command: generate MOTOR features
     echo "Running $MODEL_NAME feature generation for $TASK_NAME..."
 
-    # Build the command with conditional observation_window parameter
-    GENERATE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.generate_mtpp_features \
-      --pretraining_data \"$PRETRAINING_DATA\" \
-      --model_path \"$MODEL_PATH\" \
-      --meds_reader \"$OMOP_MEDS_READER\" \
-      --num_proc \"$NUM_PROC\" \
-      --tokens_per_batch \"$TOKENS_PER_BATCH\" \
-      --device \"$DEVICE\" \
-      --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
-      --cohort_dir \"$TASK_DIR\" \
-      --ontology_path \"$ONTOLOGY_PATH\""
+    # # Build the command with conditional observation_window parameter
+    # GENERATE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.generate_mtpp_features \
+    #   --pretraining_data \"$PRETRAINING_DATA\" \
+    #   --model_path \"$MODEL_PATH\" \
+    #   --meds_reader \"$OMOP_MEDS_READER\" \
+    #   --num_proc \"$NUM_PROC\" \
+    #   --tokens_per_batch \"$TOKENS_PER_BATCH\" \
+    #   --device \"$DEVICE\" \
+    #   --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
+    #   --cohort_dir \"$TASK_DIR\" \
+    #   --ontology_path \"$ONTOLOGY_PATH\""
 
     # Add linear_interpolation parameter if specified
     if [ "$USE_LINEAR_INTERPOLATION" = true ]; then
@@ -323,46 +323,46 @@ echo "All tasks processed."
 #   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_L_num/best_120735 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um/best_120735 \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
 #   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --model_name deephit_no_divide_mask_L_num \
-#   --task in_hospital_mortality \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
+#   --model_name deephit_no_divide_mask_mean_um  \
+#   --task celiac \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
+
+# export CUDA_VISIBLE_DEVICES=3
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um/best_120735 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --model_name deephit_no_divide_mask_mean_um  \
+#   --task masld \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
+
 
 # export CUDA_VISIBLE_DEVICES=5
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_L_num/best_120735 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um/best_120735 \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
 #   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --model_name deephit_no_divide_mask_L_num \
-#   --task readmission \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
-
-
-# export CUDA_VISIBLE_DEVICES=5
-# bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_all/best_134150 \
-#   --tokens_per_batch   65536 \
-#   --device             cuda:0 \
-#   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --model_name deephit_no_divide_mask_mean_all \
-#   --task readmission \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
+#   --model_name deephit_no_divide_mask_mean_um \
+#   --task stroke \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
 
 # export CUDA_VISIBLE_DEVICES=5
 # bash run_mtpp_cbs.sh \

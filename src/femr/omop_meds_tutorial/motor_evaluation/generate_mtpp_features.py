@@ -6,7 +6,8 @@ from typing import Optional
 
 import femr.transforms
 import meds_reader
-import femr.models_tpp.transformer
+# import femr.models_tpp.transformer_mtpp
+import femr.models.architecture.transformer
 import pandas as pd
 import pickle
 import meds
@@ -163,9 +164,9 @@ def main():
                 for label in labels.to_dict(orient="records")
             ]
             print(f"typed_labels length: {len(typed_labels)}")
-            total_flops = femr.models_tpp.transformer.TotalFlops()
+            # total_flops = femr.models.architecture.transformer femr.models_tpp.transformer.TotalFlops()
             start_time: datetime.datetime = datetime.datetime.now()
-            features = femr.models_tpp.transformer.compute_features(
+            features = femr.models.architecture.transformer.compute_features(
                 db=database,
                 model_path=args.model_path,
                 labels=typed_labels,
@@ -182,12 +183,12 @@ def main():
                 pickle.dump(features, f)
 
             # Save the training metrics to the output file
-            with open(training_metrics_file, "w") as output_file:
-                training_metrics = {
-                    "duration_in_seconds": (datetime.datetime.now() - start_time).total_seconds(),
-                    "total_flops": total_flops.total_flops,
-                }
-                json.dump(training_metrics, output_file)
+            # with open(training_metrics_file, "w") as output_file:
+            #     training_metrics = {
+            #         "duration_in_seconds": (datetime.datetime.now() - start_time).total_seconds(),
+            #         "total_flops": total_flops.total_flops,
+            #     }
+            #     json.dump(training_metrics, output_file)
 
 if __name__ == "__main__":
     main()
