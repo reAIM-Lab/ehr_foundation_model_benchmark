@@ -254,7 +254,7 @@ def main():
         adam_beta2=0.95,
         report_to="none",
         # report_to=["wandb"],
-        run_name="deephit_mimic_bin_8_corrected",
+        run_name="tpp_mamba",
         # run_name="motor_pretrain_mimic",
         num_train_epochs=args.n_epochs,
         ddp_find_unused_parameters=True,
@@ -331,25 +331,8 @@ CUDA_VISIBLE_DEVICES=0,3,5 accelerate launch \
   --loss_type motor \
   --n_layers 12
 
-python pretrain_motor.py \
-  --pretraining_data /user/zj2398/cache/motor_mimic_8k \
-  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
-  --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/motor_mimic_8k/output_test
-  --model transformer
 
 
-  17.5
-
-CUDA_VISIBLE_DEVICES=4,5,1 accelerate launch \
-  --num_processes 3 \
-  --mixed_precision bf16 \
-  --gpu_ids "4,5,1" \
-  pretrain_motor.py \
-  --pretraining_data //user/zj2398/cache/motor_mimic_8k \
-  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
-  --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/motor_mimic_8k/output_separate
 
 gsb
 CUDA_VISIBLE_DEVICES=0,1,2 accelerate launch \
@@ -373,6 +356,18 @@ CUDA_VISIBLE_DEVICES=0 accelerate launch \
   --per_device_train_batch_size 1 \
   --output_dir /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8/output_exlude_corrected 
 
+CUDA_VISIBLE_DEVICES=0,2 accelerate launch \
+  --num_processes 2 \
+  --mixed_precision bf16 \
+  --gpu_ids "0,2" \
+  pretrain_motor.py \
+  --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/mimic/deephit_tpp \
+  --meds_reader /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+  --per_device_train_batch_size 1 \
+  --output_dir /data/processed_datasets/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_mamba \
+  --model mamba \
+  --loss_type tpp \
+  --n_layers 12
 
 CUDA_VISIBLE_DEVICES=3 accelerate launch \
   --num_processes 1 \
