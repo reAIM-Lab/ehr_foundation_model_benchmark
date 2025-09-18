@@ -189,7 +189,7 @@ class CLMBRTask(Task):
         return {"labels": np.array(self.batch_labels, dtype=np.int32)}
 
 
-class SurvivalCalculator:
+class MOTOR_SurvivalCalculator:
     def __init__(
             self, ontology: femr.ontology.Ontology, subject: meds_reader.Subject,
             code_whitelist: Optional[Set[str]] = None
@@ -243,7 +243,7 @@ def _prefit_motor_map(
     task_set = set(tasks)
 
     for subject in subjects:
-        calculator = SurvivalCalculator(ontology, subject, task_set)
+        calculator = MOTOR_SurvivalCalculator(ontology, subject, task_set)
 
         birth = femr.pat_utils.get_subject_birthdate(subject)
 
@@ -284,7 +284,7 @@ def _prefit_motor_agg(first: Any, second: Any) -> Any:
     return first
 
 
-class MOTORTask(Task):
+class MOTOR_Task(Task):
     @classmethod
     def fit_pretraining_task_info(
             cls,
@@ -294,7 +294,7 @@ class MOTORTask(Task):
             num_bins: int,
             final_layer_size: int,
             codes_to_skip: List[str] = None,
-    ) -> MOTORTask:
+    ) -> MOTOR_Task:
         print("Begin fit_pretraining_task_info")
         tasks = []
         for dict_entry in tokenizer.dictionary["vocab"]:
@@ -335,7 +335,7 @@ class MOTORTask(Task):
 
             task_data.append((task, rate, task_stats[0], task_stats[1], task_stats[2].mean()))
 
-        return MOTORTask(task_data, time_bins, final_layer_size)
+        return MOTOR_Task(task_data, time_bins, final_layer_size)
 
     def __init__(self, pretraining_task_info: List[Tuple[str, float]], time_bins: List[float], final_layer_size: int):
         self.pretraining_task_info = pretraining_task_info
@@ -360,7 +360,7 @@ class MOTORTask(Task):
 
     def start_subject(self, subject: meds_reader.Subject, ontology: Optional[femr.ontology.Ontology]) -> None:
         assert ontology
-        self.calculator = SurvivalCalculator(ontology, subject, self.pretraining_task_codes)
+        self.calculator = MOTOR_SurvivalCalculator(ontology, subject, self.pretraining_task_codes)
 
         self.per_subject_censor_time: List[float] = []
         self.per_subject_time_sparse: Dict[str, List[float]] = {

@@ -17,12 +17,12 @@ from torch import nn
 from tqdm import tqdm
 from torch.profiler import ProfilerActivity, profile
 
-import femr.models_tpp.config
-import femr.models_tpp.processor
-import femr.models_tpp.rmsnorm
-import femr.models_tpp.tasks
-import femr.models_tpp.tokenizer
-import femr.models_tpp.xformers
+import femr.models.config
+import femr.models.processor
+import femr.models.rmsnorm
+import src.femr.models.tasks.mtpp
+import femr.models.tokenizer
+import femr.models.architecture.xformers
 
 
 @dataclass(frozen=False)
@@ -81,10 +81,10 @@ def apply_rotary_pos_emb(x, sincos):
 
 
 class FEMREncoderLayer(nn.Module):
-    def __init__(self, config: femr.models_tpp.config.FEMRTransformerConfig):
+    def __init__(self, config: femr.models.config.FEMRTransformerConfig):
         super().__init__()
         self.config = config
-        self.norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
         if self.config.hidden_act == "swiglu":
             hidden_mult = 2
         else:
@@ -121,7 +121,7 @@ class FEMREncoderLayer(nn.Module):
         k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
         v = qkv[:, 2, :, :]
 
-        attn = femr.models_tpp.xformers.memory_efficient_attention_wrapper(
+        attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
             q.unsqueeze(0),
             k.unsqueeze(0),
             v.unsqueeze(0),
@@ -143,12 +143,12 @@ class FEMREncoderLayer(nn.Module):
 
 
 class FEMRTransformer(nn.Module):
-    def __init__(self, config: femr.models_tpp.config.FEMRTransformerConfig):
+    def __init__(self, config: femr.models.config.FEMRTransformerConfig):
         super().__init__()
         self.config = config
 
-        self.in_norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
-        self.out_norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.in_norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.out_norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
 
         if not self.config.is_hierarchical:
             self.embed = nn.Embedding(self.config.vocab_size, self.config.hidden_size)
@@ -209,7 +209,7 @@ class CLMBRTaskHead(nn.Module):
         return loss, {"logits": logits}
 
 
-class MOTORTaskHead(nn.Module):
+class MTPPTaskHead(nn.Module):
     def __init__(
             self,
             hidden_size: int,
@@ -272,7 +272,7 @@ class MOTORTaskHead(nn.Module):
         # self.numerical_task_layer = nn.Linear(self.final_layer_size, num_numerical_tasks).to(features.device)
         
         self.softmax = nn.Softmax(dim=1)
-        self.norm = femr.models_tpp.rmsnorm.RMSNorm(self.final_layer_size)
+        self.norm = femr.models.rmsnorm.RMSNorm(self.final_layer_size)
         self.linear_interpolation = linear_interpolation
         self.H_t  = math.log(self.num_time_bins)
         self.H_tv = math.log(self.num_time_bins * self.num_value_bins)
@@ -613,9 +613,9 @@ def remove_first_dimension(data: Any) -> Any:
 
 
 class FEMRModel(transformers.PreTrainedModel):
-    config_class = femr.models_tpp.config.FEMRModelConfig
+    config_class = femr.models.config.FEMRModelConfig
     
-    def __init__(self, config: femr.models_tpp.config.FEMRModelConfig, **kwargs):
+    def __init__(self, config: femr.models.config.FEMRModelConfig, **kwargs):
         # Extract linear_interpolation from kwargs, default to False
         self.linear_interpolation = kwargs.pop('linear_interpolation', False)
         
@@ -732,19 +732,19 @@ def compute_features(
          -  "subject_ids" and "feature_times" define the subject and time each feature refers to
          -  "features" provides the representations at each subject id and feature time
     """
-    task = femr.models_tpp.tasks.LabeledSubjectTask(labels, observation_window)
+    task = femr.models.tasks.mtpp.LabeledSubjectTask(labels, observation_window)
 
     print(f"Loading model from {model_path}")
     # print(f"use_linear_interpolation: {use_linear_interpolation}")
     
     # Use the new from_pretrained method that supports linear_interpolation
-    model = femr.models_tpp.transformer.FEMRModel.from_pretrained(
+    model = femr.models.architecture.transformer.FEMRModel.from_pretrained(
         model_path, 
         task_config=task.get_task_config(),
     )
 
-    tokenizer = femr.models_tpp.tokenizer.HierarchicalTokenizer.from_pretrained(model_path, ontology=ontology)
-    processor = femr.models_tpp.processor.FEMRBatchProcessor(tokenizer, task=task)
+    tokenizer = femr.models.tokenizer.HierarchicalTokenizer.from_pretrained(model_path, ontology=ontology)
+    processor = femr.models.processor.FEMRBatchProcessor(tokenizer, task=task)
 
     filtered_data = db.filter(list(task.label_map.keys()))
 

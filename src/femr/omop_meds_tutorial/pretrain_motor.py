@@ -231,7 +231,7 @@ def main():
 
     # Unified model wrapper supports both architectures
     model = femr.models.architecture.embedding.FEMRModel(config, loss_type=args.loss_type,linear_interpolation=args.linear_interpolation)
-    model = model.to(torch.device("cuda:0"))
+    # model = model.to(torch.device("cuda:0"))
 
 
     print(f"Model param count: {count_parameters(model)}")
@@ -257,7 +257,7 @@ def main():
         run_name="deephit_mimic_bin_8_corrected",
         # run_name="motor_pretrain_mimic",
         num_train_epochs=args.n_epochs,
-        ddp_find_unused_parameters=False,
+        ddp_find_unused_parameters=True,
 
         warmup_steps=500,
 
@@ -310,10 +310,23 @@ if __name__ == "__main__":
 export CUDA_VISIBLE_DEVICES=4
 
 python pretrain_motor.py \
+  --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
+  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
+  --per_device_train_batch_size 1 \
+  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_mamba \
+  --model mamba \
+  --loss_type mtpp \
+  --n_layers 12
+
+CUDA_VISIBLE_DEVICES=0,3,5 accelerate launch \
+  --num_processes 3 \
+  --mixed_precision bf16 \
+  --gpu_ids "0,3,5" \
+  pretrain_motor.py \
   --pretraining_data /user/zj2398/cache/motor_mimic_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/motor_mimic_8k/output_test \
+  --output_dir /user/zj2398/cache/motor_mimic_8k/output_mamba \
   --model mamba \
   --loss_type motor \
   --n_layers 12

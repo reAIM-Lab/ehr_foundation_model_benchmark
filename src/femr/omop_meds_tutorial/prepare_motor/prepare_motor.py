@@ -227,10 +227,10 @@ if __name__ == "__main__":
 mimic
 gsb
 python prepare_motor.py \
-  --pretraining_data /user/zj2398/cache/motor_mimic_8k \
+  --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
   --athena_path " " \
   --num_bins 8 \
-  --loss_type motor \
+  --loss_type mtpp \
   --num_threads 100 \
   --meds_reader /user/zj2398/cache/mimic/meds_v0.6_reader 
 

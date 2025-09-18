@@ -20,7 +20,7 @@ from torch.profiler import ProfilerActivity, profile
 import femr.models_tpp.config
 import femr.models_tpp.processor
 import femr.models_tpp.rmsnorm
-import femr.models_tpp.tasks
+import src.femr.models_tpp.tasks_mtpp
 import femr.models_tpp.tokenizer
 import femr.models_tpp.xformers
 
@@ -647,7 +647,7 @@ def compute_features(
          -  "subject_ids" and "feature_times" define the subject and time each feature refers to
          -  "features" provides the representations at each subject id and feature time
     """
-    task = femr.models_tpp.tasks.LabeledSubjectTask(labels, observation_window)
+    task = femr.models_tpp.tasks_mtpp.LabeledSubjectTask(labels, observation_window)
 
     print(f"Loading model from {model_path}")
     # print(f"use_linear_interpolation: {use_linear_interpolation}")

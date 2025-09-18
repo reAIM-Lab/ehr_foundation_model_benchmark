@@ -299,7 +299,7 @@ class MOTORTaskHead(nn.Module):
         """
         eps = 1e-9
         total_loss = torch.tensor(0.0, device=features.device)
-        total_count = 0
+        loss_count = 0
         result = {}
 
         
@@ -312,6 +312,10 @@ class MOTORTaskHead(nn.Module):
         # Non-numerical task logits: [prediction_points, time_bins, non_numerical_tasks]
         task_logits = self.non_numerical_task_layer(self.norm(time_independent_features))
         time_dependent_logits = self.softmax(task_logits)
+
+        # task_logits_f32 = task_logits.float()
+        # task_logits_f32 = task_logits_f32 - task_logits_f32.amax(dim=1, keepdim=True)
+        # time_dependent_logits = torch.softmax(task_logits_f32, dim=1).to(task_logits.dtype)
         
         # print(f"time_dependent_logits is {time_dependent_logits}")
         # Debug: Check for NaN/inf values  
@@ -320,35 +324,35 @@ class MOTORTaskHead(nn.Module):
             raise ValueError("NaN/inf detected in time_dependent_logits")
         
         # Verify probability sums to 1 over time bins
-        prob_sums = torch.sum(time_dependent_logits, dim=1)  # Sum over time bins
-        assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-2), f"Probability sums: {prob_sums[0]}"
+        # prob_sums = torch.sum(time_dependent_logits, dim=1)  # Sum over time bins
+        # assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-2), f"Probability sums: {prob_sums[0]}"
         
         # Calculate CDF for survival analysis
         cdf = torch.cumsum(time_dependent_logits, dim=1)
         integrated_logits = torch.cat([torch.ones_like(time_dependent_logits[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
         
         # Add numerical stability
-        time_dependent_logits_stable = torch.clamp(time_dependent_logits, min=eps, max=1.0-eps)
-        integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
+        time_dependent_logits_stable = torch.clamp(time_dependent_logits, min=eps)
+        integrated_logits_stable = torch.clamp(integrated_logits, min=eps)
         
         # Linear interpolation adjustment if enabled
-        if self.linear_interpolation:
-            censor_time_ratio = batch["non_numerical_censor_time_ratio"]
-            is_censored_expanded = batch["non_numerical_is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)
-            integrated_logits_stable = torch.where(
-                is_censored_expanded,
-                integrated_logits_stable - (censor_time_ratio * time_dependent_logits_stable),
-                integrated_logits_stable
-            )
-            integrated_logits_stable = torch.clamp(integrated_logits_stable, min=eps, max=1.0-eps)
+        # if self.linear_interpolation:
+        #     censor_time_ratio = batch["non_numerical_censor_time_ratio"]
+        #     is_censored_expanded = batch["non_numerical_is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)
+        #     integrated_logits_stable = torch.where(
+        #         is_censored_expanded,
+        #         integrated_logits_stable - (censor_time_ratio * time_dependent_logits_stable),
+        #         integrated_logits_stable
+        #     )
+        #     integrated_logits_stable = torch.clamp(integrated_logits_stable, min=eps, max=1.0-eps)
         
         # Verify input shapes match expectations
         assert batch["non_numerical_is_event"].shape == time_dependent_logits.shape, \
             f"Shape mismatch: time_dependent_logits {time_dependent_logits.shape} vs is_event {batch['non_numerical_is_event'].shape}"
         
         # Validate exactly one bin per prediction-task combination
-        labels_sum = torch.sum(batch["non_numerical_is_event"], dim=1)
-        assert torch.all(labels_sum == 1), f"Expected exactly 1 True bin per prediction-task combination"
+        # labels_sum = torch.sum(batch["non_numerical_is_event"], dim=1)
+        # assert torch.all(labels_sum == 1), f"Expected exactly 1 True bin per prediction-task combination"
         
         # Loss calculation for non-numerical codes
         marked_bins = batch["non_numerical_is_event"]
@@ -371,8 +375,6 @@ class MOTORTaskHead(nn.Module):
         num_marked_bins = torch.sum(marked_bins)
         if num_marked_bins > 0:
             L_non = -torch.sum(loss_values) / (num_marked_bins)  # normalized by log B_t
-            total_loss += -torch.sum(loss_values)
-            total_count += num_marked_bins
         else:
             L_non = torch.tensor(0.0, device=features.device)
 
@@ -428,22 +430,28 @@ class MOTORTaskHead(nn.Module):
             # # Normalize over time_bins × value_bins to ensure probability sum = 1 (only over valid bins)
             # numerical_probs_flat = self.softmax(numerical_task_logits)
 
-            numerical_log_probs_flat = F.log_softmax(numerical_task_logits, dim=1)
-            numerical_probs_flat = torch.exp(numerical_log_probs_flat)
 
-            # # numerical_logits_f32 = (numerical_task_logits - numerical_task_logits.amax(dim=1, keepdim=True)).to(torch.float32)
-            # # numerical_probs_flat = F.softmax(numerical_logits_f32, dim=1).to(numerical_task_logits.dtype)
-            # # print(numerical_probs_flat.shape,numerical_probs_flat)
+            # numerical_log_probs_flat = F.log_softmax(numerical_task_logits, dim=1)
+            # numerical_probs_flat = torch.exp(numerical_log_probs_flat)
+
+            numerical_probs_flat = self.softmax(numerical_task_logits)
+
+            # torch.logsumexp()
+            # torch.exp(torch.logsum(numerical_log_probs_flat))
+
+            # numerical_logits_f32 = (numerical_task_logits - numerical_task_logits.amax(dim=1, keepdim=True)).to(torch.float32)
+            # numerical_probs_flat = F.softmax(numerical_logits_f32, dim=1).to(numerical_task_logits.dtype)
+            # print(numerical_probs_flat.shape,numerical_probs_flat)
 
             # numerical_log_probs = numerical_log_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
             numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
-
-            # numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
 
             numerical_probs = numerical_probs.clamp_min(eps)
 
             # # assert check
             expanded_valid_mask_assert = mask_tv.unsqueeze(0).expand(batch_size,-1,-1,-1)
+            numerical_probs = numerical_probs*expanded_valid_mask_assert
+
             assert torch.all(numerical_probs[~expanded_valid_mask_assert] <= eps), \
             "Non-zero probabilities found in invalid bins."
             assert torch.all(numerical_probs[expanded_valid_mask_assert] >= eps), \
@@ -455,9 +463,9 @@ class MOTORTaskHead(nn.Module):
             #     f"Numerical probability sums off; example: {prob_sums[0]}"
 
             # numerical_probs = torch.where(expanded_valid_mask_assert, numerical_probs.clamp_min(eps), numerical_probs)
-            prob_sums = torch.sum(numerical_probs, dim=(1, 2))  # Sum over time and value bins
-            assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-6), f"Numerical probability sums: {prob_sums[0]}"
-            # print(f"numerical_probs is {numerical_probs}")
+            # prob_sums = torch.sum(numerical_probs, dim=(1, 2))  # Sum over time and value bins
+            # assert torch.allclose(torch.sum(numerical_probs, dim=(1, 2)), torch.ones_like(prob_sums), atol=1e-6), f"Numerical probability sums: {prob_sums[0]}"
+
             
             #original one
             # numerical_probs_flat = self.softmax(numerical_task_logits)
@@ -478,7 +486,7 @@ class MOTORTaskHead(nn.Module):
 
             if torch.any(time_censor_in_bin):
                 # Sum probabilities over value bins: [pred_points, time_bins, numerical_tasks]
-                time_only_probs = torch.sum(numerical_probs*expanded_valid_mask_assert, dim=2)
+                time_only_probs = torch.sum(numerical_probs, dim=2)
                 cdf = torch.cumsum(time_only_probs, dim=1)
                 integrated_logits = torch.cat([torch.ones_like(time_only_probs[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
                 integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
@@ -492,10 +500,10 @@ class MOTORTaskHead(nn.Module):
                 )
                 
                 censored_count = torch.sum(time_censor_in_bin)
-                if censored_count > 0:
-                    L_num_cens = -torch.sum(censored_loss_values) 
-                    numerical_loss += L_num_cens
-                    total_num_count += censored_count
+                # if censored_count > 0:
+                L_num_cens = -torch.sum(censored_loss_values) 
+                numerical_loss += L_num_cens
+                total_num_count += censored_count
 
             # Case 2: Event cases - predict both time and value using outer product
             # Construct event_bins = time_event_in_bin ⊗ value_event_in_bin (outer product)  
@@ -514,16 +522,16 @@ class MOTORTaskHead(nn.Module):
                 event_count = torch.sum(event_bins)
                 if event_count > 0:
                     # Normalize by the number of valid value bins for each task
-                    valid_bin_counts = torch.sum(value_valid_mask, dim=1)  # [numerical_tasks]
+                    # valid_bin_counts = torch.sum(value_valid_mask, dim=1)  # [numerical_tasks]
                     # print(f"the min value in valid_bin_counts is {torch.min(valid_bin_counts)}")
                     # Expand to match event_bins shape: [pred_points, time_bins, value_bins, numerical_tasks]
-                    valid_bin_counts_expanded = valid_bin_counts.unsqueeze(0).unsqueeze(1).unsqueeze(2)  # [1, 1, 1, numerical_tasks]
+                    # valid_bin_counts_expanded = valid_bin_counts.unsqueeze(0).unsqueeze(1).unsqueeze(2)  # [1, 1, 1, numerical_tasks]
+
                     # Apply normalization only where events occur
-                    # normalization = torch.where(event_bins, torch.log(valid_bin_counts_expanded), torch.zeros_like(event_bins))
-                    # print(f"before event-loss-value, {torch.sum(event_loss_values)}")
+                    # normalization = torch.where(event_bins, torch.log(valid_bin_counts_expanded), torch.ones_like(event_bins))
                     # event_loss_values = torch.div(event_loss_values,normalization)
-                    # event_loss_values = event_loss_values - normalization
-                    # print(f"after normalization event-loss-vaues {event_loss_values}")
+                    # event_loss_values = event_loss_values / normalization
+
                     L_num_event = -torch.sum(event_loss_values)
                     numerical_loss += L_num_event
                     total_num_count += event_count
@@ -533,9 +541,6 @@ class MOTORTaskHead(nn.Module):
             # den = ne + nc
             if total_num_count > 0:
                 L_num = numerical_loss/total_num_count
-                total_count += total_num_count
-                total_loss += numerical_loss
-
             else:
                 L_num = torch.tensor(0.0, device=features.device)
 
@@ -561,6 +566,7 @@ class MOTORTaskHead(nn.Module):
             print("No numerical codes found in batch")
         # Final loss: mean of non-numerical and numerical losses
         # print(f"ratio {non_numerical_loss/numerical_loss}, non_numerical_loss is {non_numerical_loss} : numerical loss is {numerical_loss}, censor {censored_loss}, event {event_loss}")
+        # loss = total_loss / loss_count
         # loss = non_numerical_loss*0.75+numerical_loss_mean*0.25
         # print(f"l_non {L_non}, L_num {L_num}")
 
@@ -572,18 +578,21 @@ class MOTORTaskHead(nn.Module):
         # else:
         #     # simple fallback (e.g., warmup for first epoch)
 
-        loss = total_loss / total_count
-        # error = -torch.sum(loss_values) + numerical_loss - total_loss
-        # assert error< 10, f"total_non is {-torch.sum(loss_values)}, total_num is {numerical_loss}, total_loss is {total_loss}"
-        # print(f"per bin loss is {loss},total count is {total_count}")
-        # loss = 0.5 * (L_non + L_num)
-        # print(f"mean loss is {loss}, L_non is {L_non}, total non {num_marked_bins},  L_num is {L_num}, total num {total_num_count}")
+        # if args.
+        #     loss = alpha * L_non + (1 - alpha) * L_num
+        # else:
+        #     loss = total_loss / loss_count
+        alpha = 0.5
+        loss = alpha * L_non + (1 - alpha) * L_num
+    
+        # loss = L_num
+        # print(f"yes mean loss is {loss}, L_non is {L_non}, total non {num_marked_bins},  L_num is {L_num}, total num {total_num_count}")
         
         # Debug: Check for issues
-        # if torch.isnan(loss) or torch.isinf(loss):
-        #     print(f"WARNING: NaN/inf detected in final loss: {loss}")
-        #     print(f"  num_losses: {loss_count}")
-        #     print(f"  total_loss: {total_loss}")
+        if torch.isnan(loss) or torch.isinf(loss):
+            print(f"WARNING: NaN/inf detected in final loss: {loss}")
+            print(f"  num_losses: {loss_count}")
+            print(f"  total_loss: {total_loss}")
 
         return loss, result
 

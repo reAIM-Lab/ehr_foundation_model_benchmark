@@ -17,12 +17,12 @@ from torch import nn
 from tqdm import tqdm
 from torch.profiler import ProfilerActivity, profile
 
-import femr.models_tpp.config
-import femr.models_tpp.processor
-import femr.models_tpp.rmsnorm
-import src.femr.models_tpp.tasks_mtpp
-import femr.models_tpp.tokenizer
-import femr.models_tpp.xformers
+import femr.models.config
+import femr.models.processor
+import femr.models.rmsnorm
+import femr.models.tasks.tpp
+import femr.models.tokenizer
+import femr.models.architecture.xformers
 
 
 @dataclass(frozen=False)
@@ -81,10 +81,10 @@ def apply_rotary_pos_emb(x, sincos):
 
 
 class FEMREncoderLayer(nn.Module):
-    def __init__(self, config: femr.models_tpp.config.FEMRTransformerConfig):
+    def __init__(self, config: femr.models.config.FEMRTransformerConfig):
         super().__init__()
         self.config = config
-        self.norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
         if self.config.hidden_act == "swiglu":
             hidden_mult = 2
         else:
@@ -121,7 +121,7 @@ class FEMREncoderLayer(nn.Module):
         k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
         v = qkv[:, 2, :, :]
 
-        attn = femr.models_tpp.xformers.memory_efficient_attention_wrapper(
+        attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
             q.unsqueeze(0),
             k.unsqueeze(0),
             v.unsqueeze(0),
@@ -143,12 +143,12 @@ class FEMREncoderLayer(nn.Module):
 
 
 class FEMRTransformer(nn.Module):
-    def __init__(self, config: femr.models_tpp.config.FEMRTransformerConfig):
+    def __init__(self, config: femr.models.config.FEMRTransformerConfig):
         super().__init__()
         self.config = config
 
-        self.in_norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
-        self.out_norm = femr.models_tpp.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.in_norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
+        self.out_norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
 
         if not self.config.is_hierarchical:
             self.embed = nn.Embedding(self.config.vocab_size, self.config.hidden_size)
@@ -180,7 +180,118 @@ class FEMRTransformer(nn.Module):
             x = x + layer(x, time_data, pos_embed, attn_bias, s)
 
         final = self.out_norm(x)
+        return final
+    
+class FEMRMamba(nn.Module):
+    def __init__(self, config: femr.models.config.FEMRMambaConfig):
+        super().__init__()
+        self.config = config
 
+        # Build embeddings like transformer for identical input pipeline
+        hidden_size = config.hidden_size
+        emb_dim = hidden_size if hidden_size is not None else 768
+        if not self.config.is_hierarchical:
+            self.embed = nn.Embedding(self.config.vocab_size, emb_dim)
+        else:
+            self.embed_bag = nn.EmbeddingBag(
+                num_embeddings=self.config.vocab_size,
+                embedding_dim=emb_dim,
+                mode="sum",
+                include_last_offset=True,
+            )
+
+        self.in_norm = femr.models.rmsnorm.RMSNorm(emb_dim)
+        self.out_norm = femr.models.rmsnorm.RMSNorm(emb_dim)
+
+        # Load HF Mamba config and apply overrides
+        hf_config = transformers.AutoConfig.from_pretrained(self.config.hf_name, trust_remote_code=True)
+
+        # Adopt model size defaults from HF unless explicitly overridden
+        # if self.config.hidden_size is not None:
+        #     hf_config.d_model = self.config.hidden_size
+        # if self.config.n_layers is not None:
+        #     if hasattr(hf_config, "n_layer"):
+        #         hf_config.n_layer = self.config.n_layers
+        #     if hasattr(hf_config, "num_hidden_layers"):
+        #         hf_config.num_hidden_layers = self.config.n_layers
+        # if self.config.d_state is not None and hasattr(hf_config, "d_state"):
+        #     hf_config.d_state = self.config.d_state
+        # if hasattr(hf_config, "vocab_size"):
+        #     hf_config.vocab_size = self.config.vocab_size
+
+        hf_config.intermediate_size = self.config.intermediate_size
+        hf_config.d_model = self.config.hidden_size
+        hf_config.n_layer = self.config.n_layers
+        hf_config.num_hidden_layers = self.config.n_layers
+        hf_config.d_state = self.config.d_state
+        hf_config.vocab_size = self.config.vocab_size
+
+        # Freeform overrides
+        # for key, val in (self.config.config_kwargs or {}).items():
+        #     if hasattr(hf_config, key):
+        #         setattr(hf_config, key, val)
+
+        # Update embed dims and norms to match final d_model
+        d_model = getattr(hf_config, "d_model", emb_dim)
+        if not self.config.is_hierarchical:
+            self.embed = nn.Embedding(self.config.vocab_size, d_model)
+        else:
+            self.embed_bag = nn.EmbeddingBag(
+                num_embeddings=self.config.vocab_size,
+                embedding_dim=d_model,
+                mode="sum",
+                include_last_offset=True,
+            )
+        self.in_norm = femr.models.rmsnorm.RMSNorm(d_model)
+        self.out_norm = femr.models.rmsnorm.RMSNorm(d_model)
+
+        # Instantiate backbone; use CausalLM variant for maximum compatibility
+        print(f"the hf_config is {hf_config}")
+        backbone_model = transformers.AutoModelForCausalLM.from_config(hf_config, trust_remote_code=True)
+        if hasattr(backbone_model, "backbone"):
+            self.backbone = backbone_model.backbone
+        elif hasattr(backbone_model, "model"):
+            self.backbone = backbone_model.model
+        else:
+            self.backbone = backbone_model
+
+    def forward(self, batch: Mapping[str, torch.Tensor], s):
+        # Embedding path identical to transformer
+        if not self.config.is_hierarchical:
+            x = self.embed(batch["tokens"])  # (T, D)
+        else:
+            x = self.embed_bag(batch["hierarchical_tokens"], batch["token_indices"], batch["hierarchical_weights"])  # (T, D)
+
+        x = self.in_norm(x)
+
+        # Inject normalized ages/time features as in transformer
+        if self.config.use_normed_ages:
+            time_data = batch["time_data"]
+            all_time = torch.concatenate((time_data, time_data ** 2), axis=-1)
+            x[:, -all_time.shape[1]:] = all_time.to(dtype=x.dtype)
+
+        # Efficient per-subject batching: pad sequences and process in parallel
+        lengths = torch.tensor(batch["subject_lengths"],device=x.device)  # (S,)
+        seqs = torch.split(x, lengths.tolist())  # List[(L_i, D)]
+        padded = nn.utils.rnn.pad_sequence(seqs, batch_first=True)  # (S, L_max, D)
+        attn_mask = torch.arange(padded.size(1), device=padded.device)[None, :].expand(len(seqs), -1) < lengths[:, None]
+
+
+        # Forward through backbone using inputs_embeds; attention_mask may be ignored by some Mamba impls
+        out = self.backbone(inputs_embeds=padded, attention_mask=attn_mask)
+        # try:
+        #     out = self.backbone(inputs_embeds=padded, attention_mask=attn_mask)
+        # except TypeError:
+        #     out = self.backbone(inputs_embeds=padded)
+        # except Exception:
+        #     out = self.backbone(padded)
+
+        last_hidden = out.last_hidden_state if hasattr(out, "last_hidden_state") else (out[0] if isinstance(out, tuple) else out)
+
+        # Unpad back to flattened order
+        chunks: List[torch.Tensor] = [last_hidden[i, : lengths[i], :] for i in range(len(seqs))]
+        final = torch.cat(chunks, dim=0)  # (T, D)
+        final = self.out_norm(final)
         return final
 
 
@@ -208,8 +319,233 @@ class CLMBRTaskHead(nn.Module):
 
         return loss, {"logits": logits}
 
-
 class MOTORTaskHead(nn.Module):
+    def __init__(
+            self,
+            hidden_size: int,
+            pretraining_task_info: List[Tuple[str, float]],
+            time_bins: List[float],
+            final_layer_size: int,
+    ):
+        super().__init__()
+
+        self.num_time_bins = len(time_bins) - 1
+        self.num_tasks = len(pretraining_task_info)
+
+        self.final_layer_size = final_layer_size
+        self.final_layer = nn.Linear(hidden_size, self.num_time_bins * final_layer_size)
+
+        self.task_layer = nn.Linear(self.final_layer_size, self.num_tasks)
+        start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info], dtype=torch.float32))
+        self.task_layer.bias.data = start_bias
+
+        self.task_time_bias = nn.Parameter(torch.zeros(1, self.num_time_bins, self.num_tasks))
+
+        self.norm = femr.models.rmsnorm.RMSNorm(self.final_layer_size)
+
+    def forward(self, features: torch.Tensor, batch: Mapping[str, torch.Tensor], return_logits=False):
+        time_independent_features = self.final_layer(features).reshape(
+            features.shape[0], self.num_time_bins, self.final_layer_size
+        )
+
+        time_dependent_logits = self.task_layer(self.norm(time_independent_features)) + self.task_time_bias
+        # time_dependent_logits = self.task_layer(time_independent_features)
+
+        assert (
+                batch["log_time"].shape == time_dependent_logits.shape
+        ), f"{time_dependent_logits.shape} {batch['log_time'].shape}"
+        assert (
+                batch["is_event"].shape == time_dependent_logits.shape
+        ), f"{time_dependent_logits.shape} {batch['is_event'].shape}"
+
+        # Force to always be negative
+        # time_dependent_logits = -F.softplus(-time_dependent_logits)
+
+        survival_loss = torch.exp2(time_dependent_logits + batch["log_time"]).mean()
+        event_loss = -math.log(2) * torch.where(batch["is_event"], time_dependent_logits, 0).mean()
+
+        def stats(a):
+            a = a[torch.isfinite(a)]
+            print(torch.mean(a), torch.std(a), torch.max(a), torch.min(a))
+
+        loss = survival_loss + event_loss
+
+        if not return_logits:
+            time_dependent_logits = None
+
+        return loss, {"time_dependent_logits": time_dependent_logits}
+
+class TPPTaskHead(nn.Module):
+    def __init__(
+            self,
+            hidden_size: int,
+            linear_interpolation: bool,
+            pretraining_task_info: List[Tuple[str, float]],
+            time_bins: np.ndarray,
+            final_layer_size: int,
+    ):
+        super().__init__()
+
+        # Handle both numpy array and list (from config deserialization)
+        if not isinstance(time_bins, np.ndarray):
+            time_bins = np.array(time_bins)
+        self.num_time_bins = time_bins.shape[1] - 1  # Each task has same number of bins
+        self.num_tasks = len(pretraining_task_info)
+        self.time_bins = time_bins  # Store time bins for potential debugging
+
+        self.final_layer_size = final_layer_size
+        self.final_layer = nn.Linear(hidden_size, self.num_time_bins * final_layer_size)
+
+        self.task_layer = nn.Linear(self.final_layer_size, self.num_tasks)
+        self.softmax = nn.Softmax(dim=1)
+        start_bias = torch.log2(torch.tensor([a[1] for a in pretraining_task_info], dtype=torch.float32))
+        self.task_layer.bias.data = start_bias
+
+      
+        self.norm = femr.models.rmsnorm.RMSNorm(self.final_layer_size)
+        self.linear_interpolation = linear_interpolation
+
+    def forward(self, features: torch.Tensor, batch: Mapping[str, torch.Tensor], return_logits=False):
+        """
+        MOTOR Task Head Forward Pass with Event-Specific Time Bins
+        
+        Key design principles:
+        1. Each event type has its own time discretization (task-specific time bins)
+        2. For each prediction point and task: exactly ONE time bin is marked as True in is_event
+        3. The marked bin represents either:
+           - An event occurring in that interval (is_censored=False): use f() = time_dependent_logits
+           - Censoring occurring in that interval (is_censored=True): use 1-F() = integrated_logits
+        4. Loss is calculated only for marked bins using appropriate likelihood function
+        """
+        # (num_predictions, hidden_size) -> (num_predictions, num_time_bins, final_layer_size)
+        time_independent_features = self.final_layer(features).reshape(
+            features.shape[0], self.num_time_bins, self.final_layer_size
+        )
+
+        # take the softmaxof the logits over the time bins, assume indenpendence between different event types conditional previous embeddings
+        # time_dependent_logits: prediction_points*time_bins *event_types  [716, 8, 6100]
+        
+        # OPTION 1: Original approach without sigmoid (recommended)
+        # This is numerically more stable than sigmoid + softmax
+        task_logits = self.task_layer(self.norm(time_independent_features))
+        
+        # Clamp logits to prevent overflow in softmax
+        # task_logits = torch.clamp(task_logits, min=-50, max=50)
+        
+        time_dependent_logits = self.softmax(task_logits)
+        
+        # OPTION 2: If you want sigmoid, use it INSTEAD of softmax, not both
+        # Uncomment this block and comment out the above if you prefer sigmoid approach
+        
+        # Debug: Check for NaN/inf values
+        if torch.any(torch.isnan(time_dependent_logits)) or torch.any(torch.isinf(time_dependent_logits)):
+            print(f"ERROR: NaN/inf detected in time_dependent_logits")
+            print(f"  NaN count: {torch.sum(torch.isnan(time_dependent_logits))}")
+            print(f"  Inf count: {torch.sum(torch.isinf(time_dependent_logits))}")
+            print(f"  Raw logits stats - min: {torch.min(task_logits)}, max: {torch.max(task_logits)}")
+            raise ValueError("NaN/inf detected in time_dependent_logits")
+            
+        assert torch.allclose(sum(time_dependent_logits[0,:,0]), torch.tensor(1.0), atol=1e-1), f" time_dependent_logits: {time_dependent_logits[0,:,0]}"
+        #
+        # integrated_logits = 1 - torch.cumsum(time_dependent_logits, dim=1)
+        cdf = torch.cumsum(time_dependent_logits, dim=1)
+        integrated_logits = torch.cat([torch.ones_like(time_dependent_logits[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
+        # Verify input shapes match our expectations
+        assert (
+                batch["is_event"].shape == time_dependent_logits.shape
+        ), f"Shape mismatch: time_dependent_logits {time_dependent_logits.shape} vs is_event {batch['is_event'].shape}"
+        
+        # Add numerical stability - clamp values to prevent log(0)
+        eps = 1e-8
+        time_dependent_logits_stable = torch.clamp(time_dependent_logits, min=eps, max=1.0-eps)
+        integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
+        
+
+        # Validate that exactly one bin per prediction-task combination is True
+        labels_sum = torch.sum(batch["is_event"], dim=1)  # Sum along time bins dimension [prediction_points, tasks]
+        if not torch.all(labels_sum == 1):
+            print(f"ERROR: Expected exactly 1 True bin per prediction-task combination")
+            print(f"  Found {torch.sum(labels_sum != 1)} invalid combinations")
+            print(f"  Labels sum range: {torch.min(labels_sum)} to {torch.max(labels_sum)}")
+            
+        # Calculate loss only for the marked bins
+        # For each prediction point and task, exactly one bin should be True
+        # Use f() for events, 1-F() for censoring
+        
+        # Get the marked bins: where is_event is True
+        marked_bins = batch["is_event"]  # [prediction_points, time_bins, tasks]
+        event_in_bins = batch["event_in_bin"]
+        censor_in_bins = batch["censor_in_bin"]
+
+        
+        # For event cases: use f() = time_dependent_logits
+        # For censoring cases: use 1-F() = integrated_logits  
+        # is_censored has shape [prediction_points, tasks], need to expand to match marked_bins
+        is_censored_expanded = batch["is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)  # [prediction_points, time_bins, tasks]
+        
+        if self.linear_interpolation:
+            censor_time_ratio = batch["censor_time_ratio"]
+            integrated_logits_stable = torch.where(
+                is_censored_expanded,
+                integrated_logits_stable - (censor_time_ratio * time_dependent_logits_stable),
+                integrated_logits_stable  # No adjustment where not censored
+            )
+            integrated_logits_stable = torch.clamp(integrated_logits_stable, min=eps, max=1.0-eps)
+
+        # event probability
+        event_probs = torch.where(
+            event_in_bins,
+            time_dependent_logits_stable,
+            torch.zeros_like(event_in_bins)
+        )
+
+        censor_probs = torch.where(
+            is_censored_expanded,
+            integrated_logits_stable,
+            torch.zeros_like(is_censored_expanded)
+        )
+
+        # Select the appropriate probability based on event vs censoring
+        selected_probs = torch.where(
+            is_censored_expanded,
+            integrated_logits_stable,  # Use 1-F() for censoring
+            time_dependent_logits_stable  # Use f() for events
+        )
+        
+        # Calculate loss only for marked bins
+        loss_values = torch.where(
+            marked_bins,
+            torch.log(selected_probs),
+            torch.zeros_like(selected_probs)  # No contribution from unmarked bins
+        )
+
+        assert event_in_bins+censor_in_bins==marked_bins, f" event {event_in_bins} censor {censor_in_bins} take & {marked_bins}"
+        assert event_in_bins.shape == censor_in_bins.shape
+        assert marked_bins.shape == censor_in_bins.shape
+        assert torch.sum(loss_values) == torch.sum(event_probs) + torch.sum(censor_probs), f"the loss for all, event, censor are {torch.sum(loss_values)}, {torch.sum(event_probs)},{torch.sum(censor_probs)}"
+        
+
+        # Average over all marked bins (should be exactly one per prediction-task combination)
+        num_marked_bins = torch.sum(marked_bins)
+        if num_marked_bins > 0:
+            loss = -torch.sum(loss_values) / num_marked_bins  # Negative log likelihood
+        else:
+            loss = torch.tensor(0.0, device=marked_bins.device)
+        
+        # Debug: Check for issues
+        if torch.isnan(loss) or torch.isinf(loss):
+            print(f"WARNING: NaN/inf detected in final loss: {loss}")
+            print(f"  num_marked_bins: {num_marked_bins}")
+            print(f"  time_dependent_logits range: {torch.min(time_dependent_logits_stable)} to {torch.max(time_dependent_logits_stable)}")
+            print(f"  integrated_logits range: {torch.min(integrated_logits_stable)} to {torch.max(integrated_logits_stable)}")
+            print(f"  selected_probs range: {torch.min(selected_probs[marked_bins])} to {torch.max(selected_probs[marked_bins])}")
+
+        if not return_logits:
+            time_dependent_logits = None
+
+        return loss, {"time_dependent_logits": time_dependent_logits}
+
+class MTPPTaskHead(nn.Module):
     def __init__(
             self,
             hidden_size: int,
@@ -253,12 +589,6 @@ class MOTORTaskHead(nn.Module):
         self.non_numerical_tasks = non_numerical_task
 
         self.final_layer_size = final_layer_size
-
-        # print(f"non_numerical_task: {len(non_numerical_task)}")
-        # print(f"numerical_task: {len(numerical_task)}")
-        # print(f"value_bins: {value_bins.shape}")
-        # print(f"non_numerical_task_time_bins: {non_numerical_task_time_bins.shape}")
-        # print(f"numerical_task_time_bins: {numerical_task_time_bins.shape}")
         
         # Original layer for non-numerical codes: time prediction only
         self.non_numerical_final_layer = nn.Linear(hidden_size, self.num_time_bins * final_layer_size)
@@ -272,7 +602,7 @@ class MOTORTaskHead(nn.Module):
         # self.numerical_task_layer = nn.Linear(self.final_layer_size, num_numerical_tasks).to(features.device)
         
         self.softmax = nn.Softmax(dim=1)
-        self.norm = femr.models_tpp.rmsnorm.RMSNorm(self.final_layer_size)
+        self.norm = femr.models.rmsnorm.RMSNorm(self.final_layer_size)
         self.linear_interpolation = linear_interpolation
         self.H_t  = math.log(self.num_time_bins)
         self.H_tv = math.log(self.num_time_bins * self.num_value_bins)
@@ -299,7 +629,7 @@ class MOTORTaskHead(nn.Module):
         """
         eps = 1e-9
         total_loss = torch.tensor(0.0, device=features.device)
-        total_count = 0
+        loss_count = 0
         result = {}
 
         
@@ -312,43 +642,31 @@ class MOTORTaskHead(nn.Module):
         # Non-numerical task logits: [prediction_points, time_bins, non_numerical_tasks]
         task_logits = self.non_numerical_task_layer(self.norm(time_independent_features))
         time_dependent_logits = self.softmax(task_logits)
-        
-        # print(f"time_dependent_logits is {time_dependent_logits}")
+
         # Debug: Check for NaN/inf values  
         if torch.any(torch.isnan(time_dependent_logits)) or torch.any(torch.isinf(time_dependent_logits)):
             print(f"ERROR: NaN/inf detected in time_dependent_logits")
             raise ValueError("NaN/inf detected in time_dependent_logits")
         
         # Verify probability sums to 1 over time bins
-        prob_sums = torch.sum(time_dependent_logits, dim=1)  # Sum over time bins
-        assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-2), f"Probability sums: {prob_sums[0]}"
+        # prob_sums = torch.sum(time_dependent_logits, dim=1)  # Sum over time bins
+        # assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-2), f"Probability sums: {prob_sums[0]}"
         
         # Calculate CDF for survival analysis
         cdf = torch.cumsum(time_dependent_logits, dim=1)
         integrated_logits = torch.cat([torch.ones_like(time_dependent_logits[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
         
         # Add numerical stability
-        time_dependent_logits_stable = torch.clamp(time_dependent_logits, min=eps, max=1.0-eps)
-        integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
-        
-        # Linear interpolation adjustment if enabled
-        if self.linear_interpolation:
-            censor_time_ratio = batch["non_numerical_censor_time_ratio"]
-            is_censored_expanded = batch["non_numerical_is_censored"].unsqueeze(1).expand(-1, self.num_time_bins, -1)
-            integrated_logits_stable = torch.where(
-                is_censored_expanded,
-                integrated_logits_stable - (censor_time_ratio * time_dependent_logits_stable),
-                integrated_logits_stable
-            )
-            integrated_logits_stable = torch.clamp(integrated_logits_stable, min=eps, max=1.0-eps)
+        time_dependent_logits_stable = torch.clamp(time_dependent_logits, min=eps)
+        integrated_logits_stable = torch.clamp(integrated_logits, min=eps)
         
         # Verify input shapes match expectations
         assert batch["non_numerical_is_event"].shape == time_dependent_logits.shape, \
             f"Shape mismatch: time_dependent_logits {time_dependent_logits.shape} vs is_event {batch['non_numerical_is_event'].shape}"
         
         # Validate exactly one bin per prediction-task combination
-        labels_sum = torch.sum(batch["non_numerical_is_event"], dim=1)
-        assert torch.all(labels_sum == 1), f"Expected exactly 1 True bin per prediction-task combination"
+        # labels_sum = torch.sum(batch["non_numerical_is_event"], dim=1)
+        # assert torch.all(labels_sum == 1), f"Expected exactly 1 True bin per prediction-task combination"
         
         # Loss calculation for non-numerical codes
         marked_bins = batch["non_numerical_is_event"]
@@ -371,8 +689,6 @@ class MOTORTaskHead(nn.Module):
         num_marked_bins = torch.sum(marked_bins)
         if num_marked_bins > 0:
             L_non = -torch.sum(loss_values) / (num_marked_bins)  # normalized by log B_t
-            total_loss += -torch.sum(loss_values)
-            total_count += num_marked_bins
         else:
             L_non = torch.tensor(0.0, device=features.device)
 
@@ -390,10 +706,6 @@ class MOTORTaskHead(nn.Module):
             # numerical_is_censored = batch["numerical_is_censored"]  # [pred_points, numerical_tasks]
             
             batch_size, _, num_numerical_tasks = time_event_in_bin.shape
-            # _, value_bins, _ = value_event_in_bin.shape
-            
-            # print(f"time bins is {self.num_time_bins}")
-            # print(f"value bins is {self.num_value_bins}")
             # Time-value features: [pred_points, time_bins, value_bins, final_layer_size]
             numerical_features = self.numerical_final_layer(features).reshape(
                 batch_size, self.num_time_bins*self.num_value_bins, self.final_layer_size
@@ -425,43 +737,27 @@ class MOTORTaskHead(nn.Module):
             mask_value = -1e10  # This effectively zeros out in softmax but avoids -inf
             numerical_task_logits = numerical_task_logits.masked_fill(~expanded_mask, mask_value)
 
-            # # Normalize over time_bins × value_bins to ensure probability sum = 1 (only over valid bins)
-            # numerical_probs_flat = self.softmax(numerical_task_logits)
+            # numerical_log_probs_flat = F.log_softmax(numerical_task_logits, dim=1)
+            # numerical_probs_flat = torch.exp(numerical_log_probs_flat)
 
-            numerical_log_probs_flat = F.log_softmax(numerical_task_logits, dim=1)
-            numerical_probs_flat = torch.exp(numerical_log_probs_flat)
+            numerical_probs_flat = self.softmax(numerical_task_logits)
 
-            # # numerical_logits_f32 = (numerical_task_logits - numerical_task_logits.amax(dim=1, keepdim=True)).to(torch.float32)
-            # # numerical_probs_flat = F.softmax(numerical_logits_f32, dim=1).to(numerical_task_logits.dtype)
-            # # print(numerical_probs_flat.shape,numerical_probs_flat)
+            # torch.logsumexp()
+            # torch.exp(torch.logsum(numerical_log_probs_flat))
 
             # numerical_log_probs = numerical_log_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
             numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
-
-            # numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
 
             numerical_probs = numerical_probs.clamp_min(eps)
 
             # # assert check
             expanded_valid_mask_assert = mask_tv.unsqueeze(0).expand(batch_size,-1,-1,-1)
+            numerical_probs = numerical_probs*expanded_valid_mask_assert
+
             assert torch.all(numerical_probs[~expanded_valid_mask_assert] <= eps), \
             "Non-zero probabilities found in invalid bins."
             assert torch.all(numerical_probs[expanded_valid_mask_assert] >= eps), \
             "zero probabilities found in valid bins."
-
-            # # Probability should sum to 1 over valid (T,V) for each (B,N)
-            # prob_sums = (numerical_probs * expanded_valid_mask_assert).sum(dim=(1, 2))  # [B, N]
-            # assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-6), \
-            #     f"Numerical probability sums off; example: {prob_sums[0]}"
-
-            # numerical_probs = torch.where(expanded_valid_mask_assert, numerical_probs.clamp_min(eps), numerical_probs)
-            prob_sums = torch.sum(numerical_probs, dim=(1, 2))  # Sum over time and value bins
-            assert torch.allclose(prob_sums, torch.ones_like(prob_sums), atol=1e-6), f"Numerical probability sums: {prob_sums[0]}"
-            # print(f"numerical_probs is {numerical_probs}")
-            
-            #original one
-            # numerical_probs_flat = self.softmax(numerical_task_logits)
-            # numerical_probs = numerical_probs_flat.reshape(batch_size, self.num_time_bins, self.num_value_bins, num_numerical_tasks)
             
             # === MATRIX-WISE LOSS COMPUTATION (NO NESTED LOOPS) ===
             
@@ -478,7 +774,7 @@ class MOTORTaskHead(nn.Module):
 
             if torch.any(time_censor_in_bin):
                 # Sum probabilities over value bins: [pred_points, time_bins, numerical_tasks]
-                time_only_probs = torch.sum(numerical_probs*expanded_valid_mask_assert, dim=2)
+                time_only_probs = torch.sum(numerical_probs, dim=2)
                 cdf = torch.cumsum(time_only_probs, dim=1)
                 integrated_logits = torch.cat([torch.ones_like(time_only_probs[:, :1, :]), 1.0 - cdf[:, :-1, :]], dim=1)
                 integrated_logits_stable = torch.clamp(integrated_logits, min=eps, max=1.0-eps)
@@ -492,10 +788,10 @@ class MOTORTaskHead(nn.Module):
                 )
                 
                 censored_count = torch.sum(time_censor_in_bin)
-                if censored_count > 0:
-                    L_num_cens = -torch.sum(censored_loss_values) 
-                    numerical_loss += L_num_cens
-                    total_num_count += censored_count
+                # if censored_count > 0:
+                L_num_cens = -torch.sum(censored_loss_values) 
+                numerical_loss += L_num_cens
+                total_num_count += censored_count
 
             # Case 2: Event cases - predict both time and value using outer product
             # Construct event_bins = time_event_in_bin ⊗ value_event_in_bin (outer product)  
@@ -514,16 +810,16 @@ class MOTORTaskHead(nn.Module):
                 event_count = torch.sum(event_bins)
                 if event_count > 0:
                     # Normalize by the number of valid value bins for each task
-                    valid_bin_counts = torch.sum(value_valid_mask, dim=1)  # [numerical_tasks]
+                    # valid_bin_counts = torch.sum(value_valid_mask, dim=1)  # [numerical_tasks]
                     # print(f"the min value in valid_bin_counts is {torch.min(valid_bin_counts)}")
                     # Expand to match event_bins shape: [pred_points, time_bins, value_bins, numerical_tasks]
-                    valid_bin_counts_expanded = valid_bin_counts.unsqueeze(0).unsqueeze(1).unsqueeze(2)  # [1, 1, 1, numerical_tasks]
+                    # valid_bin_counts_expanded = valid_bin_counts.unsqueeze(0).unsqueeze(1).unsqueeze(2)  # [1, 1, 1, numerical_tasks]
+
                     # Apply normalization only where events occur
-                    # normalization = torch.where(event_bins, torch.log(valid_bin_counts_expanded), torch.zeros_like(event_bins))
-                    # print(f"before event-loss-value, {torch.sum(event_loss_values)}")
+                    # normalization = torch.where(event_bins, torch.log(valid_bin_counts_expanded), torch.ones_like(event_bins))
                     # event_loss_values = torch.div(event_loss_values,normalization)
-                    # event_loss_values = event_loss_values - normalization
-                    # print(f"after normalization event-loss-vaues {event_loss_values}")
+                    # event_loss_values = event_loss_values / normalization
+
                     L_num_event = -torch.sum(event_loss_values)
                     numerical_loss += L_num_event
                     total_num_count += event_count
@@ -533,9 +829,6 @@ class MOTORTaskHead(nn.Module):
             # den = ne + nc
             if total_num_count > 0:
                 L_num = numerical_loss/total_num_count
-                total_count += total_num_count
-                total_loss += numerical_loss
-
             else:
                 L_num = torch.tensor(0.0, device=features.device)
 
@@ -559,10 +852,6 @@ class MOTORTaskHead(nn.Module):
             # L_num = numerical_loss / (total_count*self.H_tv)
         else:
             print("No numerical codes found in batch")
-        # Final loss: mean of non-numerical and numerical losses
-        # print(f"ratio {non_numerical_loss/numerical_loss}, non_numerical_loss is {non_numerical_loss} : numerical loss is {numerical_loss}, censor {censored_loss}, event {event_loss}")
-        # loss = non_numerical_loss*0.75+numerical_loss_mean*0.25
-        # print(f"l_non {L_non}, L_num {L_num}")
 
         # logvars = torch.clamp(self.logvars, *self._logvar_clamp)
         # w = torch.exp(-self.logvars)  # [w_non, w_num] = [exp(-s1), exp(-s2)]
@@ -572,22 +861,24 @@ class MOTORTaskHead(nn.Module):
         # else:
         #     # simple fallback (e.g., warmup for first epoch)
 
-        loss = total_loss / total_count
-        # error = -torch.sum(loss_values) + numerical_loss - total_loss
-        # assert error< 10, f"total_non is {-torch.sum(loss_values)}, total_num is {numerical_loss}, total_loss is {total_loss}"
-        # print(f"per bin loss is {loss},total count is {total_count}")
-        # loss = 0.5 * (L_non + L_num)
-        # print(f"mean loss is {loss}, L_non is {L_non}, total non {num_marked_bins},  L_num is {L_num}, total num {total_num_count}")
+        # if args.
+        #     loss = alpha * L_non + (1 - alpha) * L_num
+        # else:
+        #     loss = total_loss / loss_count
+        alpha = 0.5
+        loss = alpha * L_non + (1 - alpha) * L_num
+    
+        # loss = L_num
+        # print(f"yes mean loss is {loss}, L_non is {L_non}, total non {num_marked_bins},  L_num is {L_num}, total num {total_num_count}")
         
         # Debug: Check for issues
-        # if torch.isnan(loss) or torch.isinf(loss):
-        #     print(f"WARNING: NaN/inf detected in final loss: {loss}")
-        #     print(f"  num_losses: {loss_count}")
-        #     print(f"  total_loss: {total_loss}")
+        if torch.isnan(loss) or torch.isinf(loss):
+            print(f"WARNING: NaN/inf detected in final loss: {loss}")
+            print(f"  num_losses: {loss_count}")
+            print(f"  total_loss: {total_loss}")
 
         return loss, result
-
-
+    
 def remove_first_dimension(data: Any) -> Any:
     if isinstance(data, collections.abc.Mapping):
         return {k: remove_first_dimension(v) for k, v in data.items()}
@@ -604,36 +895,63 @@ def remove_first_dimension(data: Any) -> Any:
 
 
 class FEMRModel(transformers.PreTrainedModel):
-    config_class = femr.models_tpp.config.FEMRModelConfig
-    
-    def __init__(self, config: femr.models_tpp.config.FEMRModelConfig, **kwargs):
-        # Extract linear_interpolation from kwargs, default to False
-        self.linear_interpolation = kwargs.pop('linear_interpolation', False)
-        
-        # Allow the task config to be ovewritten
+    config_class = femr.models.config.FEMRModelConfig
+
+    def __init__(self, config: femr.models.config.FEMRModelConfig, **kwargs):
         if "task_config" in kwargs:
             config.task_config = kwargs["task_config"]
-
         super().__init__(config, **kwargs)
+        self.linear_interpolation = kwargs.pop("linear_interpolation", False)
+        self.loss_type = kwargs.pop("loss_type",False)
 
-        self.transformer = FEMRTransformer(self.config.transformer_config)
+
+        # Choose backbone
+        if self.config.model_type == "mamba":
+            # self.config.mamba_config should be model_config in pretrain_motor.py
+            assert self.config.mamba_config is not None
+            self.backbone = FEMRMamba(self.config.mamba_config)
+            self.hidden_size = self.config.mamba_config.hidden_size
+            
+            # if self.hidden_size is None:
+            #     self.hidden_size = self.backbone.out_norm.weight.shape[0]
+        elif self.config.model_type == "transformer":
+            assert self.config.transformer_config is not None
+            self.backbone = FEMRTransformer(self.config.transformer_config)
+            self.hidden_size = self.config.transformer_config.hidden_size
+        else:
+            raise ValueError(f"Unknown model_type: {self.config.model_type}")
+        assert self.hidden_size is not None
+        print(f"the hidden size is {self.hidden_size}")
+
+        # Task head (shared across architectures)
         if self.config.task_config is not None:
             self.task_model = self.create_task_head()
 
-        
-
     def create_task_head(self) -> nn.Module:
-        hidden_size = self.config.transformer_config.hidden_size
+        # hidden_size = self.config.transformer_config.hidden_size
         task_type = self.config.task_config.task_type
         task_kwargs = self.config.task_config.task_kwargs
-        if task_type == "clmbr":
-            return CLMBRTaskHead(hidden_size, **task_kwargs)
-        elif task_type == "labeled_subjects":
-            return LabeledSubjectTaskHead(hidden_size, **task_kwargs)
-        elif task_type == "motor":
-            return MOTORTaskHead(hidden_size, self.linear_interpolation, **task_kwargs)
+        # if task_type == "clmbr":
+        #     return CLMBRTaskHead(hidden_size, **task_kwargs)
+        # elif task_type == "labeled_subjects":
+        #     return LabeledSubjectTaskHead(hidden_size, **task_kwargs)
+        # elif task_type == "motor":
+        #     return MOTORTaskHead(hidden_size, **task_kwargs)
+        # else:
+        #     raise RuntimeError("Could not determine head for task " + task_type)
+        print(f"create loss type is {self.loss_type}")
+        if self.loss_type == "clmbr":
+            return CLMBRTaskHead(self.hidden_size, **task_kwargs)
+        elif self.loss_type == "labeled_subjects":
+            return LabeledSubjectTaskHead(self.hidden_size, **task_kwargs)
+        elif self.loss_type == "motor":
+            return MOTORTaskHead(self.hidden_size, **task_kwargs)
+        elif self.loss_type == "tpp":
+            return TPPTaskHead(self.hidden_size, **task_kwargs)
+        elif self.loss_type == "mtpp":
+            return MTPPTaskHead(self.hidden_size, **task_kwargs)
         else:
-            raise RuntimeError("Could not determine head for task " + task_type)
+            raise RuntimeError("Could not determine head for task " + self.loss_type)
 
     def forward(self, batch: Mapping[str, Any], return_loss=True, return_logits=False, return_reprs=False):
         # Need a return_loss parameter for transformers.Trainer to work properly
@@ -647,7 +965,7 @@ class FEMRModel(transformers.PreTrainedModel):
         s = torch.cumsum(s, dim=0).type(torch.uint8)
 
         # (time_steps, hidden_size)
-        features = self.transformer(batch["transformer"], s)
+        features = self.backbone(batch["transformer"], s)
         if "task" in batch and self.config.task_config is not None:
             features = features.reshape(-1, features.shape[-1])
             features = features[batch["transformer"]["label_indices"], :]
@@ -704,6 +1022,7 @@ def compute_features(
         observation_window: Optional[int] = None,
         min_subjects_per_batch: int = 1,
         total_flops: TotalFlops = None,
+        use_linear_interpolation: bool = False,
 ) -> Dict[str, np.ndarray]:
     """ "Compute features for a set of labels given a dataset and a model.
 
@@ -723,19 +1042,20 @@ def compute_features(
          -  "subject_ids" and "feature_times" define the subject and time each feature refers to
          -  "features" provides the representations at each subject id and feature time
     """
-    task = femr.models_tpp.tasks_mtpp.LabeledSubjectTask(labels, observation_window)
+    task = femr.models.tasks.tpp.LabeledSubjectTask(labels, observation_window)
 
     print(f"Loading model from {model_path}")
-    # print(f"use_linear_interpolation: {use_linear_interpolation}")
+    print(f"use_linear_interpolation: {use_linear_interpolation}")
     
     # Use the new from_pretrained method that supports linear_interpolation
-    model = femr.models_tpp.transformer.FEMRModel.from_pretrained(
+    model = femr.models.architecture.transformer.FEMRModel.from_pretrained(
         model_path, 
         task_config=task.get_task_config(),
+        linear_interpolation=use_linear_interpolation
     )
 
-    tokenizer = femr.models_tpp.tokenizer.HierarchicalTokenizer.from_pretrained(model_path, ontology=ontology)
-    processor = femr.models_tpp.processor.FEMRBatchProcessor(tokenizer, task=task)
+    tokenizer = femr.models.tokenizer.HierarchicalTokenizer.from_pretrained(model_path, ontology=ontology)
+    processor = femr.models.processor.FEMRBatchProcessor(tokenizer, task=task)
 
     filtered_data = db.filter(list(task.label_map.keys()))
 

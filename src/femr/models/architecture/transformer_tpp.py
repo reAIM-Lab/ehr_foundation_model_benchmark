@@ -20,9 +20,9 @@ from torch.profiler import ProfilerActivity, profile
 import femr.models.config
 import femr.models.processor
 import femr.models.rmsnorm
-import femr.models.tasks
+import femr.models.tasks.tpp
 import femr.models.tokenizer
-import femr.models.xformers
+import femr.models.architecture.xformers
 
 
 @dataclass(frozen=False)
@@ -121,7 +121,7 @@ class FEMREncoderLayer(nn.Module):
         k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
         v = qkv[:, 2, :, :]
 
-        attn = femr.models.xformers.memory_efficient_attention_wrapper(
+        attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
             q.unsqueeze(0),
             k.unsqueeze(0),
             v.unsqueeze(0),
@@ -209,7 +209,7 @@ class CLMBRTaskHead(nn.Module):
         return loss, {"logits": logits}
 
 
-class MOTORTaskHead(nn.Module):
+class TPPTaskHead(nn.Module):
     def __init__(
             self,
             hidden_size: int,
@@ -363,9 +363,6 @@ class MOTORTaskHead(nn.Module):
         assert marked_bins.shape == censor_in_bins.shape
         assert torch.sum(loss_values) == torch.sum(event_probs) + torch.sum(censor_probs), f"the loss for all, event, censor are {torch.sum(loss_values)}, {torch.sum(event_probs)},{torch.sum(censor_probs)}"
         
-        print(f"total loss {-torch.sum(loss_values) / num_marked_bins}")
-        print(f"event loss {-torch.sum(event_probs) / event_in_bins}")
-        print(f"censor loss {-torch.sum(censor_in_bins) / censor_in_bins}")
 
         # Average over all marked bins (should be exactly one per prediction-task combination)
         num_marked_bins = torch.sum(marked_bins)
@@ -419,7 +416,6 @@ class FEMRModel(transformers.PreTrainedModel):
         self.transformer = FEMRTransformer(self.config.transformer_config)
         if self.config.task_config is not None:
             self.task_model = self.create_task_head()
-
         
 
     def create_task_head(self) -> nn.Module:
@@ -431,7 +427,7 @@ class FEMRModel(transformers.PreTrainedModel):
         elif task_type == "labeled_subjects":
             return LabeledSubjectTaskHead(hidden_size, **task_kwargs)
         elif task_type == "motor":
-            return MOTORTaskHead(hidden_size, self.linear_interpolation, **task_kwargs)
+            return MOTORTaskHead(hidden_size, **task_kwargs)
         else:
             raise RuntimeError("Could not determine head for task " + task_type)
 
@@ -524,13 +520,13 @@ def compute_features(
          -  "subject_ids" and "feature_times" define the subject and time each feature refers to
          -  "features" provides the representations at each subject id and feature time
     """
-    task = femr.models.tasks.LabeledSubjectTask(labels, observation_window)
+    task = femr.models.tasks.tpp.LabeledSubjectTask(labels, observation_window)
 
     print(f"Loading model from {model_path}")
     print(f"use_linear_interpolation: {use_linear_interpolation}")
     
     # Use the new from_pretrained method that supports linear_interpolation
-    model = femr.models.transformer.FEMRModel.from_pretrained(
+    model = femr.models.architecture.transformer.FEMRModel.from_pretrained(
         model_path, 
         task_config=task.get_task_config(),
         linear_interpolation=use_linear_interpolation

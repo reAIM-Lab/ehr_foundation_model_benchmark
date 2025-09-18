@@ -12,7 +12,7 @@ from torch import nn
 
 import femr.models.config
 import femr.models.rmsnorm
-import femr.models.xformers
+import femr.models.architecture.xformers
 
 
 # === Shared helper functions (copied behavior from transformer.py) ===
@@ -83,7 +83,7 @@ class FEMREncoderLayer(nn.Module):
         q = apply_rotary_pos_emb(qkv[:, 0, :, :], pos_embed)
         k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
         v = qkv[:, 2, :, :]
-        attn = femr.models.xformers.memory_efficient_attention_wrapper(
+        attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
             q.unsqueeze(0),
             k.unsqueeze(0),
             v.unsqueeze(0),
@@ -417,9 +417,6 @@ class MOTORTaskHead(nn.Module):
         assert marked_bins.shape == censor_in_bins.shape
         assert torch.sum(loss_values) == torch.sum(event_probs) + torch.sum(censor_probs), f"the loss for all, event, censor are {torch.sum(loss_values)}, {torch.sum(event_probs)},{torch.sum(censor_probs)}"
         
-        print(f"total loss {-torch.sum(loss_values) / num_marked_bins}")
-        print(f"event loss {-torch.sum(event_probs) / event_in_bins}")
-        print(f"censor loss {-torch.sum(censor_in_bins) / censor_in_bins}")
 
         # Average over all marked bins (should be exactly one per prediction-task combination)
         num_marked_bins = torch.sum(marked_bins)
@@ -583,7 +580,7 @@ def compute_features(
     print(f"use_linear_interpolation: {use_linear_interpolation}")
     
     # Use the new from_pretrained method that supports linear_interpolation
-    model = femr.models.transformer.FEMRModel.from_pretrained(
+    model = femr.models.architecture.transformer.FEMRModel.from_pretrained(
         model_path, 
         task_config=task.get_task_config(),
         linear_interpolation=use_linear_interpolation
