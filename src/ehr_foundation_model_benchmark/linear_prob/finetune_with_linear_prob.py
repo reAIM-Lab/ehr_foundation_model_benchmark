@@ -10,7 +10,7 @@ from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import auc, precision_recall_curve, roc_auc_score
 
 MINIMUM_NUM_CASES = 10
-TRAIN_SIZES = [100, 1000, 10000, 100000]
+TRAIN_SIZES = [100, 1000, 10000, 100000, 200000, 300000, 400000, 500000]
 
 
 def main(args):
