@@ -1,6 +1,7 @@
 # MEDS-TAB
 
-This folder contains the code for meds-tab evaluation. It contains a lot of helper scripts to work around the existing meds-tab issues.
+This folder contains the code for meds-tab evaluation with institution data. It contains a lot of helper scripts to work around the existing meds-tab issues.
+For MIMIC data, you can follow the tutorial [here](https://github.com/mmcdermott/MEDS_Tabular_AutoML/tree/main/MIMICIV_TUTORIAL).
 
 ## Installation
 
