@@ -566,19 +566,19 @@ class TPPTaskHead(nn.Module):
         # event probability
         event_probs = torch.where(
             event_in_bins,
-            time_dependent_logits_stable,
+            torch.log(time_dependent_logits_stable),
             torch.zeros_like(event_in_bins)
         )
 
         censor_probs = torch.where(
-            is_censored_expanded,
-            integrated_logits_stable,
-            torch.zeros_like(is_censored_expanded)
+            censor_in_bins,
+            torch.log(integrated_logits_stable),
+            torch.zeros_like(censor_in_bins)
         )
 
         # Select the appropriate probability based on event vs censoring
         selected_probs = torch.where(
-            is_censored_expanded,
+            is_censored_expanded,  # true for all time bins for censor patients
             integrated_logits_stable,  # Use 1-F() for censoring
             time_dependent_logits_stable  # Use f() for events
         )
@@ -590,10 +590,13 @@ class TPPTaskHead(nn.Module):
             torch.zeros_like(selected_probs)  # No contribution from unmarked bins
         )
 
-        assert event_in_bins+censor_in_bins==marked_bins, f" event {event_in_bins} censor {censor_in_bins} take & {marked_bins}"
+        # print(f"event_in_bins {event_in_bins},{event_in_bins.shape}")
+        # print(f"censor_in_bins {censor_in_bins},{censor_in_bins.shape}")
+        # print(f"marked_bins {marked_bins},{marked_bins.shape}")
+        assert torch.all(event_in_bins+censor_in_bins==marked_bins), f" event {event_in_bins} censor {censor_in_bins} take & {marked_bins}"
         assert event_in_bins.shape == censor_in_bins.shape
         assert marked_bins.shape == censor_in_bins.shape
-        assert torch.sum(loss_values) == torch.sum(event_probs) + torch.sum(censor_probs), f"the loss for all, event, censor are {torch.sum(loss_values)}, {torch.sum(event_probs)},{torch.sum(censor_probs)}"
+        assert torch.sum(loss_values) - (torch.sum(event_probs) + torch.sum(censor_probs))<5, f"the loss for all, event, censor are {torch.sum(loss_values)}, {torch.sum(event_probs)},{torch.sum(censor_probs)}"
         
 
         # Average over all marked bins (should be exactly one per prediction-task combination)

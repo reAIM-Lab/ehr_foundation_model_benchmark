@@ -131,26 +131,26 @@ def main(args):
         # for key in example_batch['batch'].keys():
         #     print(f"example_batch[{key}], shape: {example_batch['batch'][key].shape}, values: {example_batch['batch'][key]}")
 
-        # train_batches_path = pretraining_data_path / 'train_batches'
+        train_batches_path = pretraining_data_path / 'train_batches'
 
-        # if not train_batches_path.exists():
-        #     print("Convert batches")
-        #     # But generally we want to convert entire datasets
-        #     train_batches = processor.convert_dataset(train_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
+        if not train_batches_path.exists():
+            print("Convert batches")
+            # But generally we want to convert entire datasets
+            train_batches = processor.convert_dataset(train_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
 
-        #     print("Convert batches to pytorch")
-        #     # Convert our batches to pytorch tensors
-        #     train_batches.set_format("pt")
-        #     train_batches.save_to_disk(train_batches_path)
+            print("Convert batches to pytorch")
+            # Convert our batches to pytorch tensors
+            train_batches.set_format("pt")
+            train_batches.save_to_disk(train_batches_path)
 
-        # val_batches_path = pretraining_data_path / 'val_batches'
+        val_batches_path = pretraining_data_path / 'val_batches'
 
-        # if not val_batches_path.exists():
-        #     print("Convert val batches")
-        #     val_batches = processor.convert_dataset(val_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
-        #     # Convert our batches to pytorch tensors
-        #     val_batches.set_format("pt")
-        #     val_batches.save_to_disk(val_batches_path)
+        if not val_batches_path.exists():
+            print("Convert val batches")
+            val_batches = processor.convert_dataset(val_database, tokens_per_batch=args.tokens_per_batch, num_proc=64)
+            # Convert our batches to pytorch tensors
+            val_batches.set_format("pt")
+            val_batches.save_to_disk(val_batches_path)
 
 
 def create_omop_meds_tutorial_argparser():
@@ -226,7 +226,7 @@ if __name__ == "__main__":
 '''
 mimic
 gsb
-python prepare_motor.py \
+python prepare_motor.prepare_motor.py \
   --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
   --athena_path " " \
   --num_bins 8 \
@@ -234,14 +234,15 @@ python prepare_motor.py \
   --num_threads 100 \
   --meds_reader /user/zj2398/cache/mimic/meds_v0.6_reader 
 
-#   > out.log 2>&1  
 
 kuvira
+
 python prepare_motor.py \
-  --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8 \
+  --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/mimic/deephit_tpp \
   --athena_path " " \
   --num_bins 8 \
-  --num_threads 64 \
+  --loss_type tpp \
+  --num_threads 100 \
   --meds_reader /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader
 
 cumc-kuvira

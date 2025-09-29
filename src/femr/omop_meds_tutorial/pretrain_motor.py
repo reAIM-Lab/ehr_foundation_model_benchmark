@@ -360,6 +360,18 @@ CUDA_VISIBLE_DEVICES=0 accelerate launch \
   --per_device_train_batch_size 1 \
   --output_dir /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_8/output_exlude_corrected 
 
+CUDA_VISIBLE_DEVICES=0,2 accelerate launch \
+  --num_processes 2 \
+  --mixed_precision bf16 \
+  --gpu_ids "0,2" \
+  pretrain_motor.py \
+  --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/mimic/deephit_tpp \
+  --meds_reader /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+  --per_device_train_batch_size 1 \
+  --output_dir /data/processed_datasets/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_mamba \
+  --model mamba \
+  --loss_type tpp \
+  --n_layers 12
 
 CUDA_VISIBLE_DEVICES=3 accelerate launch \
   --num_processes 1 \
