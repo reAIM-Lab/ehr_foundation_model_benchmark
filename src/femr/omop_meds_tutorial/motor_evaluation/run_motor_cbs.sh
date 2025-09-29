@@ -106,6 +106,10 @@ while [ $# -gt 0 ]; do
             MODEL_NAME="$2"
             shift 2
             ;;
+        --loss_type)
+            LOSS_TYPE="$2"
+            shift 2
+            ;;
         -*)
             echo "Error: Unknown option: $1" >&2
             echo "Try '$SCRIPT_NAME --help' for more information." >&2
@@ -232,7 +236,8 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
       --device \"$DEVICE\" \
       --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
       --cohort_dir \"$TASK_DIR\" \
-      --ontology_path \"$ONTOLOGY_PATH\""
+      --ontology_path \"$ONTOLOGY_PATH\"
+      --loss_type \"$LOSS_TYPE\""
 
     # Add linear_interpolation parameter if specified
     if [ "$USE_LINEAR_INTERPOLATION" = true ]; then
@@ -259,91 +264,93 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     # Run the second command: fine-tune MOTOR
     echo "Running $MODEL_NAME fine-tuning for $TASK_NAME..."
 
-    # Build the command with conditional observation_window parameter
-    FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.finetune_motor \
-      --pretraining_data \"$PRETRAINING_DATA\" \
-      --meds_reader \"$OMOP_MEDS_READER\" \
-      --cohort_label \"$TASK_NAME\" \
-      --main_split_path \"$MAIN_SPLIT_PATH\" \
-      --model_name \"$MODEL_NAME\""
+    # # Build the command with conditional observation_window parameter
+    # FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.finetune_motor \
+    #   --pretraining_data \"$PRETRAINING_DATA\" \
+    #   --meds_reader \"$OMOP_MEDS_READER\" \
+    #   --cohort_label \"$TASK_NAME\" \
+    #   --model_path \"$MODEL_PATH\" \
+    #   --main_split_path \"$MAIN_SPLIT_PATH\" \
+    #   --model_name \"$MODEL_NAME\""
 
-    # Add observation_window parameter if specified
-    if [ -n "$OBSERVATION_WINDOW" ]; then
-        FINETUNE_CMD="$FINETUNE_CMD --observation_window \"$OBSERVATION_WINDOW\""
-    fi
+    # # Add observation_window parameter if specified
+    # if [ -n "$OBSERVATION_WINDOW" ]; then
+    #     FINETUNE_CMD="$FINETUNE_CMD --observation_window \"$OBSERVATION_WINDOW\""
+    # fi
 
-    # Print the command
-    echo "Executing command: $FINETUNE_CMD"
+    # # Print the command
+    # echo "Executing command: $FINETUNE_CMD"
 
-    # Execute the command
-    eval $FINETUNE_CMD
+    # # Execute the command
+    # eval $FINETUNE_CMD
 
-    # Check if the second command succeeded
-    if [ $? -ne 0 ]; then
-        echo "Error: $MODEL_NAME fine-tuning failed for task $TASK_NAME"
-        continue
-    fi
+    # # Check if the second command succeeded
+    # if [ $? -ne 0 ]; then
+    #     echo "Error: $MODEL_NAME fine-tuning failed for task $TASK_NAME"
+    #     continue
+    # fi
 
-    # Determine the MOTOR prediction folder path based on observation window
-    if [ -n "$OBSERVATION_WINDOW" ]; then
-        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
-        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
-    else
-        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/test_predictions"
-        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/"
-    fi
+    # # Determine the MOTOR prediction folder path based on observation window
+    # if [ -n "$OBSERVATION_WINDOW" ]; then
+    #     MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
+    #     MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
+    # else
+    #     MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/test_predictions"
+    #     MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/"
+    # fi
 
-    # Build the evaluation command
-    EVAL_CMD="meds-evaluation-cli predictions_path=\"$MOTOR_PREDICTION_FOLDER\" \
-      output_dir=\"$MOTOR_OUTPUT_DIR\""
+    # # Build the evaluation command
+    # EVAL_CMD="meds-evaluation-cli predictions_path=\"$MOTOR_PREDICTION_FOLDER\" \
+    #   output_dir=\"$MOTOR_OUTPUT_DIR\""
 
-    # Run the third command to compute the metrics
-    echo "Running meds-evaluation for $TASK_NAME..."
-    echo "Executing command: $EVAL_CMD"
+    # # Run the third command to compute the metrics
+    # echo "Running meds-evaluation for $TASK_NAME..."
+    # echo "Executing command: $EVAL_CMD"
 
-    # Execute the command
-    eval $EVAL_CMD
+    # # Execute the command
+    # eval $EVAL_CMD
 
-    # Check if the third command succeeded
-    if [ $? -ne 0 ]; then
-        echo "Error: Running meds-evaluation failed for task $TASK_NAME"
-    fi
+    # # Check if the third command succeeded
+    # if [ $? -ne 0 ]; then
+    #     echo "Error: Running meds-evaluation failed for task $TASK_NAME"
+    # fi
 
-    echo "Completed processing of task: $TASK_NAME"
-    echo "----------------------------------------"
+    # echo "Completed processing of task: $TASK_NAME"
+    # echo "----------------------------------------"
 done
 
 echo "All tasks processed."
 
 
 # phenotype
-# export CUDA_VISIBLE_DEVICES=7
+# export CUDA_VISIBLE_DEVICES=2
 # bash run_motor_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --pretraining_data   /user/zj2398/cache/motor_mimic_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           100 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_add_mask/best_147565 \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/motor_mimic_8k/output/best_100620 \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --model_name deephit_add_mask_separate_mean \
-#   --task "masld" \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
+#   --ontology_path       /user/zj2398/cache/motor_mimic_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/motor_mimic_8k/main_split.csv \
+#   --model_name motor \
+#   --loss_type  labeled_subjects \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
 
 
-# export CUDA_VISIBLE_DEVICES=5
+# export CUDA_VISIBLE_DEVICES=3
 # bash run_motor_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --pretraining_data   /user/zj2398/cache/motor_mimic_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           100 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output/best_160980 \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/motor_mimic_8k/output/best_100620 \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --task "masld" \
+#   --ontology_path       /user/zj2398/cache/motor_mimic_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/motor_mimic_8k/main_split.csv \
+#   --model_name motor \
+#   --loss_type  labeled_subjects \
 #   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
 

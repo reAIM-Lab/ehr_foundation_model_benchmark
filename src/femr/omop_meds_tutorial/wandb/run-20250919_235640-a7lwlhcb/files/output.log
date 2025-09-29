@@ -1,0 +1,30 @@
+  0%|                                                                                                                             | 0/670750 [00:00<?, ?it/s]Could not estimate the number of tokens of the input, floating-point operations will not be computed
+ 18%|███████████████████                                                                                       | 120735/670750 [5:59:40<196:03:07,  1.28s/it]/user/zj2398/.conda/envs/tte/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py:4807: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user.
+{'loss': 0.1577, 'grad_norm': 0.09123789519071579, 'learning_rate': 9.807325624766879e-06, 'epoch': 1.0}
+  warnings.warn(  # warn only once                                                                                                                           
+{'eval_loss': 0.1379408985376358, 'eval_runtime': 136.692, 'eval_samples_per_second': 15.18, 'eval_steps_per_second': 5.062, 'epoch': 1.0}
+{'loss': 0.1342, 'grad_norm': 0.10093998163938522, 'learning_rate': 9.607176426706453e-06, 'epoch': 2.0}
+{'eval_loss': 0.13065701723098755, 'eval_runtime': 131.5244, 'eval_samples_per_second': 15.777, 'eval_steps_per_second': 5.261, 'epoch': 2.0}
+{'loss': 0.1281, 'grad_norm': 0.1071469634771347, 'learning_rate': 9.407027228646028e-06, 'epoch': 3.0}
+{'eval_loss': 0.12564624845981598, 'eval_runtime': 139.3943, 'eval_samples_per_second': 14.886, 'eval_steps_per_second': 4.964, 'epoch': 3.0}
+{'loss': 0.1244, 'grad_norm': 0.12310784310102463, 'learning_rate': 9.206878030585604e-06, 'epoch': 4.0}
+{'eval_loss': 0.12305779755115509, 'eval_runtime': 141.4869, 'eval_samples_per_second': 14.666, 'eval_steps_per_second': 4.891, 'epoch': 4.0}
+{'loss': 0.1219, 'grad_norm': 0.07936535030603409, 'learning_rate': 9.006728832525178e-06, 'epoch': 5.0}
+{'eval_loss': 0.12141940742731094, 'eval_runtime': 150.2058, 'eval_samples_per_second': 13.814, 'eval_steps_per_second': 4.607, 'epoch': 5.0}
+{'loss': 0.1199, 'grad_norm': 0.10452429205179214, 'learning_rate': 8.806579634464753e-06, 'epoch': 6.0}
+{'eval_loss': 0.11994946002960205, 'eval_runtime': 132.7061, 'eval_samples_per_second': 15.636, 'eval_steps_per_second': 5.215, 'epoch': 6.0}
+{'loss': 0.1182, 'grad_norm': 0.07707669585943222, 'learning_rate': 8.606430436404327e-06, 'epoch': 7.0}
+{'eval_loss': 0.11929932981729507, 'eval_runtime': 139.5995, 'eval_samples_per_second': 14.864, 'eval_steps_per_second': 4.957, 'epoch': 7.0}
+{'loss': 0.1169, 'grad_norm': 0.11675138026475906, 'learning_rate': 8.406281238343902e-06, 'epoch': 8.0}
+{'eval_loss': 0.118146613240242, 'eval_runtime': 137.1693, 'eval_samples_per_second': 15.127, 'eval_steps_per_second': 5.045, 'epoch': 8.0}
+{'loss': 0.1157, 'grad_norm': 0.4073835611343384, 'learning_rate': 8.206132040283476e-06, 'epoch': 9.0}
+{'eval_loss': 0.11808472126722336, 'eval_runtime': 134.3271, 'eval_samples_per_second': 15.447, 'eval_steps_per_second': 5.152, 'epoch': 9.0}
+ 18%|███████████████████▎                                                                                       | 120735/670750 [5:59:46<27:18:57,  5.59it/s]
+{'train_runtime': 21591.9375, 'train_samples_per_second': 93.195, 'train_steps_per_second': 31.065, 'train_loss': 0.12632724456907174, 'epoch': 9.0}
+***** train metrics *****
+  epoch                    =        9.0
+  total_flos               =        0GF
+  train_loss               =     0.1263
+  train_runtime            = 5:59:51.93
+  train_samples_per_second =     93.195
+  train_steps_per_second   =     31.065

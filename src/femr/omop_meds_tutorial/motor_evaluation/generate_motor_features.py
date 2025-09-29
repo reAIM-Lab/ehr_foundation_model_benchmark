@@ -6,7 +6,7 @@ from typing import Optional
 
 import femr.transforms
 import meds_reader
-import femr.models.architecture.transformer
+import femr.models.architecture.embedding
 import pandas as pd
 import pickle
 import meds
@@ -75,6 +75,12 @@ def create_arg_parser():
         dest="use_linear_interpolation",
         action="store_true",
         help="Whether to use linear interpolation for the model",
+    )
+    args.add_argument(
+        "--loss_type",
+        dest="loss_type",
+        default=None,
+        help="The loss type",
     )
     return args
 
@@ -163,7 +169,7 @@ def main():
                 for label in labels.to_dict(orient="records")
             ]
             print(f"typed_labels length: {len(typed_labels)}")
-            total_flops = femr.models.transformer.TotalFlops()
+            # total_flops = femr.models.transformer.TotalFlops()
             start_time: datetime.datetime = datetime.datetime.now()
             if os.path.basename(pretraining_data) == "motor_mimic_bin_8_start_idx_corrected" or  os.path.basename(pretraining_data) == "motor_mimic_bin_8_linear_interpolation":
                 print("load from start_idx or interpolation")
@@ -182,7 +188,7 @@ def main():
                 )
             else:
                 print("load from normal model")
-                features = femr.models.transformer.compute_features(
+                features = femr.models.architecture.embedding.compute_features(
                     db=database,
                     model_path=args.model_path,
                     labels=typed_labels,
@@ -192,7 +198,8 @@ def main():
                     num_proc=args.num_proc,
                     observation_window=args.observation_window,
                     min_subjects_per_batch=args.min_subjects_per_batch,
-                    use_linear_interpolation=args.use_linear_interpolation,
+                    loss_type=args.loss_type
+                    # use_linear_interpolation=args.use_linear_interpolation,
                     # total_flops=None
                 )
 
@@ -203,7 +210,7 @@ def main():
             with open(training_metrics_file, "w") as output_file:
                 training_metrics = {
                     "duration_in_seconds": (datetime.datetime.now() - start_time).total_seconds(),
-                    "total_flops": total_flops.total_flops,
+                    # "total_flops": total_flops.total_flops,
                 }
                 json.dump(training_metrics, output_file)
 

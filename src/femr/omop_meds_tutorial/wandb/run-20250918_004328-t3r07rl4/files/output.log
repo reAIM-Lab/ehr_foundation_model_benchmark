@@ -1,0 +1,21 @@
+  0%|                                                                                                                                       | 0/670750 [00:00<?, ?it/s]Could not estimate the number of tokens of the input, floating-point operations will not be computed
+ 10%|███████████▌                                                                                                        | 67075/670750 [13:02:08<117:19:19,  1.43it/s]
+{'loss': 0.1761, 'grad_norm': 0.9899539351463318, 'learning_rate': 9.807325624766879e-06, 'epoch': 1.0}
+                                                                                                                                                                       
+{'eval_loss': 0.15011905133724213, 'eval_runtime': 193.6062, 'eval_samples_per_second': 10.718, 'eval_steps_per_second': 3.574, 'epoch': 1.0}
+{'loss': 0.1463, 'grad_norm': 0.3821761906147003, 'learning_rate': 9.607176426706453e-06, 'epoch': 2.0}
+{'eval_loss': 0.14393304288387299, 'eval_runtime': 192.5606, 'eval_samples_per_second': 10.776, 'eval_steps_per_second': 3.594, 'epoch': 2.0}
+{'loss': 0.1414, 'grad_norm': 0.36889034509658813, 'learning_rate': 9.407027228646028e-06, 'epoch': 3.0}
+{'eval_loss': 0.14023956656455994, 'eval_runtime': 192.8463, 'eval_samples_per_second': 10.76, 'eval_steps_per_second': 3.588, 'epoch': 3.0}
+{'loss': 0.1382, 'grad_norm': 0.3462071120738983, 'learning_rate': 9.206878030585604e-06, 'epoch': 4.0}
+{'eval_loss': 0.13887478411197662, 'eval_runtime': 190.8729, 'eval_samples_per_second': 10.871, 'eval_steps_per_second': 3.625, 'epoch': 4.0}
+{'loss': 0.1351, 'grad_norm': 0.4324149787425995, 'learning_rate': 9.006728832525178e-06, 'epoch': 5.0}
+{'eval_loss': 0.13907097280025482, 'eval_runtime': 192.5666, 'eval_samples_per_second': 10.775, 'eval_steps_per_second': 3.594, 'epoch': 5.0}
+{'train_runtime': 46932.7592, 'train_samples_per_second': 42.875, 'train_steps_per_second': 14.292, 'train_loss': 0.1474195018402907, 'epoch': 5.0}
+***** train metrics *****
+  epoch                    =         5.0
+  total_flos               =         0GF
+  train_loss               =      0.1474
+  train_runtime            = 13:02:12.75
+  train_samples_per_second =      42.875
+  train_steps_per_second   =      14.292

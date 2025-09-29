@@ -93,7 +93,7 @@ def create_arg_parser():
         "--loss_type",
         dest="loss_type",
         type=str,
-        choices=["motor", "tpp","mtpp"],
+        choices=["motor", "tpp","mtpp","mtpp_shared"],
         default="motor",
         required=True,
     )
@@ -150,27 +150,13 @@ def main():
     )
     print(f"Tokenizer vocab size: {tokenizer.vocab_size}")
 
-    # # if args.loss_type == 'motor':
-    # #     from femr.models.tasks.motor import MOTORTask as MOTORTask
-    # #     # print("loss motor")
-    # # elif args.loss_type == 'tpp':
-    # #     from femr.models.tasks.tpp import MOTORTask as MOTORTask
-    # # elif args.loss_type == 'mtpp':
-    # #     from femr.models.tasks.mtpp import MOTORTask as MOTORTask
-    # if args.loss_type == "motor":
-    #     from femr.models.tasks.motor import MOTORTask as _MOTORImpl
-    # elif args.loss_type == "tpp":
-    #     from femr.models.tasks.tpp import MOTORTask as _MOTORImpl
-    # elif args.loss_type == "mtpp":
-    #     from femr.models.tasks.mtpp import MOTORTask as _MOTORImpl
-    # else:
-    #     raise ValueError(f"Unknown loss_type: {args.loss_type}")
 
     # # <-- critical alias for pickle backward-compatibility
     # import femr.models.tasks as _tasks_mod
     # _tasks_mod.MOTORTask = _MOTORImpl
 
-    task_path = pretraining_data / f'{args.loss_type}_task.pkl'
+    model_type = args.loss_type.split("_")[0]
+    task_path = pretraining_data / f'{model_type}_task.pkl'
     with open(task_path, 'rb') as f:
         task = pickle.load(f)
     # print(f"{args.loss_type} task: {task}")
@@ -252,9 +238,9 @@ def main():
 
         weight_decay=0.1,
         adam_beta2=0.95,
-        report_to="none",
-        # report_to=["wandb"],
-        run_name="deephit_mimic_bin_8_corrected",
+        # report_to="none",
+        report_to=["wandb"],
+        run_name="mttp_mean_all_shared_task_layer",
         # run_name="motor_pretrain_mimic",
         num_train_epochs=args.n_epochs,
         ddp_find_unused_parameters=True,
@@ -307,29 +293,30 @@ if __name__ == "__main__":
 
 '''
 40 hours
-export CUDA_VISIBLE_DEVICES=4
+export CUDA_VISIBLE_DEVICES=0
 
 python pretrain_motor.py \
-  --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
+  --pretraining_data /user/zj2398/cache/mtpp_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
+  --checkpoint_dir /user/zj2398/cache/mtpp_8k/output_mamba_store/checkpoint-53660 \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/deephit_tpp_8k/output_mamba \
+  --output_dir /user/zj2398/cache/mtpp_8k/output_mamba \
   --model mamba \
   --loss_type mtpp \
+  --learning_rate 5e-6 \
   --n_layers 12
 
-CUDA_VISIBLE_DEVICES=0,3,5 accelerate launch \
+CUDA_VISIBLE_DEVICES=3,4,6 accelerate launch \
   --num_processes 3 \
   --mixed_precision bf16 \
-  --gpu_ids "0,3,5" \
+  --gpu_ids "3,4,6" \
   pretrain_motor.py \
-  --pretraining_data /user/zj2398/cache/motor_mimic_8k \
+  --pretraining_data /user/zj2398/cache/mtpp_8k \
   --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/motor_mimic_8k/output_mamba \
-  --model mamba \
-  --loss_type motor \
-  --n_layers 12
+  --output_dir /user/zj2398/cache/mtpp_8k/output_mean_all_shared \
+  --model transformer \
+  --loss_type mtpp_shared 
 
 python pretrain_motor.py \
   --pretraining_data /user/zj2398/cache/motor_mimic_8k \

@@ -1,0 +1,16 @@
+  0%|                                                                                                    | 0/2012250 [00:00<?, ?it/s]/user/zj2398/.conda/envs/tte/lib/python3.11/site-packages/torch/nn/parallel/_functions.py:71: UserWarning: Was asked to gather along dimension 0, but all input tensors were scalars; will instead unsqueeze and return a vector.
+  warnings.warn(
+Could not estimate the number of tokens of the input, floating-point operations will not be computed
+  3%|██▏                                                                                 | 53741/2012250 [01:59<914:47:11,  1.68s/it]Traceback (most recent call last):
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor.py", line 301, in <module>
+    main()
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/pretrain_motor.py", line 294, in main
+    train_result = trainer.train(resume_from_checkpoint=args.checkpoint_dir)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/tte/lib/python3.11/site-packages/transformers/trainer.py", line 2328, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/tte/lib/python3.11/site-packages/transformers/trainer.py", line 2677, in _inner_training_loop
+    and (torch.isnan(tr_loss_step) or torch.isinf(tr_loss_step))
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

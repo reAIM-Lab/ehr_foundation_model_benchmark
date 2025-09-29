@@ -7,7 +7,7 @@ from typing import Optional
 import femr.transforms
 import meds_reader
 # import femr.models_tpp.transformer_mtpp
-import femr.models.architecture.transformer
+import femr.models.architecture.embedding
 import pandas as pd
 import pickle
 import meds
@@ -77,6 +77,12 @@ def create_arg_parser():
         action="store_true",
         help="Whether to use linear interpolation for the model",
     )
+    args.add_argument(
+        "--loss_type",
+        dest="loss_type",
+        default=None,
+        help="The loss type",
+    )
     return args
 
 
@@ -134,19 +140,20 @@ def main():
             cohort.to_parquet(
                 pretraining_data / "labels" / (label_name + '.parquet')
             )
-            labels = [label_name]
+            # labels = [label_name]
 
         # eg: label_name=inhospital_mortality
-        for label_name in labels:
-            motor_features_name = get_motor_features_name(label_name, args.observation_window)
-            feature_output_path = features_path / f"{motor_features_name}.pkl"
-            training_metrics_file = flops_path / f"{motor_features_name}.json"
-            if feature_output_path.exists():
-                print(
-                    f"The features for {label_name} already exist at {feature_output_path}, it will be skipped!"
-                )
-                continue
-
+        # for label_name in labels:
+        motor_features_name = get_motor_features_name(label_name, args.observation_window)
+        feature_output_path = features_path / f"{motor_features_name}.pkl"
+        training_metrics_file = flops_path / f"{motor_features_name}.json"
+        if feature_output_path.exists():
+            print(
+                f"The features for {label_name} already exist at {feature_output_path}, it will be skipped!"
+            )
+            # continue
+        
+        else:
             # no split here
             file_path = pretraining_data / "labels" / (label_name + '.parquet')
             print("Loading labels from ", file_path)
@@ -166,7 +173,7 @@ def main():
             print(f"typed_labels length: {len(typed_labels)}")
             # total_flops = femr.models.architecture.transformer femr.models_tpp.transformer.TotalFlops()
             start_time: datetime.datetime = datetime.datetime.now()
-            features = femr.models.architecture.transformer.compute_features(
+            features = femr.models.architecture.embedding.compute_features(
                 db=database,
                 model_path=args.model_path,
                 labels=typed_labels,
@@ -176,6 +183,7 @@ def main():
                 num_proc=args.num_proc,
                 observation_window=args.observation_window,
                 min_subjects_per_batch=args.min_subjects_per_batch,
+                loss_type=args.loss_type
                 # total_flops=None
             )
 

@@ -622,6 +622,7 @@ class FEMRBatchProcessor:
             },
             num_proc=num_proc // 4,
             writer_batch_size=8,
+            cache_dir="/shared/share_mala/zj2398/huggingface/datasets",
         )
 
         return batch_dataset

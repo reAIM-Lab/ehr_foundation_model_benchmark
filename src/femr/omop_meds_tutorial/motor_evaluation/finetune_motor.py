@@ -69,8 +69,9 @@ def main():
         else:
             raise RuntimeError(f"The user provided label does not exist at {label_path}")
 
+    # labels = ["in_hospital_mortality","readmission","long_los"]
     output_dir = pretraining_data / "results"
-    with meds_reader.SubjectDatabase(args.meds_reader, num_threads=6) as database:
+    with meds_reader.SubjectDatabase(args.meds_reader, num_threads=16) as database:
         for label_name in labels:
             if args.observation_window:
                 label_output_dir = output_dir / label_name / f"{args.model_name}_{args.observation_window}"
@@ -93,7 +94,8 @@ def main():
             # Find labels that have no features
             labels_no_features = labels[~labels.subject_id.isin(features["subject_ids"])]
             if len(labels_no_features) > 0:
-                labels_no_features.to_parquet(label_output_dir / "labels_no_features.parquet")
+                print(f"{len(labels_no_features)} features are not included")
+                # labels_no_features.to_parquet(label_output_dir / "labels_no_features.parquet")
 
             # Remove the labels that do not have features generated
             labels = labels[labels.subject_id.isin(features["subject_ids"])]
