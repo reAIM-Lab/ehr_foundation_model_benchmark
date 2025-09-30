@@ -46,9 +46,9 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     if "logs" in task:
         continue
     # only long los tasks
-    if "readmission" in task or "Schizophrenia" in task or "death" in task:
-        print(f"Skipping task {task}.")
-        continue
+    # if "readmission" in task or "Schizophrenia" in task or "death" in task:
+    #     print(f"Skipping task {task}.")
+    #     continue
 
     task = os.path.basename(task)
     task_path = os.path.join(PHENOTYPE_PATH, task)
@@ -83,7 +83,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         start_time = time.time()  # Start timing
         try:
             print("Running:", " ".join(cmd_reshard))
-            # subprocess.run(cmd_reshard, check=True)
+            subprocess.run(cmd_reshard, check=True)
         except Exception as e:
             log_error(task, f"reshard.py ({split})", e)
         finally:
@@ -99,7 +99,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     start_time = time.time()  # Start timing
     try:
         print("Running:", " ".join(describe_cmd))
-        # subprocess.run(describe_cmd, check=True)
+        subprocess.run(describe_cmd, check=True)
     except Exception as e:
         log_error(task, "meds-tab-describe", e)
     finally:
@@ -117,7 +117,9 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         "do_overwrite=False",
         f"input_label_dir={os.path.join(TASKS_DIR, task)}",
         "tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]",
-        "tabularization.window_sizes=[1d,7d,30d,60d,365d,full]"
+        # "tabularization.window_sizes=[1d,7d,30d,60d,365d,full]"
+        "tabularization.window_sizes=[730d]"
+
         # "tabularization.aggs=[code/count]",
         # "tabularization.window_sizes=[full]"
     ]
@@ -161,7 +163,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         start_time = time.time()  # Start timing
         try:
             print("Running:", " ".join(xgboost_cmd))
-            subprocess.run(xgboost_cmd, check=True)
+            # subprocess.run(xgboost_cmd, check=True)
         except Exception as e:
             log_error(task, f"meds-tab-xgboost-{ratio}", e)
         finally:
