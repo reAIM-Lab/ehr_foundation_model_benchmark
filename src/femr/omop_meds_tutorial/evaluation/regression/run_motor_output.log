@@ -1,0 +1,619 @@
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              billirubin creatinine
+
+Discovering prediction tasks...
+[skip] Not in filter: regression_labels_1_month
+No matching prediction tasks found in /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              billirubin creatinine
+
+Discovering prediction tasks...
+No matching prediction tasks found in /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              bilirubin creatinine
+
+Discovering prediction tasks...
+No matching prediction tasks found in /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              bilirubin creatinine
+
+Discovering prediction tasks...
+No matching prediction tasks found in /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              bilirubin creatinine
+
+Discovering prediction tasks...
+[1] Selected task: bilirubin
+[2] Selected task: creatinine
+[skip] Not in filter: pao2
+[skip] Not in filter: platelets
+Will run 2 task(s).
+
+All selected tasks processed.
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              bilirubin creatinine
+
+Discovering prediction tasks...
+[1] Selected task: bilirubin
+[2] Selected task: creatinine
+[skip] Not in filter: pao2
+[skip] Not in filter: platelets
+Will run 2 task(s).
+
+[1/2] Processing task: bilirubin
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"
+Traceback (most recent call last):
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 16, in <module>
+    from femr.omop_meds_tutorial.motor_evaluation.generate_labels import (  # type: ignore
+ModuleNotFoundError: No module named 'femr.omop_meds_tutorial.motor_evaluation'
+Error: feature generation failed for bilirubin
+----------------------------------------
+[2/2] Processing task: creatinine
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"
+Traceback (most recent call last):
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 16, in <module>
+    from femr.omop_meds_tutorial.motor_evaluation.generate_labels import (  # type: ignore
+ModuleNotFoundError: No module named 'femr.omop_meds_tutorial.motor_evaluation'
+Error: feature generation failed for creatinine
+----------------------------------------
+All selected tasks processed.
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              bilirubin creatinine
+
+Discovering prediction tasks...
+[1] Selected task: bilirubin
+[2] Selected task: creatinine
+[skip] Not in filter: pao2
+[skip] Not in filter: platelets
+Will run 2 task(s).
+
+[1/2] Processing task: bilirubin
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"
+label_name of cohort_dir: regression_labels_1_month
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/platelets.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/regression_labels_1_month.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           0.3  mg/dL
+1    10000084 2160-12-27 20:13:00           0.8  mg/dL
+2    10000117 2176-02-08 22:43:00           0.9  mg/dL
+3    10000285 2161-11-08 16:52:00           0.8  mg/dL
+4    10000560 2189-06-26 14:30:00           0.6  mg/dL
+task type is binary
+Traceback (most recent call last):
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 221, in <module>
+    main()
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 184, in main
+    typed_labels = [
+                   ^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 188, in <listcomp>
+    boolean_value=label["boolean_value"] if args.task_type=="binary" else None,
+                  ~~~~~^^^^^^^^^^^^^^^^^
+KeyError: 'boolean_value'
+Error: feature generation failed for bilirubin
+----------------------------------------
+[2/2] Processing task: creatinine
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"
+label_name of cohort_dir: regression_labels_1_month
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/platelets.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/regression_labels_1_month.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           0.3  mg/dL
+1    10000084 2160-12-27 20:13:00           0.8  mg/dL
+2    10000117 2176-02-08 22:43:00           0.9  mg/dL
+3    10000285 2161-11-08 16:52:00           0.8  mg/dL
+4    10000560 2189-06-26 14:30:00           0.6  mg/dL
+task type is binary
+Traceback (most recent call last):
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 221, in <module>
+    main()
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 184, in main
+    typed_labels = [
+                   ^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 188, in <listcomp>
+    boolean_value=label["boolean_value"] if args.task_type=="binary" else None,
+                  ~~~~~^^^^^^^^^^^^^^^^^
+KeyError: 'boolean_value'
+Error: feature generation failed for creatinine
+----------------------------------------
+All selected tasks processed.
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              bilirubin creatinine
+
+Discovering prediction tasks...
+[1] Selected task: bilirubin
+[2] Selected task: creatinine
+[skip] Not in filter: pao2
+[skip] Not in filter: platelets
+Will run 2 task(s).
+
+[1/2] Processing task: bilirubin
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"         --task_type regression 
+label_name of cohort_dir: regression_labels_1_month
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/platelets.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/regression_labels_1_month.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           0.3  mg/dL
+1    10000084 2160-12-27 20:13:00           0.8  mg/dL
+2    10000117 2176-02-08 22:43:00           0.9  mg/dL
+3    10000285 2161-11-08 16:52:00           0.8  mg/dL
+4    10000560 2189-06-26 14:30:00           0.6  mg/dL
+task type is regression
+typed_labels length: 408395
+Loading model from /user/zj2398/cache/motor_mimic_8k/output/best_100620
+use_linear_interpolation: False
+loss type is None
+the hidden size is 768
+create loss type is None
+Traceback (most recent call last):
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 221, in <module>
+    main()
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 195, in main
+    features = femr.models.architecture.embedding.compute_features(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models/architecture/embedding.py", line 1397, in compute_features
+    model = femr.models.architecture.embedding.FEMRModel.from_pretrained(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/tte/lib/python3.11/site-packages/transformers/modeling_utils.py", line 288, in _wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/tte/lib/python3.11/site-packages/transformers/modeling_utils.py", line 5103, in from_pretrained
+    model = cls(config, *model_args, **model_kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models/architecture/embedding.py", line 1271, in __init__
+    self.task_model = self.create_task_head()
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models/architecture/embedding.py", line 1299, in create_task_head
+    raise RuntimeError("Could not determine head for task " + self.loss_type)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+TypeError: can only concatenate str (not "NoneType") to str
+Error: feature generation failed for bilirubin
+----------------------------------------
+[2/2] Processing task: creatinine
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"         --task_type regression 
+label_name of cohort_dir: regression_labels_1_month
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/platelets.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/regression_labels_1_month.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           0.3  mg/dL
+1    10000084 2160-12-27 20:13:00           0.8  mg/dL
+2    10000117 2176-02-08 22:43:00           0.9  mg/dL
+3    10000285 2161-11-08 16:52:00           0.8  mg/dL
+4    10000560 2189-06-26 14:30:00           0.6  mg/dL
+task type is regression
+typed_labels length: 408395
+Loading model from /user/zj2398/cache/motor_mimic_8k/output/best_100620
+use_linear_interpolation: False
+loss type is None
+the hidden size is 768
+create loss type is None
+Traceback (most recent call last):
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 221, in <module>
+    main()
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py", line 195, in main
+    features = femr.models.architecture.embedding.compute_features(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models/architecture/embedding.py", line 1397, in compute_features
+    model = femr.models.architecture.embedding.FEMRModel.from_pretrained(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/tte/lib/python3.11/site-packages/transformers/modeling_utils.py", line 288, in _wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/.conda/envs/tte/lib/python3.11/site-packages/transformers/modeling_utils.py", line 5103, in from_pretrained
+    model = cls(config, *model_args, **model_kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models/architecture/embedding.py", line 1271, in __init__
+    self.task_model = self.create_task_head()
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/user/zj2398/femr_chao_meds_v3/src/femr/models/architecture/embedding.py", line 1299, in create_task_head
+    raise RuntimeError("Could not determine head for task " + self.loss_type)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+TypeError: can only concatenate str (not "NoneType") to str
+Error: feature generation failed for creatinine
+----------------------------------------
+All selected tasks processed.
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              bilirubin creatinine
+
+Discovering prediction tasks...
+[1] Selected task: bilirubin
+[2] Selected task: creatinine
+[skip] Not in filter: pao2
+[skip] Not in filter: platelets
+Will run 2 task(s).
+
+[1/2] Processing task: bilirubin
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"         --loss_type labeled_subjects         --task_type regression 
+label_name of cohort_dir: regression_labels_1_month
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/platelets.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/regression_labels_1_month.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           0.3  mg/dL
+1    10000084 2160-12-27 20:13:00           0.8  mg/dL
+2    10000117 2176-02-08 22:43:00           0.9  mg/dL
+3    10000285 2161-11-08 16:52:00           0.8  mg/dL
+4    10000560 2189-06-26 14:30:00           0.6  mg/dL
+task type is regression
+typed_labels length: 408395
+Loading model from /user/zj2398/cache/motor_mimic_8k/output/best_100620
+use_linear_interpolation: False
+loss type is labeled_subjects
+the hidden size is 768
+create loss type is labeled_subjects
+Some weights of the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 were not used when initializing FEMRModel: ['task_model.final_layer.bias', 'task_model.final_layer.weight', 'task_model.norm.weight', 'task_model.task_layer.bias', 'task_model.task_layer.weight', 'task_model.task_time_bias', 'transformer.embed_bag.weight', 'transformer.in_norm.weight', 'transformer.layers.0.input_proj.weight', 'transformer.layers.0.norm.weight', 'transformer.layers.0.output_proj.weight', 'transformer.layers.1.input_proj.weight', 'transformer.layers.1.norm.weight', 'transformer.layers.1.output_proj.weight', 'transformer.layers.10.input_proj.weight', 'transformer.layers.10.norm.weight', 'transformer.layers.10.output_proj.weight', 'transformer.layers.2.input_proj.weight', 'transformer.layers.2.norm.weight', 'transformer.layers.2.output_proj.weight', 'transformer.layers.3.input_proj.weight', 'transformer.layers.3.norm.weight', 'transformer.layers.3.output_proj.weight', 'transformer.layers.4.input_proj.weight', 'transformer.layers.4.norm.weight', 'transformer.layers.4.output_proj.weight', 'transformer.layers.5.input_proj.weight', 'transformer.layers.5.norm.weight', 'transformer.layers.5.output_proj.weight', 'transformer.layers.6.input_proj.weight', 'transformer.layers.6.norm.weight', 'transformer.layers.6.output_proj.weight', 'transformer.layers.7.input_proj.weight', 'transformer.layers.7.norm.weight', 'transformer.layers.7.output_proj.weight', 'transformer.layers.8.input_proj.weight', 'transformer.layers.8.norm.weight', 'transformer.layers.8.output_proj.weight', 'transformer.layers.9.input_proj.weight', 'transformer.layers.9.norm.weight', 'transformer.layers.9.output_proj.weight', 'transformer.out_norm.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of FEMRModel were not initialized from the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 and are newly initialized: ['backbone.embed_bag.weight', 'backbone.in_norm.weight', 'backbone.layers.0.input_proj.weight', 'backbone.layers.0.norm.weight', 'backbone.layers.0.output_proj.weight', 'backbone.layers.1.input_proj.weight', 'backbone.layers.1.norm.weight', 'backbone.layers.1.output_proj.weight', 'backbone.layers.10.input_proj.weight', 'backbone.layers.10.norm.weight', 'backbone.layers.10.output_proj.weight', 'backbone.layers.2.input_proj.weight', 'backbone.layers.2.norm.weight', 'backbone.layers.2.output_proj.weight', 'backbone.layers.3.input_proj.weight', 'backbone.layers.3.norm.weight', 'backbone.layers.3.output_proj.weight', 'backbone.layers.4.input_proj.weight', 'backbone.layers.4.norm.weight', 'backbone.layers.4.output_proj.weight', 'backbone.layers.5.input_proj.weight', 'backbone.layers.5.norm.weight', 'backbone.layers.5.output_proj.weight', 'backbone.layers.6.input_proj.weight', 'backbone.layers.6.norm.weight', 'backbone.layers.6.output_proj.weight', 'backbone.layers.7.input_proj.weight', 'backbone.layers.7.norm.weight', 'backbone.layers.7.output_proj.weight', 'backbone.layers.8.input_proj.weight', 'backbone.layers.8.norm.weight', 'backbone.layers.8.output_proj.weight', 'backbone.layers.9.input_proj.weight', 'backbone.layers.9.norm.weight', 'backbone.layers.9.output_proj.weight', 'backbone.out_norm.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              bilirubin creatinine
+
+Discovering prediction tasks...
+[1] Selected task: bilirubin
+[2] Selected task: creatinine
+[skip] Not in filter: pao2
+[skip] Not in filter: platelets
+Will run 2 task(s).
+
+[1/2] Processing task: bilirubin
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"         --loss_type labeled_subjects         --task_type regression 
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              pao2 platelets
+
+Discovering prediction tasks...
+[skip] Not in filter: bilirubin
+[skip] Not in filter: creatinine
+[1] Selected task: pao2
+[2] Selected task: platelets
+Will run 2 task(s).
+
+[1/2] Processing task: pao2
+Task file: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2.parquet
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"         --loss_type labeled_subjects         --task_type regression 
+label_name of cohort_dir: regression_labels_1_month
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/platelets.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/regression_labels_1_month.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           0.3  mg/dL
+1    10000084 2160-12-27 20:13:00           0.8  mg/dL
+2    10000117 2176-02-08 22:43:00           0.9  mg/dL
+3    10000285 2161-11-08 16:52:00           0.8  mg/dL
+4    10000560 2189-06-26 14:30:00           0.6  mg/dL
+task type is regression
+typed_labels length: 408395
+Loading model from /user/zj2398/cache/motor_mimic_8k/output/best_100620
+use_linear_interpolation: False
+loss type is labeled_subjects
+the hidden size is 768
+create loss type is labeled_subjects
+Some weights of the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 were not used when initializing FEMRModel: ['task_model.final_layer.bias', 'task_model.final_layer.weight', 'task_model.norm.weight', 'task_model.task_layer.bias', 'task_model.task_layer.weight', 'task_model.task_time_bias', 'transformer.embed_bag.weight', 'transformer.in_norm.weight', 'transformer.layers.0.input_proj.weight', 'transformer.layers.0.norm.weight', 'transformer.layers.0.output_proj.weight', 'transformer.layers.1.input_proj.weight', 'transformer.layers.1.norm.weight', 'transformer.layers.1.output_proj.weight', 'transformer.layers.10.input_proj.weight', 'transformer.layers.10.norm.weight', 'transformer.layers.10.output_proj.weight', 'transformer.layers.2.input_proj.weight', 'transformer.layers.2.norm.weight', 'transformer.layers.2.output_proj.weight', 'transformer.layers.3.input_proj.weight', 'transformer.layers.3.norm.weight', 'transformer.layers.3.output_proj.weight', 'transformer.layers.4.input_proj.weight', 'transformer.layers.4.norm.weight', 'transformer.layers.4.output_proj.weight', 'transformer.layers.5.input_proj.weight', 'transformer.layers.5.norm.weight', 'transformer.layers.5.output_proj.weight', 'transformer.layers.6.input_proj.weight', 'transformer.layers.6.norm.weight', 'transformer.layers.6.output_proj.weight', 'transformer.layers.7.input_proj.weight', 'transformer.layers.7.norm.weight', 'transformer.layers.7.output_proj.weight', 'transformer.layers.8.input_proj.weight', 'transformer.layers.8.norm.weight', 'transformer.layers.8.output_proj.weight', 'transformer.layers.9.input_proj.weight', 'transformer.layers.9.norm.weight', 'transformer.layers.9.output_proj.weight', 'transformer.out_norm.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of FEMRModel were not initialized from the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 and are newly initialized: ['backbone.embed_bag.weight', 'backbone.in_norm.weight', 'backbone.layers.0.input_proj.weight', 'backbone.layers.0.norm.weight', 'backbone.layers.0.output_proj.weight', 'backbone.layers.1.input_proj.weight', 'backbone.layers.1.norm.weight', 'backbone.layers.1.output_proj.weight', 'backbone.layers.10.input_proj.weight', 'backbone.layers.10.norm.weight', 'backbone.layers.10.output_proj.weight', 'backbone.layers.2.input_proj.weight', 'backbone.layers.2.norm.weight', 'backbone.layers.2.output_proj.weight', 'backbone.layers.3.input_proj.weight', 'backbone.layers.3.norm.weight', 'backbone.layers.3.output_proj.weight', 'backbone.layers.4.input_proj.weight', 'backbone.layers.4.norm.weight', 'backbone.layers.4.output_proj.weight', 'backbone.layers.5.input_proj.weight', 'backbone.layers.5.norm.weight', 'backbone.layers.5.output_proj.weight', 'backbone.layers.6.input_proj.weight', 'backbone.layers.6.norm.weight', 'backbone.layers.6.output_proj.weight', 'backbone.layers.7.input_proj.weight', 'backbone.layers.7.norm.weight', 'backbone.layers.7.output_proj.weight', 'backbone.layers.8.input_proj.weight', 'backbone.layers.8.norm.weight', 'backbone.layers.8.output_proj.weight', 'backbone.layers.9.input_proj.weight', 'backbone.layers.9.norm.weight', 'backbone.layers.9.output_proj.weight', 'backbone.out_norm.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
+label_name of cohort_dir: regression_labels_1_month
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/creatinine.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2.parquet
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/platelets.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/regression_labels_1_month.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           0.3  mg/dL
+1    10000084 2160-12-27 20:13:00           0.8  mg/dL
+2    10000117 2176-02-08 22:43:00           0.9  mg/dL
+3    10000285 2161-11-08 16:52:00           0.8  mg/dL
+4    10000560 2189-06-26 14:30:00           0.6  mg/dL
+task type is regression
+typed_labels length: 408395
+Loading model from /user/zj2398/cache/motor_mimic_8k/output/best_100620
+use_linear_interpolation: False
+loss type is labeled_subjects
+the hidden size is 768
+create loss type is labeled_subjects
+Some weights of the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 were not used when initializing FEMRModel: ['task_model.final_layer.bias', 'task_model.final_layer.weight', 'task_model.norm.weight', 'task_model.task_layer.bias', 'task_model.task_layer.weight', 'task_model.task_time_bias', 'transformer.embed_bag.weight', 'transformer.in_norm.weight', 'transformer.layers.0.input_proj.weight', 'transformer.layers.0.norm.weight', 'transformer.layers.0.output_proj.weight', 'transformer.layers.1.input_proj.weight', 'transformer.layers.1.norm.weight', 'transformer.layers.1.output_proj.weight', 'transformer.layers.10.input_proj.weight', 'transformer.layers.10.norm.weight', 'transformer.layers.10.output_proj.weight', 'transformer.layers.2.input_proj.weight', 'transformer.layers.2.norm.weight', 'transformer.layers.2.output_proj.weight', 'transformer.layers.3.input_proj.weight', 'transformer.layers.3.norm.weight', 'transformer.layers.3.output_proj.weight', 'transformer.layers.4.input_proj.weight', 'transformer.layers.4.norm.weight', 'transformer.layers.4.output_proj.weight', 'transformer.layers.5.input_proj.weight', 'transformer.layers.5.norm.weight', 'transformer.layers.5.output_proj.weight', 'transformer.layers.6.input_proj.weight', 'transformer.layers.6.norm.weight', 'transformer.layers.6.output_proj.weight', 'transformer.layers.7.input_proj.weight', 'transformer.layers.7.norm.weight', 'transformer.layers.7.output_proj.weight', 'transformer.layers.8.input_proj.weight', 'transformer.layers.8.norm.weight', 'transformer.layers.8.output_proj.weight', 'transformer.layers.9.input_proj.weight', 'transformer.layers.9.norm.weight', 'transformer.layers.9.output_proj.weight', 'transformer.out_norm.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of FEMRModel were not initialized from the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 and are newly initialized: ['backbone.embed_bag.weight', 'backbone.in_norm.weight', 'backbone.layers.0.input_proj.weight', 'backbone.layers.0.norm.weight', 'backbone.layers.0.output_proj.weight', 'backbone.layers.1.input_proj.weight', 'backbone.layers.1.norm.weight', 'backbone.layers.1.output_proj.weight', 'backbone.layers.10.input_proj.weight', 'backbone.layers.10.norm.weight', 'backbone.layers.10.output_proj.weight', 'backbone.layers.2.input_proj.weight', 'backbone.layers.2.norm.weight', 'backbone.layers.2.output_proj.weight', 'backbone.layers.3.input_proj.weight', 'backbone.layers.3.norm.weight', 'backbone.layers.3.output_proj.weight', 'backbone.layers.4.input_proj.weight', 'backbone.layers.4.norm.weight', 'backbone.layers.4.output_proj.weight', 'backbone.layers.5.input_proj.weight', 'backbone.layers.5.norm.weight', 'backbone.layers.5.output_proj.weight', 'backbone.layers.6.input_proj.weight', 'backbone.layers.6.norm.weight', 'backbone.layers.6.output_proj.weight', 'backbone.layers.7.input_proj.weight', 'backbone.layers.7.norm.weight', 'backbone.layers.7.output_proj.weight', 'backbone.layers.8.input_proj.weight', 'backbone.layers.8.norm.weight', 'backbone.layers.8.output_proj.weight', 'backbone.layers.9.input_proj.weight', 'backbone.layers.9.norm.weight', 'backbone.layers.9.output_proj.weight', 'backbone.out_norm.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+  TASK FILTER:              pao2 platelets
+
+Discovering prediction tasks...
+No matching prediction tasks found in /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+
+[1] Found task: bilirubin
+[2] Found task: creatinine
+[3] Found task: pao2
+[4] Found task: platelets
+[1 skipped] Skipping task: bilirubin (not in specified task list)
+[2 skipped] Skipping task: creatinine (not in specified task list)
+[1/4] Processing task: pao2
+cohort_base_dir: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+Task directory: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2/
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2/"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"         --loss_type labeled_subjects         --task_type regression 
+label_name of cohort_dir: pao2
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2/pao2.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/pao2.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000935 2187-10-22 15:42:00          86.0  mm Hg
+1    10001884 2130-10-10 09:32:00          73.0  mm Hg
+2    10002013 2160-05-18 09:23:00         441.0  mm Hg
+3    10002155 2129-08-04 12:27:00          89.0  mm Hg
+4    10002428 2156-04-19 19:43:00          95.0  mm Hg
+task type is regression
+typed_labels length: 27446
+Loading model from /user/zj2398/cache/motor_mimic_8k/output/best_100620
+use_linear_interpolation: False
+loss type is labeled_subjects
+the hidden size is 768
+create loss type is labeled_subjects
+Some weights of the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 were not used when initializing FEMRModel: ['task_model.final_layer.bias', 'task_model.final_layer.weight', 'task_model.norm.weight', 'task_model.task_layer.bias', 'task_model.task_layer.weight', 'task_model.task_time_bias', 'transformer.embed_bag.weight', 'transformer.in_norm.weight', 'transformer.layers.0.input_proj.weight', 'transformer.layers.0.norm.weight', 'transformer.layers.0.output_proj.weight', 'transformer.layers.1.input_proj.weight', 'transformer.layers.1.norm.weight', 'transformer.layers.1.output_proj.weight', 'transformer.layers.10.input_proj.weight', 'transformer.layers.10.norm.weight', 'transformer.layers.10.output_proj.weight', 'transformer.layers.2.input_proj.weight', 'transformer.layers.2.norm.weight', 'transformer.layers.2.output_proj.weight', 'transformer.layers.3.input_proj.weight', 'transformer.layers.3.norm.weight', 'transformer.layers.3.output_proj.weight', 'transformer.layers.4.input_proj.weight', 'transformer.layers.4.norm.weight', 'transformer.layers.4.output_proj.weight', 'transformer.layers.5.input_proj.weight', 'transformer.layers.5.norm.weight', 'transformer.layers.5.output_proj.weight', 'transformer.layers.6.input_proj.weight', 'transformer.layers.6.norm.weight', 'transformer.layers.6.output_proj.weight', 'transformer.layers.7.input_proj.weight', 'transformer.layers.7.norm.weight', 'transformer.layers.7.output_proj.weight', 'transformer.layers.8.input_proj.weight', 'transformer.layers.8.norm.weight', 'transformer.layers.8.output_proj.weight', 'transformer.layers.9.input_proj.weight', 'transformer.layers.9.norm.weight', 'transformer.layers.9.output_proj.weight', 'transformer.out_norm.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of FEMRModel were not initialized from the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 and are newly initialized: ['backbone.embed_bag.weight', 'backbone.in_norm.weight', 'backbone.layers.0.input_proj.weight', 'backbone.layers.0.norm.weight', 'backbone.layers.0.output_proj.weight', 'backbone.layers.1.input_proj.weight', 'backbone.layers.1.norm.weight', 'backbone.layers.1.output_proj.weight', 'backbone.layers.10.input_proj.weight', 'backbone.layers.10.norm.weight', 'backbone.layers.10.output_proj.weight', 'backbone.layers.2.input_proj.weight', 'backbone.layers.2.norm.weight', 'backbone.layers.2.output_proj.weight', 'backbone.layers.3.input_proj.weight', 'backbone.layers.3.norm.weight', 'backbone.layers.3.output_proj.weight', 'backbone.layers.4.input_proj.weight', 'backbone.layers.4.norm.weight', 'backbone.layers.4.output_proj.weight', 'backbone.layers.5.input_proj.weight', 'backbone.layers.5.norm.weight', 'backbone.layers.5.output_proj.weight', 'backbone.layers.6.input_proj.weight', 'backbone.layers.6.norm.weight', 'backbone.layers.6.output_proj.weight', 'backbone.layers.7.input_proj.weight', 'backbone.layers.7.norm.weight', 'backbone.layers.7.output_proj.weight', 'backbone.layers.8.input_proj.weight', 'backbone.layers.8.norm.weight', 'backbone.layers.8.output_proj.weight', 'backbone.layers.9.input_proj.weight', 'backbone.layers.9.norm.weight', 'backbone.layers.9.output_proj.weight', 'backbone.out_norm.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+
+[1] Found task: bilirubin
+[2] Found task: creatinine
+[3] Found task: pao2
+[4] Found task: platelets
+[1 skipped] Skipping task: bilirubin (not in specified task list)
+[2 skipped] Skipping task: creatinine (not in specified task list)
+[1/4] Processing task: pao2
+cohort_base_dir: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+Task directory: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2/
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2/"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"         --loss_type labeled_subjects         --task_type regression 
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/motor_mimic_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 64
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+
+[1] Found task: bilirubin
+[2] Found task: creatinine
+[3] Found task: pao2
+[4] Found task: platelets
+[1/4] Processing task: bilirubin
+cohort_base_dir: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+Task directory: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin/
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/motor_mimic_8k"         --model_path "/user/zj2398/cache/motor_mimic_8k/output/best_100620"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "64"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin/"         --ontology_path "/user/zj2398/cache/motor_mimic_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression"         --loss_type labeled_subjects         --task_type regression 
+label_name of cohort_dir: pao2
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/pao2/pao2.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/pao2.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000935 2187-10-22 15:42:00          86.0  mm Hg
+1    10001884 2130-10-10 09:32:00          73.0  mm Hg
+2    10002013 2160-05-18 09:23:00         441.0  mm Hg
+3    10002155 2129-08-04 12:27:00          89.0  mm Hg
+4    10002428 2156-04-19 19:43:00          95.0  mm Hg
+task type is regression
+typed_labels length: 27446
+Loading model from /user/zj2398/cache/motor_mimic_8k/output/best_100620
+use_linear_interpolation: False
+loss type is labeled_subjects
+the hidden size is 768
+create loss type is labeled_subjects
+Some weights of the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 were not used when initializing FEMRModel: ['task_model.final_layer.bias', 'task_model.final_layer.weight', 'task_model.norm.weight', 'task_model.task_layer.bias', 'task_model.task_layer.weight', 'task_model.task_time_bias', 'transformer.embed_bag.weight', 'transformer.in_norm.weight', 'transformer.layers.0.input_proj.weight', 'transformer.layers.0.norm.weight', 'transformer.layers.0.output_proj.weight', 'transformer.layers.1.input_proj.weight', 'transformer.layers.1.norm.weight', 'transformer.layers.1.output_proj.weight', 'transformer.layers.10.input_proj.weight', 'transformer.layers.10.norm.weight', 'transformer.layers.10.output_proj.weight', 'transformer.layers.2.input_proj.weight', 'transformer.layers.2.norm.weight', 'transformer.layers.2.output_proj.weight', 'transformer.layers.3.input_proj.weight', 'transformer.layers.3.norm.weight', 'transformer.layers.3.output_proj.weight', 'transformer.layers.4.input_proj.weight', 'transformer.layers.4.norm.weight', 'transformer.layers.4.output_proj.weight', 'transformer.layers.5.input_proj.weight', 'transformer.layers.5.norm.weight', 'transformer.layers.5.output_proj.weight', 'transformer.layers.6.input_proj.weight', 'transformer.layers.6.norm.weight', 'transformer.layers.6.output_proj.weight', 'transformer.layers.7.input_proj.weight', 'transformer.layers.7.norm.weight', 'transformer.layers.7.output_proj.weight', 'transformer.layers.8.input_proj.weight', 'transformer.layers.8.norm.weight', 'transformer.layers.8.output_proj.weight', 'transformer.layers.9.input_proj.weight', 'transformer.layers.9.norm.weight', 'transformer.layers.9.output_proj.weight', 'transformer.out_norm.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of FEMRModel were not initialized from the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 and are newly initialized: ['backbone.embed_bag.weight', 'backbone.in_norm.weight', 'backbone.layers.0.input_proj.weight', 'backbone.layers.0.norm.weight', 'backbone.layers.0.output_proj.weight', 'backbone.layers.1.input_proj.weight', 'backbone.layers.1.norm.weight', 'backbone.layers.1.output_proj.weight', 'backbone.layers.10.input_proj.weight', 'backbone.layers.10.norm.weight', 'backbone.layers.10.output_proj.weight', 'backbone.layers.2.input_proj.weight', 'backbone.layers.2.norm.weight', 'backbone.layers.2.output_proj.weight', 'backbone.layers.3.input_proj.weight', 'backbone.layers.3.norm.weight', 'backbone.layers.3.output_proj.weight', 'backbone.layers.4.input_proj.weight', 'backbone.layers.4.norm.weight', 'backbone.layers.4.output_proj.weight', 'backbone.layers.5.input_proj.weight', 'backbone.layers.5.norm.weight', 'backbone.layers.5.output_proj.weight', 'backbone.layers.6.input_proj.weight', 'backbone.layers.6.norm.weight', 'backbone.layers.6.output_proj.weight', 'backbone.layers.7.input_proj.weight', 'backbone.layers.7.norm.weight', 'backbone.layers.7.output_proj.weight', 'backbone.layers.8.input_proj.weight', 'backbone.layers.8.norm.weight', 'backbone.layers.8.output_proj.weight', 'backbone.layers.9.input_proj.weight', 'backbone.layers.9.norm.weight', 'backbone.layers.9.output_proj.weight', 'backbone.out_norm.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
+label_name of cohort_dir: bilirubin
+/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin/bilirubin.parquet
+Loading labels from  /shared/share_mala/zj2398/mimic/regression/labels/bilirubin.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           1.6  mg/dL
+1    10000084 2160-12-28 05:02:00           0.6  mg/dL
+2    10000117 2176-02-08 22:43:00           1.1  mg/dL
+3    10000285 2161-11-08 17:44:00           0.7  mg/dL
+4    10000560 2189-06-26 14:30:00           0.3  mg/dL
+task type is regression
+typed_labels length: 95607
+Loading model from /user/zj2398/cache/motor_mimic_8k/output/best_100620
+use_linear_interpolation: False
+loss type is labeled_subjects
+the hidden size is 768
+create loss type is labeled_subjects
+Some weights of the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 were not used when initializing FEMRModel: ['task_model.final_layer.bias', 'task_model.final_layer.weight', 'task_model.norm.weight', 'task_model.task_layer.bias', 'task_model.task_layer.weight', 'task_model.task_time_bias', 'transformer.embed_bag.weight', 'transformer.in_norm.weight', 'transformer.layers.0.input_proj.weight', 'transformer.layers.0.norm.weight', 'transformer.layers.0.output_proj.weight', 'transformer.layers.1.input_proj.weight', 'transformer.layers.1.norm.weight', 'transformer.layers.1.output_proj.weight', 'transformer.layers.10.input_proj.weight', 'transformer.layers.10.norm.weight', 'transformer.layers.10.output_proj.weight', 'transformer.layers.2.input_proj.weight', 'transformer.layers.2.norm.weight', 'transformer.layers.2.output_proj.weight', 'transformer.layers.3.input_proj.weight', 'transformer.layers.3.norm.weight', 'transformer.layers.3.output_proj.weight', 'transformer.layers.4.input_proj.weight', 'transformer.layers.4.norm.weight', 'transformer.layers.4.output_proj.weight', 'transformer.layers.5.input_proj.weight', 'transformer.layers.5.norm.weight', 'transformer.layers.5.output_proj.weight', 'transformer.layers.6.input_proj.weight', 'transformer.layers.6.norm.weight', 'transformer.layers.6.output_proj.weight', 'transformer.layers.7.input_proj.weight', 'transformer.layers.7.norm.weight', 'transformer.layers.7.output_proj.weight', 'transformer.layers.8.input_proj.weight', 'transformer.layers.8.norm.weight', 'transformer.layers.8.output_proj.weight', 'transformer.layers.9.input_proj.weight', 'transformer.layers.9.norm.weight', 'transformer.layers.9.output_proj.weight', 'transformer.out_norm.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of FEMRModel were not initialized from the model checkpoint at /user/zj2398/cache/motor_mimic_8k/output/best_100620 and are newly initialized: ['backbone.embed_bag.weight', 'backbone.in_norm.weight', 'backbone.layers.0.input_proj.weight', 'backbone.layers.0.norm.weight', 'backbone.layers.0.output_proj.weight', 'backbone.layers.1.input_proj.weight', 'backbone.layers.1.norm.weight', 'backbone.layers.1.output_proj.weight', 'backbone.layers.10.input_proj.weight', 'backbone.layers.10.norm.weight', 'backbone.layers.10.output_proj.weight', 'backbone.layers.2.input_proj.weight', 'backbone.layers.2.norm.weight', 'backbone.layers.2.output_proj.weight', 'backbone.layers.3.input_proj.weight', 'backbone.layers.3.norm.weight', 'backbone.layers.3.output_proj.weight', 'backbone.layers.4.input_proj.weight', 'backbone.layers.4.norm.weight', 'backbone.layers.4.output_proj.weight', 'backbone.layers.5.input_proj.weight', 'backbone.layers.5.norm.weight', 'backbone.layers.5.output_proj.weight', 'backbone.layers.6.input_proj.weight', 'backbone.layers.6.norm.weight', 'backbone.layers.6.output_proj.weight', 'backbone.layers.7.input_proj.weight', 'backbone.layers.7.norm.weight', 'backbone.layers.7.output_proj.weight', 'backbone.layers.8.input_proj.weight', 'backbone.layers.8.norm.weight', 'backbone.layers.8.output_proj.weight', 'backbone.layers.9.input_proj.weight', 'backbone.layers.9.norm.weight', 'backbone.layers.9.output_proj.weight', 'backbone.out_norm.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
+Got batches 557
+Got batches 668
+Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 1 examples [02:02, 122.10s/ examples]Generating train split: 2 examples [02:06, 52.72s/ examples] Generating train split: 3 examples [02:09, 30.35s/ examples]Generating train split: 4 examples [02:13, 19.81s/ examples]Generating train split: 5 examples [02:19, 14.80s/ examples]Generating train split: 6 examples [02:23, 10.98s/ examples]Generating train split: 7 examples [02:27,  8.77s/ examples]Generating train split: 8 examples [02:31,  7.31s/ examples]Generating train split: 9 examples [02:36,  6.67s/ examples]Generating train split: 10 examples [02:38,  5.01s/ examples]Generating train split: 11 examples [02:42,  4.97s/ examples]Generating train split: 12 examples [02:46,  4.57s/ examples]Generating train split: 13 examples [02:50,  4.50s/ examples]Generating train split: 14 examples [02:54,  4.15s/ examples]Generating train split: 15 examples [03:01,  5.10s/ examples]Generating train split: 16 examples [03:06,  4.95s/ examples]Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 17 examples [03:11,  4.97s/ examples]Generating train split: 18 examples [03:16,  4.98s/ examples]Generating train split: 19 examples [03:20,  4.87s/ examples]Generating train split: 20 examples [03:24,  4.55s/ examples]Generating train split: 21 examples [03:30,  5.08s/ examples]Generating train split: 22 examples [03:33,  4.41s/ examples]Generating train split: 23 examples [03:34,  3.35s/ examples]Generating train split: 24 examples [03:36,  2.85s/ examples]Generating train split: 25 examples [03:39,  3.04s/ examples]Generating train split: 26 examples [03:42,  3.07s/ examples]Generating train split: 27 examples [03:44,  2.54s/ examples]Generating train split: 28 examples [03:48,  2.95s/ examples]Generating train split: 29 examples [03:48,  2.14s/ examples]Generating train split: 30 examples [03:52,  2.71s/ examples]Generating train split: 31 examples [03:53,  2.18s/ examples]Generating train split: 32 examples [03:58,  3.11s/ examples]Generating train split: 34 examples [03:59,  1.94s/ examples]Generating train split: 35 examples [04:01,  1.88s/ examples]Generating train split: 36 examples [04:03,  1.93s/ examples]Generating train split: 37 examples [04:06,  2.07s/ examples]Generating train split: 38 examples [04:07,  1.88s/ examples]Generating train split: 39 examples [04:08,  1.77s/ examples]Generating train split: 40 examples [04:13,  2.61s/ examples]Generating train split: 41 examples [04:14,  1.96s/ examples]Generating train split: 42 examples [04:17,  2.37s/ examples]Generating train split: 43 examples [04:19,  2.17s/ examples]Generating train split: 44 examples [04:20,  1.96s/ examples]Generating train split: 45 examples [04:23,  2.17s/ examples]Generating train split: 46 examples [04:23,  1.65s/ examples]Generating train split: 47 examples [04:26,  2.05s/ examples]Generating train split: 48 examples [04:27,  1.69s/ examples]Generating train split: 49 examples [04:31,  2.43s/ examples]Generating train split: 50 examples [04:33,  2.37s/ examples]Generating train split: 51 examples [04:38,  2.98s/ examples]Generating train split: 52 examples [04:42,  3.35s/ examples]Generating train split: 53 examples [04:45,  3.26s/ examples]Generating train split: 54 examples [04:51,  4.07s/ examples]Generating train split: 55 examples [04:56,  4.21s/ examples]Generating train split: 56 examples [04:59,  4.14s/ examples]Generating train split: 57 examples [05:04,  4.11s/ examples]Generating train split: 58 examples [05:07,  3.89s/ examples]Generating train split: 59 examples [05:07,  2.83s/ examples]Generating train split: 1 examples [02:03, 123.79s/ examples]Generating train split: 60 examples [05:12,  3.41s/ examples]Generating train split: 2 examples [02:07, 52.96s/ examples] Generating train split: 62 examples [05:16,  2.66s/ examples]Generating train split: 63 examples [05:16,  2.10s/ examples]Generating train split: 3 examples [02:11, 30.92s/ examples]Generating train split: 64 examples [05:19,  2.43s/ examples]Generating train split: 65 examples [05:23,  2.82s/ examples]Generating train split: 67 examples [05:25,  1.87s/ examples]Generating train split: 68 examples [05:27,  2.05s/ examples]Generating train split: 4 examples [02:20, 22.18s/ examples]Generating train split: 69 examples [05:30,  2.17s/ examples]Generating train split: 5 examples [02:23, 15.27s/ examples]Generating train split: 70 examples [05:33,  2.43s/ examples]Generating train split: 71 examples [05:34,  2.08s/ examples]Generating train split: 6 examples [02:27, 11.25s/ examples]Generating train split: 72 examples [05:38,  2.72s/ examples]Generating train split: 7 examples [02:31,  9.09s/ examples]Generating train split: 73 examples [05:42,  2.99s/ examples]Generating train split: 74 examples [05:42,  2.20s/ examples]Generating train split: 75 examples [05:43,  1.79s/ examples]Generating train split: 8 examples [02:36,  7.74s/ examples]Generating train split: 76 examples [05:47,  2.40s/ examples]Generating train split: 77 examples [05:47,  1.78s/ examples]Generating train split: 9 examples [02:40,  6.67s/ examples]Generating train split: 78 examples [05:50,  2.09s/ examples]Generating train split: 10 examples [02:44,  5.58s/ examples]Generating train split: 79 examples [05:52,  1.98s/ examples]Generating train split: 80 examples [05:55,  2.23s/ examples]Generating train split: 81 examples [05:56,  1.99s/ examples]Generating train split: 82 examples [05:57,  1.80s/ examples]Generating train split: 11 examples [02:50,  5.71s/ examples]Generating train split: 83 examples [05:59,  1.79s/ examples]Generating train split: 12 examples [02:54,  5.36s/ examples]Generating train split: 84 examples [06:04,  2.61s/ examples]Generating train split: 85 examples [06:05,  2.16s/ examples]Generating train split: 13 examples [03:00,  5.64s/ examples]Generating train split: 86 examples [06:10,  3.15s/ examples]Generating train split: 88 examples [06:14,  2.63s/ examples]Generating train split: 14 examples [03:08,  6.31s/ examples]Generating train split: 15 examples [03:10,  4.88s/ examples]Generating train split: 89 examples [06:18,  2.93s/ examples]Generating train split: 16 examples [03:15,  5.06s/ examples]Generating train split: 90 examples [06:23,  3.55s/ examples]Generating train split: 17 examples [03:20,  4.84s/ examples]Generating train split: 91 examples [06:28,  3.74s/ examples]Generating train split: 92 examples [06:32,  3.94s/ examples]Generating train split: 18 examples [03:24,  4.80s/ examples]Generating train split: 93 examples [06:37,  4.17s/ examples]Generating train split: 19 examples [03:30,  5.15s/ examples]Generating train split: 94 examples [06:41,  4.24s/ examples]Generating train split: 95 examples [06:42,  3.25s/ examples]Generating train split: 20 examples [03:36,  5.18s/ examples]Generating train split: 96 examples [06:46,  3.37s/ examples]Generating train split: 97 examples [06:46,  2.43s/ examples]Generating train split: 21 examples [03:41,  5.24s/ examples]Generating train split: 98 examples [06:50,  2.97s/ examples]Generating train split: 99 examples [06:51,  2.22s/ examples]Generating train split: 22 examples [03:45,  4.82s/ examples]Generating train split: 23 examples [03:45,  3.59s/ examples]Generating train split: 100 examples [06:54,  2.61s/ examples]Generating train split: 101 examples [06:55,  2.16s/ examples]Generating train split: 24 examples [03:49,  3.70s/ examples]Generating train split: 102 examples [06:58,  2.31s/ examples]Generating train split: 25 examples [03:51,  3.08s/ examples]Generating train split: 104 examples [07:03,  2.49s/ examples]Generating train split: 106 examples [07:04,  1.61s/ examples]Generating train split: 26 examples [03:56,  3.72s/ examples]Generating train split: 107 examples [07:05,  1.53s/ examples]Generating train split: 27 examples [03:58,  2.98s/ examples]Generating train split: 108 examples [07:08,  1.81s/ examples]Generating train split: 28 examples [04:01,  3.03s/ examples]Generating train split: 109 examples [07:09,  1.66s/ examples]Generating train split: 29 examples [04:01,  2.27s/ examples]Generating train split: 110 examples [07:12,  2.12s/ examples]Generating train split: 111 examples [07:14,  2.03s/ examples]Generating train split: 30 examples [04:06,  3.14s/ examples]Generating train split: 112 examples [07:16,  1.98s/ examples]Generating train split: 31 examples [04:09,  2.87s/ examples]Generating train split: 113 examples [07:19,  2.13s/ examples]Generating train split: 32 examples [04:11,  2.82s/ examples]Generating train split: 114 examples [07:20,  1.87s/ examples]Generating train split: 33 examples [04:13,  2.47s/ examples]Generating train split: 115 examples [07:23,  2.14s/ examples]Generating train split: 34 examples [04:16,  2.79s/ examples]Generating train split: 116 examples [07:25,  2.07s/ examples]Generating train split: 35 examples [04:19,  2.75s/ examples]Generating train split: 117 examples [07:27,  2.25s/ examples]Generating train split: 36 examples [04:21,  2.61s/ examples]Generating train split: 118 examples [07:29,  2.26s/ examples]Generating train split: 37 examples [04:22,  2.03s/ examples]Generating train split: 119 examples [07:32,  2.48s/ examples]Generating train split: 38 examples [04:26,  2.72s/ examples]Generating train split: 39 examples [04:27,  1.96s/ examples]Generating train split: 120 examples [07:36,  2.69s/ examples]Generating train split: 121 examples [07:38,  2.57s/ examples]Generating train split: 40 examples [04:31,  2.58s/ examples]Generating train split: 41 examples [04:33,  2.46s/ examples]Generating train split: 122 examples [07:41,  2.84s/ examples]Generating train split: 42 examples [04:36,  2.81s/ examples]Generating train split: 123 examples [07:44,  2.89s/ examples]Generating train split: 43 examples [04:38,  2.47s/ examples]Generating train split: 44 examples [04:40,  2.28s/ examples]Generating train split: 124 examples [07:49,  3.24s/ examples]Generating train split: 45 examples [04:43,  2.61s/ examples]Generating train split: 125 examples [07:52,  3.17s/ examples]Generating train split: 46 examples [04:45,  2.29s/ examples]Generating train split: 126 examples [07:55,  3.13s/ examples]Generating train split: 47 examples [04:49,  2.86s/ examples]Generating train split: 48 examples [04:50,  2.31s/ examples]Generating train split: 49 examples [04:50,  1.68s/ examples]Generating train split: 127 examples [07:59,  3.40s/ examples]Generating train split: 50 examples [04:55,  2.46s/ examples]Generating train split: 128 examples [08:03,  3.62s/ examples]Generating train split: 51 examples [04:56,  2.10s/ examples]Generating train split: 129 examples [08:06,  3.42s/ examples]Generating train split: 52 examples [04:59,  2.53s/ examples]Generating train split: 53 examples [05:00,  1.94s/ examples]Generating train split: 130 examples [08:09,  3.55s/ examples]Generating train split: 54 examples [05:04,  2.51s/ examples]Generating train split: 55 examples [05:05,  2.10s/ examples]Generating train split: 131 examples [08:15,  4.00s/ examples]Generating train split: 56 examples [05:08,  2.50s/ examples]Generating train split: 57 examples [05:09,  1.81s/ examples]Generating train split: 132 examples [08:18,  3.85s/ examples]Generating train split: 133 examples [08:20,  3.16s/ examples]Generating train split: 58 examples [05:13,  2.67s/ examples]Generating train split: 134 examples [08:22,  3.01s/ examples]Generating train split: 59 examples [05:15,  2.32s/ examples]Generating train split: 135 examples [08:24,  2.56s/ examples]Generating train split: 60 examples [05:18,  2.60s/ examples]Generating train split: 136 examples [08:26,  2.53s/ examples]Generating train split: 61 examples [05:19,  1.99s/ examples]Generating train split: 137 examples [08:28,  2.20s/ examples]Generating train split: 62 examples [05:22,  2.46s/ examples]Generating train split: 63 examples [05:22,  1.78s/ examples]Generating train split: 138 examples [08:31,  2.45s/ examples]Generating train split: 64 examples [05:23,  1.39s/ examples]Generating train split: 139 examples [08:31,  1.82s/ examples]Generating train split: 140 examples [08:34,  2.02s/ examples]Generating train split: 141 examples [08:34,  1.46s/ examples]Generating train split: 65 examples [05:26,  1.91s/ examples]Generating train split: 66 examples [05:27,  1.51s/ examples]Generating train split: 67 examples [05:27,  1.29s/ examples]Generating train split: 142 examples [08:37,  1.91s/ examples]Generating train split: 143 examples [08:38,  1.69s/ examples]Generating train split: 68 examples [05:32,  2.21s/ examples]Generating train split: 69 examples [05:32,  1.63s/ examples]Generating train split: 144 examples [08:42,  2.54s/ examples]Generating train split: 70 examples [05:35,  1.98s/ examples]Generating train split: 146 examples [08:45,  2.08s/ examples]Generating train split: 147 examples [08:46,  1.64s/ examples]Generating train split: 71 examples [05:39,  2.55s/ examples]Generating train split: 72 examples [05:39,  1.95s/ examples]Generating train split: 148 examples [08:48,  1.82s/ examples]Generating train split: 73 examples [05:43,  2.54s/ examples]Generating train split: 149 examples [08:51,  2.23s/ examples]Generating train split: 150 examples [08:52,  1.81s/ examples]Generating train split: 151 examples [08:55,  1.98s/ examples]Generating train split: 74 examples [05:47,  2.99s/ examples]Generating train split: 75 examples [05:47,  2.12s/ examples]Generating train split: 152 examples [08:58,  2.29s/ examples]Generating train split: 153 examples [08:59,  1.90s/ examples]Generating train split: 154 examples [09:02,  2.24s/ examples]Generating train split: 76 examples [05:55,  3.72s/ examples]Generating train split: 155 examples [09:03,  2.01s/ examples]Generating train split: 78 examples [05:56,  2.29s/ examples]Generating train split: 156 examples [09:05,  2.04s/ examples]Generating train split: 79 examples [05:58,  2.15s/ examples]Generating train split: 157 examples [09:06,  1.67s/ examples]Generating train split: 80 examples [06:00,  2.27s/ examples]Generating train split: 158 examples [09:11,  2.64s/ examples]Generating train split: 81 examples [06:03,  2.53s/ examples]Generating train split: 159 examples [09:12,  2.15s/ examples]Generating train split: 82 examples [06:07,  2.70s/ examples]Generating train split: 160 examples [09:18,  3.46s/ examples]Generating train split: 83 examples [06:11,  3.24s/ examples]Generating train split: 84 examples [06:12,  2.59s/ examples]Generating train split: 85 examples [06:13,  2.12s/ examples]Generating train split: 161 examples [09:24,  4.08s/ examples]Generating train split: 86 examples [06:16,  2.34s/ examples]Generating train split: 87 examples [06:16,  1.75s/ examples]Generating train split: 162 examples [09:27,  3.92s/ examples]Generating train split: 88 examples [06:21,  2.65s/ examples]Generating train split: 89 examples [06:22,  2.27s/ examples]Generating train split: 163 examples [09:31,  3.88s/ examples]Generating train split: 90 examples [06:26,  2.60s/ examples]Generating train split: 91 examples [06:27,  2.25s/ examples]Generating train split: 164 examples [09:36,  4.06s/ examples]Generating train split: 92 examples [06:30,  2.26s/ examples]Generating train split: 93 examples [06:31,  2.08s/ examples]Generating train split: 165 examples [09:40,  4.08s/ examples]Generating train split: 94 examples [06:35,  2.59s/ examples]Generating train split: 166 examples [09:43,  3.83s/ examples]Generating train split: 95 examples [06:36,  2.18s/ examples]Generating train split: 167 examples [09:47,  3.80s/ examples]Generating train split: 96 examples [06:39,  2.37s/ examples]Generating train split: 97 examples [06:41,  2.24s/ examples]Generating train split: 168 examples [09:51,  3.97s/ examples]Generating train split: 98 examples [06:46,  3.09s/ examples]Generating train split: 169 examples [09:55,  3.87s/ examples]Generating train split: 100 examples [06:49,  2.25s/ examples]Generating train split: 102 examples [06:52,  2.07s/ examples]Generating train split: 170 examples [10:01,  4.64s/ examples]Generating train split: 103 examples [06:54,  1.95s/ examples]Generating train split: 171 examples [10:02,  3.47s/ examples]Generating train split: 172 examples [10:03,  2.71s/ examples]Generating train split: 104 examples [06:57,  2.24s/ examples]Generating train split: 173 examples [10:05,  2.49s/ examples]Generating train split: 174 examples [10:06,  2.16s/ examples]Generating train split: 105 examples [06:59,  2.09s/ examples]Generating train split: 175 examples [10:09,  2.36s/ examples]Generating train split: 176 examples [10:09,  1.73s/ examples]Generating train split: 106 examples [07:02,  2.57s/ examples]Generating train split: 107 examples [07:05,  2.52s/ examples]Generating train split: 177 examples [10:13,  2.33s/ examples]Generating train split: 178 examples [10:14,  1.84s/ examples]Generating train split: 108 examples [07:07,  2.38s/ examples]Generating train split: 109 examples [07:10,  2.46s/ examples]Generating train split: 179 examples [10:18,  2.52s/ examples]Generating train split: 110 examples [07:12,  2.56s/ examples]Generating train split: 181 examples [10:21,  2.10s/ examples]Generating train split: 182 examples [10:21,  1.66s/ examples]Generating train split: 183 examples [10:25,  2.24s/ examples]Generating train split: 111 examples [07:18,  3.47s/ examples]Generating train split: 112 examples [07:21,  3.27s/ examples]Generating train split: 185 examples [10:31,  2.40s/ examples]Generating train split: 186 examples [10:34,  2.57s/ examples]Generating train split: 113 examples [07:26,  3.84s/ examples]Generating train split: 114 examples [07:27,  2.86s/ examples]Generating train split: 187 examples [10:35,  2.24s/ examples]Generating train split: 188 examples [10:37,  2.10s/ examples]Generating train split: 115 examples [07:30,  3.03s/ examples]Generating train split: 189 examples [10:39,  2.14s/ examples]Generating train split: 190 examples [10:40,  1.70s/ examples]Generating train split: 116 examples [07:32,  2.86s/ examples]Generating train split: 191 examples [10:42,  2.02s/ examples]Generating train split: 117 examples [07:36,  3.13s/ examples]Generating train split: 192 examples [10:46,  2.59s/ examples]Generating train split: 118 examples [07:40,  3.37s/ examples]Generating train split: 119 examples [07:41,  2.64s/ examples]Generating train split: 193 examples [10:51,  3.10s/ examples]Generating train split: 120 examples [07:44,  2.81s/ examples]Generating train split: 121 examples [07:45,  2.17s/ examples]Generating train split: 194 examples [10:54,  3.32s/ examples]Generating train split: 122 examples [07:49,  2.75s/ examples]Generating train split: 123 examples [07:50,  2.19s/ examples]Generating train split: 124 examples [07:53,  2.62s/ examples]Generating train split: 125 examples [07:55,  2.16s/ examples]Generating train split: 195 examples [11:04,  5.08s/ examples]Generating train split: 126 examples [07:58,  2.40s/ examples]Generating train split: 196 examples [11:08,  4.78s/ examples]Generating train split: 127 examples [08:00,  2.51s/ examples]Generating train split: 128 examples [08:02,  2.33s/ examples]Generating train split: 197 examples [11:10,  4.12s/ examples]Generating train split: 129 examples [08:07,  3.03s/ examples]Generating train split: 198 examples [11:16,  4.56s/ examples]Generating train split: 130 examples [08:08,  2.46s/ examples]Generating train split: 131 examples [08:11,  2.56s/ examples]Generating train split: 132 examples [08:12,  2.17s/ examples]Generating train split: 199 examples [11:20,  4.47s/ examples]Generating train split: 133 examples [08:14,  2.13s/ examples]Generating train split: 200 examples [11:24,  4.22s/ examples]Generating train split: 134 examples [08:18,  2.59s/ examples]Generating train split: 201 examples [11:28,  4.16s/ examples]Generating train split: 135 examples [08:20,  2.55s/ examples]Generating train split: 136 examples [08:22,  2.36s/ examples]Generating train split: 202 examples [11:31,  3.82s/ examples]Generating train split: 137 examples [08:25,  2.42s/ examples]Generating train split: 203 examples [11:33,  3.37s/ examples]Generating train split: 204 examples [11:34,  2.66s/ examples]Generating train split: 205 examples [11:36,  2.25s/ examples]Generating train split: 138 examples [08:30,  3.21s/ examples]Generating train split: 206 examples [11:38,  2.41s/ examples]Generating train split: 139 examples [08:31,  2.64s/ examples]Generating train split: 140 examples [08:32,  2.02s/ examples]Generating train split: 207 examples [11:40,  2.13s/ examples]Generating train split: 208 examples [11:41,  1.85s/ examples]Generating train split: 141 examples [08:35,  2.46s/ examples]Generating train split: 209 examples [11:44,  2.06s/ examples]Generating train split: 210 examples [11:44,  1.70s/ examples]Generating train split: 142 examples [08:38,  2.45s/ examples]Generating train split: 211 examples [11:47,  2.10s/ examples]Generating train split: 143 examples [08:40,  2.56s/ examples]Generating train split: 212 examples [11:49,  1.86s/ examples]Generating train split: 144 examples [08:42,  2.34s/ examples]Generating train split: 213 examples [11:51,  2.09s/ examples]Generating train split: 214 examples [11:53,  2.05s/ examples]Generating train split: 145 examples [08:46,  2.73s/ examples]Generating train split: 146 examples [08:47,  2.22s/ examples]Generating train split: 215 examples [11:57,  2.69s/ examples]Generating train split: 147 examples [08:51,  2.76s/ examples]Generating train split: 148 examples [08:51,  2.10s/ examples]Generating train split: 217 examples [12:02,  2.47s/ examples]Generating train split: 149 examples [08:54,  2.30s/ examples]Generating train split: 218 examples [12:02,  1.94s/ examples]Generating train split: 150 examples [08:56,  2.10s/ examples]Generating train split: 151 examples [08:57,  1.87s/ examples]Generating train split: 219 examples [12:06,  2.34s/ examples]Generating train split: 220 examples [12:07,  2.11s/ examples]Generating train split: 152 examples [09:01,  2.43s/ examples]Generating train split: 154 examples [09:03,  1.74s/ examples]Generating train split: 221 examples [12:12,  2.99s/ examples]Generating train split: 155 examples [09:06,  2.04s/ examples]Generating train split: 223 examples [12:15,  2.15s/ examples]Generating train split: 224 examples [12:15,  1.70s/ examples]Generating train split: 156 examples [09:08,  2.20s/ examples]Generating train split: 157 examples [09:09,  1.66s/ examples]Generating train split: 225 examples [12:18,  2.07s/ examples]Generating train split: 226 examples [12:19,  1.73s/ examples]Generating train split: 158 examples [09:12,  2.16s/ examples]Generating train split: 227 examples [12:22,  2.06s/ examples]Generating train split: 159 examples [09:14,  2.07s/ examples]Generating train split: 228 examples [12:24,  2.03s/ examples]Generating train split: 229 examples [12:25,  1.85s/ examples]Generating train split: 160 examples [09:17,  2.48s/ examples]Generating train split: 230 examples [12:28,  2.13s/ examples]Generating train split: 231 examples [12:28,  1.62s/ examples]Generating train split: 162 examples [09:25,  2.97s/ examples]Generating train split: 164 examples [09:26,  2.05s/ examples]Generating train split: 165 examples [09:27,  1.88s/ examples]Generating train split: 232 examples [12:35,  3.20s/ examples]Generating train split: 233 examples [12:40,  3.72s/ examples]Generating train split: 166 examples [09:33,  2.87s/ examples]Generating train split: 234 examples [12:44,  3.74s/ examples]Generating train split: 167 examples [09:41,  4.04s/ examples]Generating train split: 235 examples [12:49,  4.08s/ examples]Generating train split: 168 examples [09:41,  3.10s/ examples]Generating train split: 169 examples [09:44,  3.16s/ examples]Generating train split: 170 examples [09:45,  2.51s/ examples]Generating train split: 236 examples [12:53,  4.18s/ examples]Generating train split: 237 examples [12:56,  3.83s/ examples]Generating train split: 171 examples [09:49,  3.02s/ examples]Generating train split: 172 examples [09:50,  2.17s/ examples]Generating train split: 173 examples [09:54,  2.68s/ examples]Generating train split: 238 examples [13:02,  4.29s/ examples]Generating train split: 174 examples [09:54,  2.15s/ examples]Generating train split: 175 examples [09:57,  2.38s/ examples]Generating train split: 239 examples [13:06,  4.36s/ examples]Generating train split: 176 examples [09:59,  2.30s/ examples]Generating train split: 240 examples [13:07,  3.40s/ examples]Generating train split: 177 examples [10:03,  2.63s/ examples]Generating train split: 178 examples [10:03,  1.90s/ examples]Generating train split: 241 examples [13:12,  3.63s/ examples]Generating train split: 242 examples [13:12,  2.67s/ examples]Generating train split: 243 examples [13:14,  2.44s/ examples]Generating train split: 179 examples [10:07,  2.41s/ examples]Generating train split: 244 examples [13:15,  2.14s/ examples]Generating train split: 180 examples [10:09,  2.27s/ examples]Generating train split: 245 examples [13:18,  2.35s/ examples]Generating train split: 181 examples [10:12,  2.54s/ examples]Generating train split: 246 examples [13:22,  2.67s/ examples]Generating train split: 247 examples [13:22,  1.96s/ examples]Generating train split: 183 examples [10:15,  2.07s/ examples]Generating train split: 184 examples [10:16,  1.93s/ examples]Generating train split: 248 examples [13:25,  2.27s/ examples]Generating train split: 249 examples [13:25,  1.68s/ examples]Generating train split: 185 examples [10:19,  2.21s/ examples]Generating train split: 186 examples [10:20,  1.90s/ examples]Generating train split: 250 examples [13:30,  2.67s/ examples]Generating train split: 251 examples [13:31,  2.09s/ examples]Generating train split: 187 examples [10:24,  2.32s/ examples]Generating train split: 188 examples [10:26,  2.21s/ examples]Generating train split: 252 examples [13:34,  2.40s/ examples]Generating train split: 253 examples [13:36,  2.15s/ examples]Generating train split: 189 examples [10:29,  2.54s/ examples]Generating train split: 190 examples [10:29,  1.91s/ examples]Generating train split: 254 examples [13:38,  2.13s/ examples]Generating train split: 255 examples [13:41,  2.55s/ examples]Generating train split: 191 examples [10:34,  2.66s/ examples]Generating train split: 192 examples [10:34,  1.94s/ examples]Generating train split: 257 examples [13:43,  1.75s/ examples]Generating train split: 258 examples [13:45,  1.72s/ examples]Generating train split: 193 examples [10:38,  2.56s/ examples]Generating train split: 194 examples [10:40,  2.25s/ examples]Generating train split: 259 examples [13:48,  2.10s/ examples]Generating train split: 195 examples [10:41,  1.85s/ examples]Generating train split: 260 examples [13:50,  2.07s/ examples]Generating train split: 261 examples [13:53,  2.29s/ examples]Generating train split: 196 examples [10:45,  2.54s/ examples]Generating train split: 262 examples [13:53,  1.82s/ examples]Generating train split: 263 examples [13:56,  2.16s/ examples]Generating train split: 198 examples [10:48,  2.20s/ examples]Generating train split: 199 examples [10:49,  1.77s/ examples]Generating train split: 264 examples [13:57,  1.78s/ examples]Generating train split: 265 examples [14:00,  2.06s/ examples]Generating train split: 266 examples [14:00,  1.48s/ examples]Generating train split: 200 examples [10:53,  2.29s/ examples]Generating train split: 201 examples [10:53,  1.84s/ examples]Generating train split: 202 examples [10:54,  1.57s/ examples]Generating train split: 203 examples [10:57,  1.90s/ examples]Generating train split: 204 examples [10:57,  1.42s/ examples]Generating train split: 205 examples [11:00,  1.89s/ examples]Generating train split: 206 examples [11:01,  1.58s/ examples]Generating train split: 267 examples [14:09,  3.74s/ examples]Generating train split: 207 examples [11:04,  1.98s/ examples]Generating train split: 268 examples [14:12,  3.51s/ examples]Generating train split: 208 examples [11:06,  1.91s/ examples]Generating train split: 269 examples [14:16,  3.79s/ examples]Generating train split: 209 examples [11:09,  2.43s/ examples]Generating train split: 210 examples [11:10,  1.96s/ examples]Generating train split: 270 examples [14:21,  3.99s/ examples]Generating train split: 211 examples [11:13,  2.40s/ examples]Generating train split: 212 examples [11:16,  2.53s/ examples]Generating train split: 271 examples [14:24,  3.85s/ examples]Generating train split: 213 examples [11:20,  2.75s/ examples]Generating train split: 214 examples [11:20,  1.96s/ examples]Generating train split: 272 examples [14:29,  4.02s/ examples]Generating train split: 215 examples [11:24,  2.72s/ examples]Generating train split: 273 examples [14:33,  4.16s/ examples]Generating train split: 216 examples [11:26,  2.37s/ examples]Generating train split: 274 examples [14:37,  3.89s/ examples]Generating train split: 217 examples [11:30,  2.83s/ examples]Generating train split: 218 examples [11:30,  2.22s/ examples]Generating train split: 275 examples [14:41,  4.08s/ examples]Generating train split: 219 examples [11:34,  2.49s/ examples]Generating train split: 276 examples [14:43,  3.32s/ examples]Generating train split: 220 examples [11:36,  2.37s/ examples]Generating train split: 221 examples [11:38,  2.34s/ examples]Generating train split: 277 examples [14:46,  3.36s/ examples]Generating train split: 278 examples [14:48,  2.83s/ examples]Generating train split: 279 examples [14:50,  2.70s/ examples]Generating train split: 222 examples [11:43,  3.02s/ examples]Generating train split: 223 examples [11:43,  2.33s/ examples]Generating train split: 280 examples [14:51,  2.29s/ examples]Generating train split: 281 examples [14:54,  2.34s/ examples]Generating train split: 282 examples [14:55,  2.14s/ examples]Generating train split: 224 examples [11:49,  3.21s/ examples]Generating train split: 225 examples [11:49,  2.45s/ examples]Generating train split: 283 examples [14:58,  2.24s/ examples]Generating train split: 284 examples [15:01,  2.38s/ examples]Generating train split: 226 examples [11:53,  2.80s/ examples]Generating train split: 227 examples [11:54,  2.29s/ examples]Generating train split: 285 examples [15:02,  2.11s/ examples]Generating train split: 286 examples [15:03,  1.66s/ examples]Generating train split: 228 examples [11:57,  2.58s/ examples]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Generating train split: 287 examples [15:06,  2.14s/ examples]Generating train split: 288 examples [15:07,  1.74s/ examples]Generating train split: 229 examples [12:01,  2.83s/ examples]Generating train split: 230 examples [12:02,  2.41s/ examples]Generating train split: 289 examples [15:11,  2.50s/ examples]Generating train split: 231 examples [12:06,  2.94s/ examples]Generating train split: 232 examples [12:07,  2.19s/ examples]Generating train split: 291 examples [15:17,  2.61s/ examples]Generating train split: 233 examples [12:10,  2.55s/ examples]Generating train split: 293 examples [15:19,  2.14s/ examples]Generating train split: 234 examples [12:12,  2.39s/ examples]Generating train split: 294 examples [15:21,  1.96s/ examples]Generating train split: 235 examples [12:15,  2.50s/ examples]Generating train split: 295 examples [15:24,  2.25s/ examples]Generating train split: 236 examples [12:17,  2.28s/ examples]Generating train split: 296 examples [15:25,  2.08s/ examples]Generating train split: 297 examples [15:27,  1.83s/ examples]Generating train split: 237 examples [12:20,  2.67s/ examples]Generating train split: 238 examples [12:21,  2.14s/ examples]Generating train split: 239 examples [12:22,  1.64s/ examples]Generating train split: 298 examples [15:30,  2.15s/ examples]Generating train split: 299 examples [15:30,  1.60s/ examples]Generating train split: 300 examples [15:33,  2.18s/ examples]Generating train split: 240 examples [12:26,  2.51s/ examples]Generating train split: 301 examples [15:34,  1.73s/ examples]Generating train split: 241 examples [12:26,  1.83s/ examples]Generating train split: 242 examples [12:27,  1.35s/ examples]Generating train split: 302 examples [15:37,  1.95s/ examples]Generating train split: 303 examples [15:37,  1.54s/ examples]Generating train split: 243 examples [12:33,  2.99s/ examples]Generating train split: 244 examples [12:34,  2.26s/ examples]Generating train split: 304 examples [15:46,  3.69s/ examples]Generating train split: 245 examples [12:38,  2.86s/ examples]Generating train split: 246 examples [12:39,  2.26s/ examples]Generating train split: 305 examples [15:48,  3.34s/ examples]Generating train split: 306 examples [15:53,  3.59s/ examples]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ayers.9.norm.weight', 'transformer.layers.9.output_proj.weight', 'transformer.out_norm.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+Some weights of FEMRModel were not initialized from the model checkpoint at /user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150 and are newly initialized: ['backbone.embed_bag.weight', 'backbone.in_norm.weight', 'backbone.layers.0.input_proj.weight', 'backbone.layers.0.norm.weight', 'backbone.layers.0.output_proj.weight', 'backbone.layers.1.input_proj.weight', 'backbone.layers.1.norm.weight', 'backbone.layers.1.output_proj.weight', 'backbone.layers.10.input_proj.weight', 'backbone.layers.10.norm.weight', 'backbone.layers.10.output_proj.weight', 'backbone.layers.2.input_proj.weight', 'backbone.layers.2.norm.weight', 'backbone.layers.2.output_proj.weight', 'backbone.layers.3.input_proj.weight', 'backbone.layers.3.norm.weight', 'backbone.layers.3.output_proj.weight', 'backbone.layers.4.input_proj.weight', 'backbone.layers.4.norm.weight', 'backbone.layers.4.output_proj.weight', 'backbone.layers.5.input_proj.weight', 'backbone.layers.5.norm.weight', 'backbone.layers.5.output_proj.weight', 'backbone.layers.6.input_proj.weight', 'backbone.layers.6.norm.weight', 'backbone.layers.6.output_proj.weight', 'backbone.layers.7.input_proj.weight', 'backbone.layers.7.norm.weight', 'backbone.layers.7.output_proj.weight', 'backbone.layers.8.input_proj.weight', 'backbone.layers.8.norm.weight', 'backbone.layers.8.output_proj.weight', 'backbone.layers.9.input_proj.weight', 'backbone.layers.9.norm.weight', 'backbone.layers.9.output_proj.weight', 'backbone.out_norm.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
+                                                                                                                              Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+  PRETRAINING_DATA:         /user/zj2398/cache/mtpp_8k
+  OMOP_MGenerating train split: 251 examples [12:54,  2.91s/ examples] NUM_PROC:                 100
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+
+[1] Found task: bilirubin
+[2] Found task: creatinine
+[3] Found task: pao2
+[4] Found task: platelets
+[1/4] Processing task: bilirubin
+cohort_base_dir: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
+Task directory: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin/
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/mtpp_8k"         --model_path "/user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "100"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin/"         --ontology_path "/user/zj2398/cache/mtpp_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression/mtpp"         --loss_type labeled_subjects         --task_type regression 
+Generating train split: 252 examples [12:55,  2.31s/ examples]Generating train split: 309 examples [16:04,  3.85s/ examples]Generating train split: 310 examples [16:09,  4.12s/ examples]Generating train split: 253 examples [13:02,  3.51s/ examples]Generating train split: 255 examples [13:04,  2.44s/ examples]Generating train split: 256 examples [13:04,  1.91s/ examples]Generating train split: 311 examples [16:13,  3.92s/ examples]Generating train split: 257 examples [13:07,  2.28s/ examples]Generating train split: 312 examples [16:17,  4.04s/ examples]Generating train split: 313 examples [16:18,  3.08s/ examples]Generating train split: 258 examples [13:10,  2.37s/ examples]Generating train split: 259 examples [13:11,  2.05s/ examples]Generating train split: 314 examples [16:21,  3.02s/ examples]Generating train split: 315 examples [16:21,  2.32s/ examples]Generating train split: 260 examples [13:14,  2.16s/ examples]Generating train split: 316 examples [16:24,  2.46s/ examples]Generating train split: 261 examples [13:17,  2.53s/ examples]Generating train split: 317 examples [16:26,  2.40s/ examples]Generating train split: 262 examples [13:20,  2.48s/ examples]
