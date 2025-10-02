@@ -215,7 +215,39 @@ done
 
 echo "All selected tasks processed."
 
+##kuvira
 
+# bash run_regression2.sh \
+#   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
+#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --num_proc           100 \
+#   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
+#   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
+#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_1_month/ \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/regression \
+#   --tasks "pao2,platelets" \
+#   --regression 
+
+# bash run_regression2.sh \
+#   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
+#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --num_proc           100 \
+#   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --tokens_per_batch   65536 \
+#   --device             cuda:2 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
+#   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
+#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_1_month/ \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/regression \
+#   --tasks "bilirubin,creatinine" \
+#   --regression 
+
+##cbs
 # bash run_regression2.sh \
 #   --pretraining_data   /user/zj2398/cache/mtpp_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \

@@ -616,4 +616,85 @@ max_length: 8192
 cohort_base_dir: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/
 Task directory: /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin/
 Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/user/zj2398/cache/mtpp_8k"         --model_path "/user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --num_proc "100"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/bilirubin/"         --ontology_path "/user/zj2398/cache/mtpp_8k/ontology.pkl"         --output_root "/shared/share_mala/zj2398/mimic/regression/mtpp"         --loss_type labeled_subjects         --task_type regression 
-Generating train split: 252 examples [12:55,  2.31s/ examples]Generating train split: 309 examples [16:04,  3.85s/ examples]Generating train split: 310 examples [16:09,  4.12s/ examples]Generating train split: 253 examples [13:02,  3.51s/ examples]Generating train split: 255 examples [13:04,  2.44s/ examples]Generating train split: 256 examples [13:04,  1.91s/ examples]Generating train split: 311 examples [16:13,  3.92s/ examples]Generating train split: 257 examples [13:07,  2.28s/ examples]Generating train split: 312 examples [16:17,  4.04s/ examples]Generating train split: 313 examples [16:18,  3.08s/ examples]Generating train split: 258 examples [13:10,  2.37s/ examples]Generating train split: 259 examples [13:11,  2.05s/ examples]Generating train split: 314 examples [16:21,  3.02s/ examples]Generating train split: 315 examples [16:21,  2.32s/ examples]Generating train split: 260 examples [13:14,  2.16s/ examples]Generating train split: 316 examples [16:24,  2.46s/ examples]Generating train split: 261 examples [13:17,  2.53s/ examples]Generating train split: 317 examples [16:26,  2.40s/ examples]Generating train split: 262 examples [13:20,  2.48s/ examples]
+Generating train split: 252 examples [12:55,  2.31s/ examples]Generating train split: 309 examples [16:04,  3.85s/ examples]Generating train split: 310 examples [16:09,  4.12s/ examples]Generating train split: 253 examples [13:02,  3.51s/ examples]Generating train split: 255 examples [13:04,  2.44s/ examples]Generating train split: 256 examples [13:04,  1.91s/ examples]Generating train split: 311 examples [16:13,  3.92s/ examples]Generating train split: 257 examples [13:07,  2.28s/ examples]Generating train split: 312 examples [16:17,  4.04s/ examples]Generating train split: 313 examples [16:18,  3.08s/ examples]Generating train split: 258 examples [13:10,  2.37s/ examples]Generating train split: 259 examples [13:11,  2.05s/ examples]Generating train split: 314 examples [16:21,  3.02s/ examples]Generating train split: 315 examples [16:21,  2.32s/ examples]Generating train split: 260 examples [13:14,  2.16s/ examples]Generating train split: 316 examples [16:24,  2.46s/ examples]Generating train split: 261 examples [13:17,  2.53s/ examples]Generating train split: 317 examples [16:26,  2.40s/ examples]Generating train split: 262 examples [13:20,  2.48s/ examples]Using configuration:
+  COHORT_BASE_DIR:          /data2/processed_datasets/mimic/regression/regression_labels_1_month/
+  PRETRAINING_DATA:         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp
+  OMOP_MEDS_READER:         /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader
+  NUM_PROC:                 100
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /home/zj2398@mc.cumc.columbia.edu/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /home/zj2398@mc.cumc.columbia.edu/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+
+[1] Found task: bilirubin
+[2] Found task: creatinine
+[3] Found task: pao2
+[4] Found task: platelets
+[1 skipped] Skipping task: bilirubin (not in specified task list)
+[2 skipped] Skipping task: creatinine (not in specified task list)
+[1/4] Processing task: pao2
+cohort_base_dir: /data2/processed_datasets/mimic/regression/regression_labels_1_month/
+Task directory: /data2/processed_datasets/mimic/regression/regression_labels_1_month/pao2/
+Executing: python -u "/home/zj2398@mc.cumc.columbia.edu/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/data2/processed_datasets/zj2398/femr/mimic/deephit_tpp"         --model_path "/data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573"         --meds_reader "/data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader"         --num_proc "100"         --tokens_per_batch "65536"         --device "cuda:0"         --min_subjects_per_batch "8"         --cohort_dir "/data2/processed_datasets/mimic/regression/regression_labels_1_month/pao2/"         --ontology_path "/data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl"         --output_root "/data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/regression"         --loss_type labeled_subjects         --task_type regression 
+label_name of cohort_dir: pao2
+/data2/processed_datasets/mimic/regression/regression_labels_1_month/pao2/pao2.parquet
+Loading labels from  /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/regression/labels/pao2.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000935 2187-10-22 15:42:00          86.0  mm Hg
+1    10001884 2130-10-10 09:32:00          73.0  mm Hg
+2    10002013 2160-05-18 09:23:00         441.0  mm Hg
+3    10002155 2129-08-04 12:27:00          89.0  mm Hg
+4    10002428 2156-04-19 19:43:00          95.0  mm Hg
+task type is regression
+typed_labels length: 27446
+Loading model from /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573
+use_linear_interpolation: False
+loss type is labeled_subjects
+the hidden size is 768
+create loss type is labeled_subjects
+Some weights of the model checkpoint at /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573 were not used when initializing FEMRModel: ['task_model.final_layer.bias', 'task_model.final_layer.weight', 'task_model.norm.weight', 'task_model.task_layer.bias', 'task_model.task_layer.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
+Using configuration:
+  COHORT_BASE_DIR:          /data2/processed_datasets/mimic/regression/regression_labels_1_month/
+  PRETRAINING_DATA:         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp
+  OMOP_MEDS_READER:         /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader
+  NUM_PROC:                 100
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /home/zj2398@mc.cumc.columbia.edu/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /home/zj2398@mc.cumc.columbia.edu/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+
+[1] Found task: bilirubin
+[2] Found task: creatinine
+[3] Found task: pao2
+[4] Found task: platelets
+[1/4] Processing task: bilirubin
+cohort_base_dir: /data2/processed_datasets/mimic/regression/regression_labels_1_month/
+Task directory: /data2/processed_datasets/mimic/regression/regression_labels_1_month/bilirubin/
+Executing: python -u "/home/zj2398@mc.cumc.columbia.edu/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/generate_mtpp_features.py"         --pretraining_data "/data2/processed_datasets/zj2398/femr/mimic/deephit_tpp"         --model_path "/data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573"         --meds_reader "/data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader"         --num_proc "100"         --tokens_per_batch "65536"         --device "cuda:2"         --min_subjects_per_batch "8"         --cohort_dir "/data2/processed_datasets/mimic/regression/regression_labels_1_month/bilirubin/"         --ontology_path "/data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl"         --output_root "/data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/regression"         --loss_type labeled_subjects         --task_type regression 
+label_name of cohort_dir: bilirubin
+/data2/processed_datasets/mimic/regression/regression_labels_1_month/bilirubin/bilirubin.parquet
+Loading labels from  /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/regression/labels/bilirubin.parquet
+labels head:    subject_id     prediction_time  target_value   unit
+0    10000032 2180-05-06 23:16:00           1.6  mg/dL
+1    10000084 2160-12-28 05:02:00           0.6  mg/dL
+2    10000117 2176-02-08 22:43:00           1.1  mg/dL
+3    10000285 2161-11-08 17:44:00           0.7  mg/dL
+4    10000560 2189-06-26 14:30:00           0.3  mg/dL
+task type is regression
+typed_labels length: 95607
+Loading model from /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573
+use_linear_interpolation: False
+loss type is labeled_subjects
+the hidden size is 768
+create loss type is labeled_subjects
+Some weights of the model checkpoint at /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573 were not used when initializing FEMRModel: ['task_model.final_layer.bias', 'task_model.final_layer.weight', 'task_model.norm.weight', 'task_model.task_layer.bias', 'task_model.task_layer.weight']
+- This IS expected if you are initializing FEMRModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing FEMRModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+The maximum context length is 8192.0,  8 subjects and 65536 tokens per batch
+max_length: 8192
