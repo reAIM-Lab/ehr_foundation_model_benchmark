@@ -7,10 +7,10 @@ import shutil
 # CONFIGURATION: adjust these if your base paths differ
 # -----------------------------------------------------------------------------
 BASE_ROOT = (
-    # "/data/processed_datasets/processed_datasets"
-    # "/ehr_foundation_data/ohdsi_cumc_deid/"
-    # "ohdsi_cumc_deid_2023q4r3_v3_mapped"
-    "/data/processed_datasets/processed_datasets/ehr_foundation_data/outputs"
+    "/data2/processed_datasets"
+    "/ehr_foundation_data/ohdsi_cumc_deid/"
+    "ohdsi_cumc_deid_2023q4r3_v3_mapped"
+    # "/data/processed_datasets/processed_datasets/ehr_foundation_data/outputs"
 )
 EXTRACT_SCRIPT = os.path.expanduser(
     "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/"
@@ -26,18 +26,20 @@ RESHARD_SCRIPT = "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchm
 SELECT_FEATURES_SCRIPT = "/home/ffp2106@mc.cumc.columbia.edu/ehr_foundation_model_benchmark/src/ehr_foundation_model_benchmark/tutorials/meds-tab/select_features.py"
 MEDS_TAB_XGBOOST_CMD = "meds-tab-xgboost"
 
-# POST_TRANSFORM_DIR = os.path.join(BASE_ROOT, "post_transform")
-POST_TRANSFORM_DIR = "/data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort/"
-OUTPUT_FIX2_LARGE = os.path.join(BASE_ROOT, "models/meds_tab/output_mimic_v2")
-# OUTPUT_FIX2_LARGE = os.path.join(BASE_ROOT, "models/meds_tab/output-fix2-large-katara")
+POST_TRANSFORM_DIR = os.path.join(BASE_ROOT, "post_transform")
+# POST_TRANSFORM_DIR = "/data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort/"
+# OUTPUT_FIX2_LARGE = os.path.join(BASE_ROOT, "models/meds_tab/output_mimic_v2")
+OUTPUT_FIX2_LARGE = os.path.join(BASE_ROOT, "models/meds_tab/output-2year")
 
-OUTPUT_FIX2_LARGE_XGB = os.path.join(BASE_ROOT, "models/meds_tab/output-xgb-v2")
+OUTPUT_FIX2_LARGE_XGB = os.path.join(BASE_ROOT, "models/meds_tab/output-2year-xgb")
 
 # TASKS = ["long_los", "death", "readmission"]
 # TASKS = ["CLL"]
 # TASKS = ["AMI"]
 # 'in_hospital_mortality', 
-TASKS = ['in_hospital_mortality']
+# TASKS = ['in_hospital_mortality']
+# TASKS = ['HTN', 'Ischemic_Stroke', 'MASLD', 'Osteoporosis', 'Pancreatic_Cancer', 'Schizophrenia',  'SLE', 'T2DM']
+TASKS = ['CLL', 'Celiac', 'SLE', 'T2DM']
 # TASKS = ['long_los', 'readmission', 'celiac', 'masld', 'stroke']
 # TASKS = ['Osteoporosis']
 # TASKS = ['Schizophrenia']
@@ -65,7 +67,8 @@ def main():
         )
         label_input_raw = os.path.join(
             # labels_folder_expanded, f"{task}"
-            OUTPUT_FIX2_LARGE, f"{task}"
+            # OUTPUT_FIX2_LARGE, f"{task}"
+            labels_folder_expanded, f"{task}"
         )
         features_label_input_raw = os.path.join(
             OUTPUT_FIX2_LARGE, f"{task}_final", "tabularize"
@@ -141,7 +144,7 @@ def main():
 
             # copy output prediction to folder for katara
             # output_to_copy = f'/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/results_probing/{task}'
-            output_to_copy = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/outputs/katara-v2/{task}"
+            output_to_copy = f"/data2/ehr_foundation_data/outputs/katara-v3/{task}"
             xgb_results = f'{OUTPUT_FIX2_LARGE_XGB}/{task}'
             # find last 
             folders = sorted([f for f in os.listdir(xgb_results) if os.path.isdir(os.path.join(xgb_results, f))])

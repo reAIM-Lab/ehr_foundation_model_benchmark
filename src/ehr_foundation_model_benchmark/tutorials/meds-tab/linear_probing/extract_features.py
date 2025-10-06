@@ -11,6 +11,10 @@ task = sys.argv[1]
 base_path = sys.argv[2]
 label_path = sys.argv[3]
 
+print("Label path", label_path)
+# ignore = ['730d']
+ignore = ['full']
+
 
 
 features_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large-katara/{task}_final/tabularize"
@@ -27,7 +31,9 @@ output_path = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/
 
 features_path = f"{base_path}/{task}_final/tabularize"
 codes_path = f"{base_path}/{task}_final/metadata"
+# labels_path = f"{base_path}/{task}"
 labels_path = f"{label_path}/{task}"
+# labels_path = f'/data/processed_datasets/processed_datasets/mimic/mimic_3.1/patient_outcome_tasks/{task}'
 output_path = f"{base_path}/{task}_final/tabularize_export"
 
 
@@ -138,6 +144,7 @@ def load_tab(path):
     data, row, col = array
     return sp.csc_matrix((data, (row, col)), shape=shape)
 
+print("Labels should be in ", labels_path)
 files = sorted(glob.glob(os.path.join(labels_path, "**/*.parquet")))
 features_all = []
 indices_subject_ids = []
@@ -154,9 +161,10 @@ for file in (pbar:=tqdm(files, desc="Processing files", total=len(files))):
 
 
     pbar.set_description(f"Processing {task_name} in split {split} ({n_rows} rows so far)")
+    
 
     # Load the labels
-    labels_df = pd.read_parquet(file)
+    labels_df = pd.read_parquet(file, engine="fastparquet")
     if labels_df.empty:
         print(f"No labels found for {task_name} in split {split}. Skipping.")
         continue
@@ -175,9 +183,24 @@ for file in (pbar:=tqdm(files, desc="Processing files", total=len(files))):
 
     feature_local_path = os.path.join(features_path, split, task_name)
     all_features_npz_files = sorted(glob.glob(os.path.join(feature_local_path, "**/**/*.npz")))
+    # print(all_features_npz_files)
+    # print(os.path.join(feature_local_path, "**/**/*.npz"))
     tabs = []
     bad = False
     for npz_file in (pbar2:=tqdm(all_features_npz_files, desc=f"Processing {task_name} features", total=len(all_features_npz_files), leave=False)):
+
+        ig = False
+        for ignore_feature in ignore:
+            # print(ignore_feature, task_name)
+            if ignore_feature in npz_file:
+                print("Ignoring", npz_file)
+                # print()
+                ig = True
+        
+        # exit()
+        if ig:
+            continue
+
         npz_agg = os.path.basename(npz_file)
         npz_agg_type = os.path.basename((os.path.dirname(npz_file)))
         npz_window = os.path.basename(os.path.dirname(os.path.dirname(npz_file)))
@@ -192,19 +215,26 @@ for file in (pbar:=tqdm(files, desc="Processing files", total=len(files))):
             print(f"Warning: Number of features ({tab.shape[0]}) does not match number of labels ({len(sids)}) for {task_name} in split {split}.")
             # exit()
             bad = True
+        print(npz_window, tab.shape)
         tabs.append(tab)
         # print(tab.shape)
+
+    # assert len(tabs) == 6
+    # input()
+    # exit(1)
+
 
     # hstack all tabs
     # if len(tabs) == 0:
     #     print(f"No features found for {task_name} in split {split}. Skipping.")
-    #     continue
+        # continue
        
 
     if bad:
         print(f"Warning: Number of features does not match number of labels for {task_name} in split {split}. Skipping.")
         continue
     features = sp.hstack(tabs, format="csc")
+    # print(features.shape)
 
     n_rows += features.shape[0]
     features_all.append(features)
@@ -234,6 +264,8 @@ print(f"Indices saved to {os.path.join(output_path, 'indices.parquet')}")
 # exit()
 print("Combining all features...")
 
+# for features_a in features_all:
+#     print(features_a.shape)
 features_all = sp.vstack(features_all, format="csc")
 print(f"Total features shape: {features_all.shape}")
 

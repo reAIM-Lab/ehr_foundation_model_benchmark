@@ -14,7 +14,9 @@ from sklearn.metrics import auc, precision_recall_curve, roc_auc_score
 import scipy.sparse as sp
 
 MINIMUM_NUM_CASES = 10
-TRAIN_SIZES = [100, 1000, 10000, 100000]
+TRAIN_SIZES = [100, 1000, 10000, 100000, 'full']
+# TRAIN_SIZES = ['full']
+
 
 # TODO import from medstab
 def load_tab(path):
@@ -82,15 +84,16 @@ def main(args):
         if should_terminate:
             break
 
-        if len(train_dataset) < size:
-            size = len(train_dataset)
-            should_terminate = True
 
         test_prediction_parquet_file = task_output_dir / f"{args.model_name}_{size}.parquet"
         few_show_output_dir = task_output_dir / f"{args.model_name}_{size}"
         few_show_output_dir.mkdir(exist_ok=True, parents=True)
         logistic_model_file = few_show_output_dir / "model.pickle"
         logistic_test_metrics_file = few_show_output_dir / "metrics.json"
+
+        if size == 'full' or len(train_dataset) < size:
+            size = len(train_dataset)
+            should_terminate = True
 
         if logistic_test_metrics_file.exists():
             print(

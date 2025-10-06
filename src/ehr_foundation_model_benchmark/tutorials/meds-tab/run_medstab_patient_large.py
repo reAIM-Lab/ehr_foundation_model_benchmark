@@ -7,9 +7,9 @@ from tqdm import tqdm
 import glob
 
 # Constants
-BASE_PATH = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped"
+BASE_PATH = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped"
 # PHENOTYPE_PATH = os.path.join(BASE_PATH, "task_labels/in_house_phenotypes/phenotype_cohorts_min_obs_2_years")
-PHENOTYPE_PATH = '/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/'
+PHENOTYPE_PATH = '/data2/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/task_labels/patient_outcomes_sample/'
 # PHENOTYPE_PATH = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/femr/motor/labels"
 REDSHARD_DIR = os.path.join(BASE_PATH, "post_transform")
 OUTPUT_MODEL_DIR = os.path.join(BASE_PATH, "models/meds_tab/output-fix2-large")

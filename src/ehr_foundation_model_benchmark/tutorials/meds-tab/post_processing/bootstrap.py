@@ -3,8 +3,9 @@ import subprocess
 import shutil
 
 # Root path where all 'xxx' folders are located
-root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large"
+# root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large"
 # root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large-katara"
+root_dir = "/data/processed_datasets/processed_datasets/ehr_foundation_data/outputs/models/meds_tab/output_mimic_v2"
 
 print(os.listdir(root_dir))
 
@@ -12,7 +13,7 @@ print(os.listdir(root_dir))
 base_script = "/home/ffp2106@mc.cumc.columbia.edu/meds-evaluation/src/meds_evaluation/__main__.py"
 
 # Output base directory for results
-results_base = "/home/ffp2106@mc.cumc.columbia.edu/src/meds_evaluation/results_final"
+results_base = "/home/ffp2106@mc.cumc.columbia.edu/src/meds_evaluation/results_final_mimic"
 
 # Loop over all folders in root_dir
 # for sampling in [0.001, 0.01, 0.1]:
@@ -54,9 +55,11 @@ for sampling in [1.0]:
 
 
             task = model_name.replace("-1.0", "")
-            output_to_copy = f'/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/results_probing/{task}'
+            # output_to_copy = f'/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/results_probing/{task}'
+
+            output_to_copy = f"/data/processed_datasets/processed_datasets/ehr_foundation_data/outputs/katara-v2/{task}"
             os.makedirs(output_to_copy, exist_ok=True)
-            shutil.copy2(predictions_path, f'{output_to_copy}/medstab_100000.parquet')
+            shutil.copy2(predictions_path, f'{output_to_copy}/medstab_full.parquet')
 
 
             # Output folder for results (use model name)

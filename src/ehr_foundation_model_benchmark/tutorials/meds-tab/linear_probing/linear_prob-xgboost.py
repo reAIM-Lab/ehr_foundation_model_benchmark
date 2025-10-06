@@ -10,13 +10,14 @@ import pickle
 from meds import train_split, tuning_split, held_out_split
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import auc, precision_recall_curve, roc_auc_score
+import warnings
 
 import scipy.sparse as sp
 
 MINIMUM_NUM_CASES_TRAIN = 8
 MINIMUM_NUM_CASES_TUNING = 2
-TRAIN_SIZES = [80, 800, 8000]
-TUNING_SIZES = [20, 200, 2000]
+TRAIN_SIZES = [80, 800, 8000, 80000]
+TUNING_SIZES = [20, 200, 2000, 20000]
 
 # TODO import from medstab
 def load_tab(path):
@@ -138,12 +139,24 @@ def main(args):
                 train_size_required_negative = \
                     size - train_size_required_positive - len(existing_samples.filter(pl.col("boolean_value") == False)) - existing_pos
 
+                print(train_size_required_positive)
+                print(len(remaining_train_set.filter(pl.col("boolean_value") == True)))
+                print(train_size_required_negative)
+                print(len(remaining_train_set.filter(pl.col("boolean_value") == False)))
+                if train_size_required_positive > len(remaining_train_set.filter(pl.col("boolean_value") == True)):
+                    warnings.warn(str.format("Too many positive samples required {0} {1}", train_size_required_positive, len(remaining_train_set.filter(pl.col("boolean_value") == False))))
+
+                if train_size_required_negative > len(remaining_train_set.filter(pl.col("boolean_value") == False)):
+                    warnings.warn(str.format("Too many negative samples required {0} {1}", train_size_required_negative, len(remaining_train_set.filter(pl.col("boolean_value") == False))))
+                
+
+
                 subset = pl.concat([
                     remaining_train_set.filter(pl.col("boolean_value") == True).sample(
-                        n=train_size_required_positive, shuffle=True, seed=args.seed
+                        n=train_size_required_positive, shuffle=True, seed=args.seed, with_replacement=True
                     ),
                     remaining_train_set.filter(pl.col("boolean_value") == False).sample(
-                        n=train_size_required_negative, shuffle=True, seed=args.seed
+                        n=train_size_required_negative, shuffle=True, seed=args.seed, with_replacement=True
                     ),
                     existing_samples
                 ]).sample(
@@ -156,6 +169,10 @@ def main(args):
                 existing_pos_tuning = len(existing_samples_tuning.filter(pl.col("boolean_value") == True))
                 tuning_size_required_positive = \
                     int(original_positive_prevalence_tuning * TUNING_SIZES[i]) - existing_pos_tuning
+                print(f"tuning_size_required_positive: {tuning_size_required_positive}")
+                print(f"existing_pos_tuning: {existing_pos_tuning}")
+                print(f"existing_samples_tuning: {existing_samples_tuning}")
+                print(f"remaining_tuning_set: {remaining_tuning_set}")
                 if tuning_size_required_positive + existing_pos_tuning < MINIMUM_NUM_CASES_TUNING:
                     if len(remaining_tuning_set.filter(pl.col("boolean_value") == True)) > MINIMUM_NUM_CASES_TUNING:
                         tuning_size_required_positive = max(MINIMUM_NUM_CASES_TUNING - existing_pos_tuning, 0)
@@ -166,12 +183,23 @@ def main(args):
                         continue
                 tuning_size_required_negative = \
                     TUNING_SIZES[i] - tuning_size_required_positive - len(existing_samples_tuning.filter(pl.col("boolean_value") == False)) - existing_pos_tuning
+                
+                print(tuning_size_required_positive)
+                print(len(remaining_tuning_set.filter(pl.col("boolean_value") == True)))
+                print(tuning_size_required_negative)
+                print(len(remaining_tuning_set.filter(pl.col("boolean_value") == False)))
+                if tuning_size_required_positive > len(remaining_tuning_set.filter(pl.col("boolean_value") == True)):
+                    warnings.warn(str.format("Too many positive samples required {0} {1}", tuning_size_required_positive, len(remaining_tuning_set.filter(pl.col("boolean_value") == False))))
+
+                if tuning_size_required_negative > len(remaining_tuning_set.filter(pl.col("boolean_value") == False)):
+                    warnings.warn(str.format("Too many negative samples required {0} {1}", tuning_size_required_negative, len(remaining_tuning_set.filter(pl.col("boolean_value") == False))))
+                
                 subset_tuning = pl.concat([
                     remaining_tuning_set.filter(pl.col("boolean_value") == True).sample(
-                        n=tuning_size_required_positive, shuffle=True, seed=args.seed
+                        n=tuning_size_required_positive, shuffle=True, seed=args.seed, with_replacement=True
                     ),
                     remaining_tuning_set.filter(pl.col("boolean_value") == False).sample(
-                        n=tuning_size_required_negative, shuffle=True, seed=args.seed
+                        n=tuning_size_required_negative, shuffle=True, seed=args.seed, with_replacement=True
                     ),
                     existing_samples_tuning
                 ]).sample(

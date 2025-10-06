@@ -9,14 +9,15 @@ def count_parquet_files(path):
         count += sum(1 for f in files if f.endswith('.parquet'))
     return count
 
-folder_src_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data"
-
+# folder_src_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform/data"
+folder_src_path = "/data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort/data/"
 
 shard_files = count_parquet_files(folder_src_path)
 print(f"Found {shard_files} shard files in {folder_src_path}")
 
 # CONFIGURE THESE
-folder_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/HTN_final/tabularize"  # <-- Set your folder here
+folder_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/outputs/models/meds_tab/output/readmissions_final/tabularize/"
+# folder_path = "/data/processed_datasets/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-fix2-large/Schizophrenia_final/tabularize"  # <-- Set your folder here
 total_files_expected = 6*6*shard_files           # <-- Set your total target here
 check_interval = 60                   # seconds
 

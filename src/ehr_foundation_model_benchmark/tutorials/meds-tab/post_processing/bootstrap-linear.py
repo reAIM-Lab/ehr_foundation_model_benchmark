@@ -30,7 +30,9 @@ for sampling in [1.0]:
                 continue  # Just to be safe, skip non-directories
 
             # Build full predictions_path
-            predictions_path = os.path.join(model_path, "medstab-lr_100000.parquet")
+            predictions_path = os.path.join(model_path, "medstab-lr_2298.parquet")
+
+            # predictions_path = os.path.join(model_path, "medstab-lr_100000.parquet")
 
 
             if not os.path.exists(os.path.expanduser(predictions_path)):
