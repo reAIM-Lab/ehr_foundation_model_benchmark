@@ -30,6 +30,13 @@ def create_arg_parser():
         default=None,
         help="The path to the model to use",
     )
+
+    args.add_argument(
+        "--model_name",
+        dest="model_name",
+        default=None,
+        help="The path to the model to use",
+    )
     
     args.add_argument(
         "--device",
@@ -94,10 +101,15 @@ def read_recursive_parquet(root_dir):
     return df
 
 
-def get_motor_features_name(label_name: str, model_name: str, observation_window: Optional[int] = None) -> str:
+def get_model_name(label_name: str, model_name: str, observation_window: Optional[int] = None) -> str:
     if observation_window:
-        return label_name + f'_motor_' + str(observation_window)
-    return label_name + f'_motor'
+        return label_name + f'_{model_name}_' + str(observation_window)
+    return label_name + f'_{model_name}'
+
+# def get_motor_features_name(label_name: str, model_name: str, observation_window: Optional[int] = None) -> str:
+#     if observation_window:
+#         return label_name + f'_{model_name}_' + str(observation_window)
+#     return label_name + f'_{model_name}'
 
 
 def main():
@@ -143,7 +155,7 @@ def main():
 
         # eg: label_name=inhospital_mortality
         for label_name in labels:
-            motor_features_name = get_motor_features_name(label_name, args.observation_window)
+            motor_features_name = get_model_name(label_name, args.model_name,args.observation_window)
             feature_output_path = features_path / f"{motor_features_name}.pkl"
             training_metrics_file = flops_path / f"{motor_features_name}.json"
             if feature_output_path.exists():

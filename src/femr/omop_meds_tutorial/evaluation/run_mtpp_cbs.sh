@@ -267,13 +267,13 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
 #     echo "Running $MODEL_NAME fine-tuning for $TASK_NAME..."
 
 #     # Build the command with conditional observation_window parameter
-#     FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.finetune_motor \
-#       --pretraining_data \"$PRETRAINING_DATA\" \
-#       --meds_reader \"$OMOP_MEDS_READER\" \
-#       --cohort_label \"$TASK_NAME\" \
-#       --model_path \"$MODEL_PATH\" \
-#       --main_split_path \"$MAIN_SPLIT_PATH\" \
-#       --model_name \"$MODEL_NAME\""
+    # FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.finetune_motor \
+    #   --pretraining_data \"$PRETRAINING_DATA\" \
+    #   --meds_reader \"$OMOP_MEDS_READER\" \
+    #   --cohort_label \"$TASK_NAME\" \
+    #   --model_path \"$MODEL_PATH\" \
+    #   --main_split_path \"$MAIN_SPLIT_PATH\" \
+    #   --model_name \"$MODEL_NAME\""
 
 #     # Add observation_window parameter if specified
 #     if [ -n "$OBSERVATION_WINDOW" ]; then

@@ -58,6 +58,7 @@ while [ $# -gt 0 ]; do
         --meds_reader) OMOP_MEDS_READER_ARG="$2"; shift 2 ;;
         --model_type) MEDS_TYPE="$2"; shift 2 ;;
         --model_path) MODEL_PATH="$2"; shift 2 ;;
+        --model_name) MODEL_NAME="$2"; shift 2 ;;
         --num_proc) NUM_PROC="$2"; shift 2 ;;
         --device) DEVICE="$2"; shift 2 ;;
         --tokens_per_batch) TOKENS_PER_BATCH="$2"; shift 2 ;;
@@ -170,39 +171,35 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
 
     CURRENT=$((CURRENT + 1))
 
-    echo "[$CURRENT/$TASK_COUNT] Processing task: $TASK_NAME"
-    echo "cohort_base_dir: $COHORT_BASE_DIR"
-    echo "Task directory: $TASK_DIR"
+    # echo "[$CURRENT/$TASK_COUNT] Processing task: $TASK_NAME"
+    # echo "cohort_base_dir: $COHORT_BASE_DIR"
+    # echo "Task directory: $TASK_DIR"
 
-    GENERATE_CMD="python -u \"$GEN_FEATURES_PY\" \
-        --pretraining_data \"$PRETRAINING_DATA\" \
-        --model_path \"$MODEL_PATH\" \
-        --meds_reader \"$OMOP_MEDS_READER\" \
-        --num_proc \"$NUM_PROC\" \
-        --tokens_per_batch \"$TOKENS_PER_BATCH\" \
-        --device \"$DEVICE\" \
-        --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
-        --cohort_dir \"$TASK_DIR\" \
-        --ontology_path \"$ONTOLOGY_PATH\" \
-        --output_root \"$OUTPUT_DIR\" \
-        --loss_type "labeled_subjects" \
-        --task_type "regression" "
-    [ -n "$OBSERVATION_WINDOW" ] && GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
+    # GENERATE_CMD="python -u \"$GEN_FEATURES_PY\" \
+    #     --pretraining_data \"$PRETRAINING_DATA\" \
+    #     --model_path \"$MODEL_PATH\" \
+    #     --model_name \"$MODEL_NAME\" \
+    #     --meds_reader \"$OMOP_MEDS_READER\" \
+    #     --num_proc \"$NUM_PROC\" \
+    #     --tokens_per_batch \"$TOKENS_PER_BATCH\" \
+    #     --device \"$DEVICE\" \
+    #     --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
+    #     --cohort_dir \"$TASK_DIR\" \
+    #     --ontology_path \"$ONTOLOGY_PATH\" \
+    #     --output_root \"$OUTPUT_DIR\" \
+    #     --loss_type "labeled_subjects" \
+    #     --task_type "regression" "
+    # [ -n "$OBSERVATION_WINDOW" ] && GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
 
-    echo "Executing: $GENERATE_CMD"
-    eval $GENERATE_CMD || { echo "Error: feature generation failed for $TASK_NAME"; echo "----------------------------------------"; continue; }
+    # echo "Executing: $GENERATE_CMD"
+    # eval $GENERATE_CMD || { echo "Error: feature generation failed for $TASK_NAME"; echo "----------------------------------------"; continue; }
 
     FINETUNE_CMD="python -u \"$FINETUNE_PY\" \
-        --pretraining_data \"$PRETRAINING_DATA\" \
-        --meds_reader \"$OMOP_MEDS_READER\" \
         --cohort_label \"$TASK_NAME\" \
+        --model_name \"$MODEL_NAME\" \
         --main_split_path \"$MAIN_SPLIT_PATH\" \
-        --ontology_path \"$ONTOLOGY_PATH\" \
+        --meds_reader \"$OMOP_MEDS_READER\" \
         --model_path \"$MODEL_PATH\" \
-        --num_proc \"$NUM_PROC\" \
-        --tokens_per_batch \"$TOKENS_PER_BATCH\" \
-        --device \"$DEVICE\" \
-        --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
         --output_root \"$OUTPUT_DIR\""
     [ -n "$OBSERVATION_WINDOW" ] && FINETUNE_CMD="$FINETUNE_CMD --observation_window \"$OBSERVATION_WINDOW\""
 
@@ -215,19 +212,20 @@ done
 
 echo "All selected tasks processed."
 
-
+#export CUDA_VISIBLE_DEVICES=6
 # bash run_regression2.sh \
 #   --pretraining_data   /user/zj2398/cache/mtpp_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           100 \
 #   --model_path         /user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150 \
+#   --model_name         mtpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /user/zj2398/cache/mtpp_8k/ontology.pkl \
 #   --main_split_path    /user/zj2398/cache/mtpp_8k/main_split.csv \
-#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/ \
-#   --output_dir   /shared/share_mala/zj2398/mimic/regression/mtpp \
+#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/regression/mtpp/ \
 #   --tasks "pao2,platelets" \
 #   --regression 
 
@@ -237,13 +235,14 @@ echo "All selected tasks processed."
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           100 \
 #   --model_path         /user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150 \
+#   --model_name         mtpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /user/zj2398/cache/mtpp_8k/ontology.pkl \
 #   --main_split_path    /user/zj2398/cache/mtpp_8k/main_split.csv \
-#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/ \
-#   --output_dir   /shared/share_mala/zj2398/mimic/regression/mtpp \
+#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/regression/mtpp/ \
 #   --tasks "bilirubin,creatinine" \
 #   --regression 
 
@@ -254,13 +253,14 @@ echo "All selected tasks processed."
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
 #   --model_path         /user/zj2398/cache/motor_mimic_8k/output/best_100620 \
+#   --model_name         motor \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /user/zj2398/cache/motor_mimic_8k/ontology.pkl \
 #   --main_split_path    /user/zj2398/cache/motor_mimic_8k/main_split.csv \
-#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/ \
-#   --output_dir   /shared/share_mala/zj2398/mimic/regression \
+#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/regression/motor/ \
 #   --tasks "pao2,platelets" \
 #   --regression 
 
@@ -270,12 +270,13 @@ echo "All selected tasks processed."
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
 #   --model_path         /user/zj2398/cache/motor_mimic_8k/output/best_100620 \
+#   --model_name         motor \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /user/zj2398/cache/motor_mimic_8k/ontology.pkl \
 #   --main_split_path    /user/zj2398/cache/motor_mimic_8k/main_split.csv \
-#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month \
-#   --output_dir   /shared/share_mala/zj2398/mimic/regression \
-#   --tasks "bilirubin,creatinine"
-#   --regression \
+#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/regression/motor/ \
+#   --tasks "bilirubin,creatinine" \
+#   --regression 

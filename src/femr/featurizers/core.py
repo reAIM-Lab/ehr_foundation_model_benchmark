@@ -311,7 +311,8 @@ class FeaturizerList:
 
 def join_labels(features: Mapping[str, np.ndarray], labels: pd.DataFrame) -> Mapping[str, np.ndarray]:
     indices = []
-    label_values = []
+    boolean_label = []
+    tte_label = []
     prediction_times = []
 
     order = np.lexsort((features["feature_times"], features["subject_ids"]))
@@ -337,13 +338,56 @@ def join_labels(features: Mapping[str, np.ndarray], labels: pd.DataFrame) -> Map
             + f'{features["feature_times"][order[feature_index]]} {len(order)} {next_key}'
         )
         indices.append(order[feature_index])
-        label_values.append(label.boolean_value)
+        boolean_label.append(label.boolean_value)
+        tte_label.append(label.tte_label)
         prediction_times.append(label.prediction_time)
 
     return {
-        "boolean_values": np.array(label_values),
+        "boolean_values": np.array(boolean_label),
+        "tte_label": np.array(tte_label),
         "subject_ids": features["subject_ids"][indices],
         "times": features["feature_times"][indices],
         "features": features["features"][indices, :],
         "prediction_times" : np.asarray(prediction_times)
     }
+
+def join_labels_numerical(features: Mapping[str, np.ndarray], labels: pd.DataFrame) -> Mapping[str, np.ndarray]:
+    indices = []
+    numerical_value = []
+    prediction_times = []
+
+    order = np.lexsort((features["feature_times"], features["subject_ids"]))
+
+    feature_index = 0
+
+    for label in labels.itertuples(index=False):
+        while ((feature_index + 1) < len(order)):
+            next_key = (features['subject_ids'][order[feature_index + 1]], features["feature_times"][order[feature_index + 1]])
+            if next_key <= (label.subject_id, label.prediction_time):
+                feature_index += 1
+            else:
+                break
+
+        is_valid = (
+            (feature_index < len(order))
+            and (features["subject_ids"][order[feature_index]] == label.subject_id)
+            and (features["feature_times"][order[feature_index]] <= label.prediction_time)
+        )
+            
+        assert is_valid, (
+            f'{feature_index} {label} {features["subject_ids"][order[feature_index]]} '
+            + f'{features["feature_times"][order[feature_index]]} {len(order)} {next_key}'
+        )
+        indices.append(order[feature_index])
+        # boolean_label.append(label.boolean_value)
+        numerical_value.append(label.numerical_value)
+        prediction_times.append(label.prediction_time)
+
+    return {
+        "numerical_value": np.array(numerical_value),
+        "subject_ids": features["subject_ids"][indices],
+        "times": features["feature_times"][indices],
+        "features": features["features"][indices, :],
+        "prediction_times" : np.asarray(prediction_times)
+    }
+
