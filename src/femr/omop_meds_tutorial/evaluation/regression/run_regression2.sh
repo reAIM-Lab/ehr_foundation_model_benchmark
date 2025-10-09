@@ -171,28 +171,28 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
 
     CURRENT=$((CURRENT + 1))
 
-    # echo "[$CURRENT/$TASK_COUNT] Processing task: $TASK_NAME"
-    # echo "cohort_base_dir: $COHORT_BASE_DIR"
-    # echo "Task directory: $TASK_DIR"
+    echo "[$CURRENT/$TASK_COUNT] Processing task: $TASK_NAME"
+    echo "cohort_base_dir: $COHORT_BASE_DIR"
+    echo "Task directory: $TASK_DIR"
 
-    # GENERATE_CMD="python -u \"$GEN_FEATURES_PY\" \
-    #     --pretraining_data \"$PRETRAINING_DATA\" \
-    #     --model_path \"$MODEL_PATH\" \
-    #     --model_name \"$MODEL_NAME\" \
-    #     --meds_reader \"$OMOP_MEDS_READER\" \
-    #     --num_proc \"$NUM_PROC\" \
-    #     --tokens_per_batch \"$TOKENS_PER_BATCH\" \
-    #     --device \"$DEVICE\" \
-    #     --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
-    #     --cohort_dir \"$TASK_DIR\" \
-    #     --ontology_path \"$ONTOLOGY_PATH\" \
-    #     --output_root \"$OUTPUT_DIR\" \
-    #     --loss_type "labeled_subjects" \
-    #     --task_type "regression" "
-    # [ -n "$OBSERVATION_WINDOW" ] && GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
+    GENERATE_CMD="python -u \"$GEN_FEATURES_PY\" \
+        --pretraining_data \"$PRETRAINING_DATA\" \
+        --model_path \"$MODEL_PATH\" \
+        --model_name \"$MODEL_NAME\" \
+        --meds_reader \"$OMOP_MEDS_READER\" \
+        --num_proc \"$NUM_PROC\" \
+        --tokens_per_batch \"$TOKENS_PER_BATCH\" \
+        --device \"$DEVICE\" \
+        --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
+        --cohort_dir \"$TASK_DIR\" \
+        --ontology_path \"$ONTOLOGY_PATH\" \
+        --output_root \"$OUTPUT_DIR\" \
+        --loss_type "labeled_subjects" \
+        --task_type "regression" "
+    [ -n "$OBSERVATION_WINDOW" ] && GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
 
-    # echo "Executing: $GENERATE_CMD"
-    # eval $GENERATE_CMD || { echo "Error: feature generation failed for $TASK_NAME"; echo "----------------------------------------"; continue; }
+    echo "Executing: $GENERATE_CMD"
+    eval $GENERATE_CMD || { echo "Error: feature generation failed for $TASK_NAME"; echo "----------------------------------------"; continue; }
 
     FINETUNE_CMD="python -u \"$FINETUNE_PY\" \
         --cohort_label \"$TASK_NAME\" \
@@ -288,29 +288,30 @@ echo "All selected tasks processed."
 # bash run_regression2.sh \
 #   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
 #   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
-#   --num_proc           100 \
+#   --num_proc           64 \
 #   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --model_name         tpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
 #   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
-#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_1_month/ \
-#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/regression \
+#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_random_drop/ \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/results/regression \
 #   --tasks "pao2,platelets" \
 #   --regression 
 
 # bash run_regression2.sh \
 #   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
 #   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
-#   --num_proc           100 \
+#   --num_proc           64 \
 #   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
 #   --tokens_per_batch   65536 \
-#   --device             cuda:2 \
+#   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
 #   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
-#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_1_month/ \
-#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/regression \
+#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_random_drop/ \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/results/regression/ \
 #   --tasks "bilirubin,creatinine" \
 #   --regression 
