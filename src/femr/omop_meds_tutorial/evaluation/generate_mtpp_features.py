@@ -232,19 +232,16 @@ def main():
 if __name__ == "__main__":
     main()
 
-'''
-export CUDA_VISIBLE_DEVICES=3
-python generate_motor_features.py \
-  --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_100 \
-  --meds_reader /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
-  --model_path /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_100/output/checkpoint-20123 \
-  --device cuda:0 \
-  --tokens_per_batch 8192*8 \
-  --cohort_dir /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task \
-  --min_subjects_per_batch 8 \
-  --num_proc 100
-'''
+# '''
+# export CUDA_VISIBLE_DEVICES=3
+# python generate_motor_features.py \
+#   --pretraining_data /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_100 \
+#   --meds_reader /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --model_path /data/processed_datasets/processed_datasets/zj2398/femr/mimic/motor_mimic_bin_100/output/checkpoint-20123 \
+#   --device cuda:0 \
+#   --tokens_per_batch 8192*8 \
+#   --cohort_dir /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task \
+#   --min_subjects_per_batch 8 \
+#   --num_proc 100
+# '''
 
-    #     --ontology_path \"$ONTOLOGY_PATH\" \
-    #     --output_root \"$OUTPUT_DIR\""
-    #  --model_type \"$MODEL_TYPE\" \

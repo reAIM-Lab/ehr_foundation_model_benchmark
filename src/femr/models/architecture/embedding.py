@@ -5,7 +5,7 @@ import math
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 from dataclasses import dataclass
-
+import os
 import meds
 import meds_reader
 import numpy as np
@@ -16,13 +16,106 @@ import xformers.ops
 from torch import nn
 from tqdm import tqdm
 from torch.profiler import ProfilerActivity, profile
+from typing import Dict, Tuple, Type, Any, List
 
+from transformers.modeling_utils import load_state_dict
+from transformers.utils import SAFE_WEIGHTS_NAME, WEIGHTS_NAME, PushToHubMixin
+
+import logging
 import femr.models.config
 import femr.models.processor
 import femr.models.rmsnorm
 import femr.models.tasks.motor
 import femr.models.tokenizer
 import femr.models.architecture.xformers
+
+from femr.models.architecture.rewrite_stat_dict import load_femr_model_with_compat
+from femr.models.tasks.motor import LabeledSubjectTask
+
+# logger = logging.getLogger(__name__)
+
+# class LoadReport:
+#     renamed_keys: List[Tuple[str, str]]
+#     dropped_keys: List[str]
+
+#     def log(self) -> None:
+#         if self.renamed_keys:
+#             logger.info(
+#                 "Renamed %d keys while adapting checkpoint (showing first 5): %s",
+#                 len(self.renamed_keys),
+#                 ", ".join(f"{src}->{dst}" for src, dst in self.renamed_keys[:5]),
+#             )
+#         if self.dropped_keys:
+#             logger.info(
+#                 "Dropped %d task head keys from checkpoint (showing first 5): %s",
+#                 len(self.dropped_keys),
+#                 ", ".join(self.dropped_keys[:5]),
+#             )
+
+# def _load_raw_state_dict(checkpoint_dir: str) -> Dict[str, torch.Tensor]:
+#     for filename in (SAFE_WEIGHTS_NAME, WEIGHTS_NAME):
+#         candidate = os.path.join(checkpoint_dir, filename)
+#         if os.path.exists(candidate):
+#             return load_state_dict(candidate)
+#     raise FileNotFoundError(
+#         f"Could not find {SAFE_WEIGHTS_NAME} or {WEIGHTS_NAME} under {checkpoint_dir}"
+#     )
+
+
+# def _rewrite_legacy_keys(state_dict: Dict[str, torch.Tensor]) -> Tuple[Dict[str, torch.Tensor], LoadReport]:
+#     renamed: List[Tuple[str, str]] = []
+#     dropped: List[str] = []
+#     adapted: Dict[str, torch.Tensor] = {}
+
+#     for key, value in state_dict.items():
+#         if key.startswith("transformer."):
+#             new_key = "backbone." + key[len("transformer."):]
+#             adapted[new_key] = value
+#             renamed.append((key, new_key))
+#         elif key.startswith("task_model."):
+#             dropped.append(key)
+#             continue
+#         else:
+#             adapted[key] = value
+
+#     return adapted, LoadReport(renamed_keys=renamed, dropped_keys=dropped)
+
+# def load_femr_model_with_compat(
+#     checkpoint_dir: str,
+#     *,
+#     model_cls: Type[FEMRModel],
+#     **model_kwargs: Any,
+# ) -> Tuple[FEMRModel, LoadReport]:
+#     """
+#     Load a FEMRModel checkpoint while providing backwards compatibility with older key layouts.
+
+#     Args:
+#         checkpoint_dir: Directory containing a HuggingFace-formatted checkpoint.
+#         model_cls: Model class to instantiate (defaults to FEMRModel).
+#         model_kwargs: Extra kwargs forwarded to model_cls.from_pretrained.
+
+#     Returns:
+#         A tuple of (model, LoadReport).
+#     """
+#     # Let HuggingFace handle config/tokenizer metadata, but replace the state dict on the fly.
+#     raw_state_dict = _load_raw_state_dict(checkpoint_dir)
+#     state_dict = raw_state_dict
+
+#     if any(key.startswith("transformer.") for key in raw_state_dict):
+#         state_dict, report = _rewrite_legacy_keys(raw_state_dict)
+#     else:
+#         report = LoadReport(renamed_keys=[], dropped_keys=[])
+
+#     model = model_cls.from_pretrained(
+#         checkpoint_dir,
+#         state_dict=state_dict,
+#         ignore_mismatched_sizes=True,
+#         **model_kwargs,
+#     )
+#     report.log()
+#     return model, report
+
+
 
 
 @dataclass(frozen=False)
@@ -142,7 +235,7 @@ def apply_rotary_pos_emb(x, sincos):
 #         return result
 
 class FEMREncoderLayer(nn.Module):
-    def __init__(self, config: femr.models.config.FEMRTransformerConfig,last_layer_bool=False):
+    def __init__(self, config: femr.models.config.FEMRTransformerConfig):
         super().__init__()
         self.config = config
         self.norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
@@ -1394,12 +1487,29 @@ def compute_features(
     print(f"use_linear_interpolation: {use_linear_interpolation}")
     print(f"loss type is {loss_type}")
     # Use the new from_pretrained method that supports linear_interpolation
-    model = femr.models.architecture.embedding.FEMRModel.from_pretrained(
-        model_path, 
-        task_config=task.get_task_config(),
-        loss_type=loss_type,
-        linear_interpolation=use_linear_interpolation
+    print("starting loading model")
+    # model = femr.models.architecture.embedding.FEMRModel.from_pretrained(
+    #     model_path, 
+    #     task_config=task.get_task_config(),
+    #     loss_type=loss_type,
+    # )
+
+    # model, report = load_femr_model_with_compat(
+    #     model_path,
+    #     model_cls=femr.models.architecture.embedding.FEMRModel,
+    #     task_config=task.get_task_config(),
+    #     loss_type=loss_type,
+    # )
+
+    model, report = load_femr_model_with_compat(
+      model_path,
+      model_cls=FEMRModel,
+      task_config=task.get_task_config(),
+      loss_type=loss_type,
+      drop_task_head=True,
     )
+
+    print(f"the report is {report}")
 
     tokenizer = femr.models.tokenizer.HierarchicalTokenizer.from_pretrained(model_path, ontology=ontology)
     processor = femr.models.processor.FEMRBatchProcessor(tokenizer, task=task)

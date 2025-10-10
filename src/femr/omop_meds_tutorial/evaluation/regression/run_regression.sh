@@ -1,8 +1,3 @@
-#!/bin/sh
-# run_motor_regression.sh
-# Clean run: invoke scripts by file path (not -m) to avoid runpy warnings.
-# Writes all artifacts under the directory you launch from via --output_root.
-
 set -e
 
 LOGFILE="$(dirname "$0")/run_motor_output.log"
@@ -32,12 +27,29 @@ show_help() {
     echo "  --observation_window     Observation window in days"
     echo "  --linear_interpolation   Enable linear interpolation"
     echo "  --regression             Use regression evaluator (RMSE/MAE/R2)"
+    echo "  --tasks                  Comma/space-separated list of task names to run"
+    echo "                           e.g. --tasks \"Readmission,Mortality\" or --tasks \"(Readmission, Mortality)\""
 }
 
 PRETRAINING_DATA_ARG=""
 OMOP_MEDS_READER_ARG=""
 COHORT_BASE_DIR=""
 MIN_SUBJECTS_PER_BATCH="1"
+
+# NEW: storage for task filters
+FILTER_TASKS=()
+
+# Helper: push parsed names into FILTER_TASKS
+# _add_tasks() {
+#     local raw="$1"
+#     # strip parentheses, spaces
+#     raw="${raw//(/\ }"; raw="${raw//)/ }"
+#     # split on commas or spaces
+#     local IFS=', '
+#     for t in $raw; do
+#         [ -n "$t" ] && FILTER_TASKS+=("$t")
+#     done
+# }
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -46,6 +58,7 @@ while [ $# -gt 0 ]; do
         --meds_reader) OMOP_MEDS_READER_ARG="$2"; shift 2 ;;
         --model_type) MEDS_TYPE="$2"; shift 2 ;;
         --model_path) MODEL_PATH="$2"; shift 2 ;;
+        --model_name) MODEL_NAME="$2"; shift 2 ;;
         --num_proc) NUM_PROC="$2"; shift 2 ;;
         --device) DEVICE="$2"; shift 2 ;;
         --tokens_per_batch) TOKENS_PER_BATCH="$2"; shift 2 ;;
@@ -55,15 +68,13 @@ while [ $# -gt 0 ]; do
         --main_split_path) MAIN_SPLIT_PATH="$2"; shift 2 ;;
         --cohort_dir) COHORT_BASE_DIR="$2"; shift 2 ;;
         --output_dir) OUTPUT_DIR="$2"; shift 2 ;;
+        --tasks) TASK_LIST="$2"; shift 2 ;;   # <-- NEW
         --regression) REGRESSION=true; shift ;;
         -*) echo "Error: Unknown option: $1" >&2; exit 1 ;;
         *)
-            # if [ -z "$COHORT_BASE_DIR" ]; then
-            #     COHORT_BASE_DIR="$1"; shift
-            # else
-            #     echo "Error: Unexpected argument: $1" >&2; exit 1
-            # fi
-            # ;;
+            # ignored positional tail in your current script
+            shift
+            ;;
     esac
 done
 
@@ -80,7 +91,6 @@ fi
 [ ! -d "$COHORT_BASE_DIR" ] && { echo "Error: Cohort base directory does not exist: $COHORT_BASE_DIR" >&2; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-# repo root is three levels up from this script (…/femr/omop_meds_tutorial/evaluation/regression)
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 RUN_ROOT="$(pwd)"
 export PYTHONPATH="$REPO_ROOT:$PYTHONPATH"
@@ -99,67 +109,98 @@ echo "  OMOP_MEDS_READER:         $OMOP_MEDS_READER"
 echo "  NUM_PROC:                 $NUM_PROC"
 echo "  TOKENS_PER_BATCH:         $TOKENS_PER_BATCH"
 echo "  OBSERVATION_WINDOW:       $([ -z "$OBSERVATION_WINDOW" ] && echo "Not specified" || echo "$OBSERVATION_WINDOW")"
-# echo "  USE_LINEAR_INTERPOLATION: $USE_LINEAR_INTERPOLATION"
 echo "  REGRESSION:               $REGRESSION"
 echo "  PYTHONPATH head:          $REPO_ROOT"
 echo "  RUN_ROOT (outputs):       $RUN_ROOT"
+if [ ${#FILTER_TASKS[@]} -gt 0 ]; then
+  echo "  TASK FILTER:              ${FILTER_TASKS[*]}"
+fi
 echo
 
-echo "Discovering prediction tasks..."
+# Helper: membership test
+task_selected() {
+    local t="$1"
+    # if no filter provided, everything is selected
+    [ ${#FILTER_TASKS[@]} -eq 0 ] && return 0
+    for x in "${FILTER_TASKS[@]}"; do
+        if [ "$x" = "$t" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 TASK_COUNT=0
+
 for TASK_DIR in "$COHORT_BASE_DIR"*/; do
-    [ -d "$TASK_DIR" ] || continue
+    # Skip if not a directory
+    if [ ! -d "$TASK_DIR" ]; then
+        continue
+    fi
+
+    # Extract task name (directory name)
     TASK_NAME=$(basename "$TASK_DIR")
     TASK_COUNT=$((TASK_COUNT + 1))
+
     echo "[$TASK_COUNT] Found task: $TASK_NAME"
 done
-[ "$TASK_COUNT" -eq 0 ] && { echo "No prediction tasks found in $COHORT_BASE_DIR"; exit 0; }
-echo "Found $TASK_COUNT prediction tasks."
-echo
+if [ "$TASK_COUNT" -eq 0 ]; then
+    echo "No prediction tasks found in $COHORT_BASE_DIR"
+    exit 0
+fi
 
 CURRENT=0
 for TASK_DIR in "$COHORT_BASE_DIR"*/; do
-    [ -d "$TASK_DIR" ] || continue
+    # Skip if not a directory
+    if [ ! -d "$TASK_DIR" ]; then
+        continue
+    fi
+
+    # Extract task name (directory name)
     TASK_NAME=$(basename "$TASK_DIR")
+
+    # Check if task list is specified and if current task is in the list
+    if [ -n "$TASK_LIST" ]; then
+        # Convert comma-separated list to array and check if task is in it
+        if ! echo ",$TASK_LIST," | grep -q ",$TASK_NAME,"; then
+            SKIPPED=$((SKIPPED + 1))
+            echo "[$SKIPPED skipped] Skipping task: $TASK_NAME (not in specified task list)"
+            continue
+        fi
+    fi
+
     CURRENT=$((CURRENT + 1))
 
-    echo "[$CURRENT/$TASK_COUNT] Processing task: $TASK_NAME"
-    echo "Task directory: $TASK_DIR"
+    # echo "[$CURRENT/$TASK_COUNT] Processing task: $TASK_NAME"
+    # echo "cohort_base_dir: $COHORT_BASE_DIR"
+    # echo "Task directory: $TASK_DIR"
 
-    # --- Generate features (direct file run; no -m) ---
-    GENERATE_CMD="python -u \"$GEN_FEATURES_PY\" \
-        --pretraining_data \"$PRETRAINING_DATA\" \
-        --model_path \"$MODEL_PATH\" \
-        --meds_reader \"$OMOP_MEDS_READER\" \
-        --num_proc \"$NUM_PROC\" \
-        --tokens_per_batch \"$TOKENS_PER_BATCH\" \
-        --device \"$DEVICE\" \
-        --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
-        --cohort_dir \"$TASK_DIR\" \
-        --ontology_path \"$ONTOLOGY_PATH\" \
-        --output_root \"$OUTPUT_DIR\" \
-        --task_type "regression" "
-    # --output_root \"$RUN_ROOT\""
-    # [ "$USE_LINEAR_INTERPOLATION" = true ] && GENERATE_CMD="$GENERATE_CMD --linear_interpolation"
-    [ -n "$OBSERVATION_WINDOW" ] && GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
+    # GENERATE_CMD="python -u \"$GEN_FEATURES_PY\" \
+    #     --pretraining_data \"$PRETRAINING_DATA\" \
+    #     --model_path \"$MODEL_PATH\" \
+    #     --model_name \"$MODEL_NAME\" \
+    #     --meds_reader \"$OMOP_MEDS_READER\" \
+    #     --num_proc \"$NUM_PROC\" \
+    #     --tokens_per_batch \"$TOKENS_PER_BATCH\" \
+    #     --device \"$DEVICE\" \
+    #     --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
+    #     --cohort_dir \"$TASK_DIR\" \
+    #     --ontology_path \"$ONTOLOGY_PATH\" \
+    #     --output_root \"$OUTPUT_DIR\" \
+    #     --loss_type "labeled_subjects" \
+    #     --task_type "regression" "
+    # [ -n "$OBSERVATION_WINDOW" ] && GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
 
-    echo "Executing: $GENERATE_CMD"
-    eval $GENERATE_CMD || { echo "Error: feature generation failed for $TASK_NAME"; echo "----------------------------------------"; continue; }
+    # echo "Executing: $GENERATE_CMD"
+    # eval $GENERATE_CMD || { echo "Error: feature generation failed for $TASK_NAME"; echo "----------------------------------------"; continue; }
 
-    # --- Finetune regression (direct file run; no -m) ---
     FINETUNE_CMD="python -u \"$FINETUNE_PY\" \
-        --pretraining_data \"$PRETRAINING_DATA\" \
-        --meds_reader \"$OMOP_MEDS_READER\" \
         --cohort_label \"$TASK_NAME\" \
+        --model_name \"$MODEL_NAME\" \
         --main_split_path \"$MAIN_SPLIT_PATH\" \
-        --ontology_path \"$ONTOLOGY_PATH\" \
+        --meds_reader \"$OMOP_MEDS_READER\" \
         --model_path \"$MODEL_PATH\" \
-        --num_proc \"$NUM_PROC\" \
-        --tokens_per_batch \"$TOKENS_PER_BATCH\" \
-        --device \"$DEVICE\" \
-        --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
         --output_root \"$OUTPUT_DIR\""
-    # [ "$USE_LINEAR_INTERPOLATION" = true ] && FINETUNE_CMD="$FINETUNE_CMD --linear_interpolation"
     [ -n "$OBSERVATION_WINDOW" ] && FINETUNE_CMD="$FINETUNE_CMD --observation_window \"$OBSERVATION_WINDOW\""
 
     echo "Executing: $FINETUNE_CMD"
@@ -169,46 +210,109 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     echo "----------------------------------------"
 done
 
-echo "All tasks processed."
+echo "All selected tasks processed."
 
-
-
-
-
-
-# ----------------------------------------
-# Example 
-# ----------------------------------------
-# export CUDA_VISIBLE_DEVICES=1
-# bash run_regression.sh \
-#   --pretraining_data   /data/models/femr_tpp/motor_bin_8 \
-#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader/ \
-#   --num_proc           8 \
-#   --model_path         /data/models/femr_tpp/motor_bin_8/output/motor_8192 \
+#export CUDA_VISIBLE_DEVICES=5
+# bash run_regression2.sh \
+#   --pretraining_data   /user/zj2398/cache/mtpp_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           100 \
+#   --model_path         /user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150 \
+#   --model_name         mtpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
-#   --ontology_path      /data/models/femr_tpp/motor_bin_8/ontology.pkl \
-#   --main_split_path    /data/models/femr_tpp/motor_bin_8/main_split.csv \
-#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month
-#   --output_dir   /shared/share_mala/zj2398/mimic/regression
-#   --regression \
+#   --ontology_path      /user/zj2398/cache/mtpp_8k/ontology.pkl \
+#   --main_split_path    /user/zj2398/cache/mtpp_8k/main_split.csv \
+#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/regression/mtpp/ \
+#   --tasks "pao2,platelets" \
+#   --regression 
 
-#export CUDA_VISIBLE_DEVICES=0
-# bash run_regression2.sh \
+
+# bash run_regression.sh \
+#   --pretraining_data   /user/zj2398/cache/mtpp_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           100 \
+#   --model_path         /user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150 \
+#   --model_name         mtpp \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path      /user/zj2398/cache/mtpp_8k/ontology.pkl \
+#   --main_split_path    /user/zj2398/cache/mtpp_8k/main_split.csv \
+#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/regression/mtpp/ \
+#   --regression 
+
+#   --tasks "bilirubin,creatinine" \
+
+
+# bash run_regression.sh \
 #   --pretraining_data   /user/zj2398/cache/motor_mimic_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
 #   --model_path         /user/zj2398/cache/motor_mimic_8k/output/best_100620 \
+#   --model_name         motor \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /user/zj2398/cache/motor_mimic_8k/ontology.pkl \
 #   --main_split_path    /user/zj2398/cache/motor_mimic_8k/main_split.csv \
-#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_1_month/ \
-#   --output_dir   /shared/share_mala/zj2398/mimic/regression \
+#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/regression/motor/ \
+#   --regression 
+
+#   --tasks "pao2,platelets" \
+
+
+# bash run_regression2.sh \
+#   --pretraining_data   /user/zj2398/cache/motor_mimic_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/motor_mimic_8k/output/best_100620 \
+#   --model_name         motor \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path      /user/zj2398/cache/motor_mimic_8k/ontology.pkl \
+#   --main_split_path    /user/zj2398/cache/motor_mimic_8k/main_split.csv \
+#   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/regression/motor/ \
 #   --tasks "bilirubin,creatinine" \
 #   --regression 
 
-#
 
+
+##kuvira
+
+# bash run_regression2.sh \
+#   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
+#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --num_proc           64 \
+#   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --model_name         tpp \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
+#   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
+#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_random_drop/ \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/results/regression \
+#   --tasks "pao2,platelets" \
+#   --regression 
+
+# bash run_regression2.sh \
+#   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
+#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --num_proc           64 \
+#   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
+#   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
+#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_random_drop/ \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/results/regression/ \
+#   --tasks "bilirubin,creatinine" \
+#   --regression 

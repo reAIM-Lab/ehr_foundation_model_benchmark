@@ -62,6 +62,7 @@ while [ $# -gt 0 ]; do
             OMOP_MEDS_READER_ARG="$2"
             shift 2
             ;;
+        --model_type) MODEL_TYPE="$2"; shift 2 ;;
         --model_path)
             MODEL_PATH="$2"
             shift 2
@@ -81,10 +82,6 @@ while [ $# -gt 0 ]; do
         --observation_window)
             OBSERVATION_WINDOW="$2"
             shift 2
-            ;;
-        --linear_interpolation)
-            USE_LINEAR_INTERPOLATION=true
-            shift
             ;;
         --task)
             TASK_LIST="$2"
@@ -110,6 +107,7 @@ while [ $# -gt 0 ]; do
             LOSS_TYPE="$2"
             shift 2
             ;;
+        --output_dir) OUTPUT_DIR="$2"; shift 2 ;;
         -*)
             echo "Error: Unknown option: $1" >&2
             echo "Try '$SCRIPT_NAME --help' for more information." >&2
@@ -173,23 +171,23 @@ echo
 echo "Discovering prediction tasks..."
 TASK_COUNT=0
 
-# for TASK_DIR in "$COHORT_BASE_DIR"*/; do
-#     # Skip if not a directory
-#     if [ ! -d "$TASK_DIR" ]; then
-#         continue
-#     fi
+for TASK_DIR in "$COHORT_BASE_DIR"*/; do
+    # Skip if not a directory
+    if [ ! -d "$TASK_DIR" ]; then
+        continue
+    fi
 
-#     # Extract task name (directory name)
-#     TASK_NAME=$(basename "$TASK_DIR")
-#     TASK_COUNT=$((TASK_COUNT + 1))
+    # Extract task name (directory name)
+    TASK_NAME=$(basename "$TASK_DIR")
+    TASK_COUNT=$((TASK_COUNT + 1))
 
-#     echo "[$TASK_COUNT] Found task: $TASK_NAME"
-# done
+    echo "[$TASK_COUNT] Found task: $TASK_NAME"
+done
 
-# if [ "$TASK_COUNT" -eq 0 ]; then
-#     echo "No prediction tasks found in $COHORT_BASE_DIR"
-#     exit 0
-# fi
+if [ "$TASK_COUNT" -eq 0 ]; then
+    echo "No prediction tasks found in $COHORT_BASE_DIR"
+    exit 0
+fi
 
 # echo "Found $TASK_COUNT prediction tasks."
 # echo
@@ -227,17 +225,20 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     echo "Running $MODEL_NAME feature generation for $TASK_NAME..."
 
     # Build the command with conditional observation_window parameter
-    GENERATE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.generate_motor_features \
+    GENERATE_CMD="python -u -m femr.omop_meds_tutorial.evaluation.generate_motor_features \
       --pretraining_data \"$PRETRAINING_DATA\" \
       --model_path \"$MODEL_PATH\" \
+      --model_name \"$MODEL_NAME\" \
       --meds_reader \"$OMOP_MEDS_READER\" \
       --num_proc \"$NUM_PROC\" \
       --tokens_per_batch \"$TOKENS_PER_BATCH\" \
       --device \"$DEVICE\" \
       --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
       --cohort_dir \"$TASK_DIR\" \
-      --ontology_path \"$ONTOLOGY_PATH\"
-      --loss_type \"$LOSS_TYPE\""
+      --ontology_path \"$ONTOLOGY_PATH\" \
+      --output_root \"$OUTPUT_DIR\" \
+      --task_type "binary" \
+      --loss_type "labeled_subjects" "
 
     # Add linear_interpolation parameter if specified
     if [ "$USE_LINEAR_INTERPOLATION" = true ]; then
@@ -264,14 +265,14 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     # Run the second command: fine-tune MOTOR
     echo "Running $MODEL_NAME fine-tuning for $TASK_NAME..."
 
-    # # Build the command with conditional observation_window parameter
-    # FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.motor_evaluation.finetune_motor \
-    #   --pretraining_data \"$PRETRAINING_DATA\" \
-    #   --meds_reader \"$OMOP_MEDS_READER\" \
+    # Build the command with conditional observation_window parameter
+    # FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.evaluation.finetune_motor \
     #   --cohort_label \"$TASK_NAME\" \
-    #   --model_path \"$MODEL_PATH\" \
+    #   --model_name \"$MODEL_NAME\" \
     #   --main_split_path \"$MAIN_SPLIT_PATH\" \
-    #   --model_name \"$MODEL_NAME\""
+    #   --meds_reader \"$OMOP_MEDS_READER\" \
+    #   --model_path \"$MODEL_PATH\" \
+    #   --output_root \"$OUTPUT_DIR\""
 
     # # Add observation_window parameter if specified
     # if [ -n "$OBSERVATION_WINDOW" ]; then
@@ -284,60 +285,75 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     # # Execute the command
     # eval $FINETUNE_CMD
 
-    # # Check if the second command succeeded
-    # if [ $? -ne 0 ]; then
-    #     echo "Error: $MODEL_NAME fine-tuning failed for task $TASK_NAME"
-    #     continue
-    # fi
+    # Check if the second command succeeded
+    if [ $? -ne 0 ]; then
+        echo "Error: $MODEL_NAME fine-tuning failed for task $TASK_NAME"
+        continue
+    fi
 
-    # # Determine the MOTOR prediction folder path based on observation window
-    # if [ -n "$OBSERVATION_WINDOW" ]; then
-    #     MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
-    #     MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
-    # else
-    #     MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/test_predictions"
-    #     MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/"
-    # fi
+    # Determine the MOTOR prediction folder path based on observation window
+    if [ -n "$OBSERVATION_WINDOW" ]; then
+        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
+        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
+    else
+        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/test_predictions"
+        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/"
+    fi
 
-    # # Build the evaluation command
-    # EVAL_CMD="meds-evaluation-cli predictions_path=\"$MOTOR_PREDICTION_FOLDER\" \
-    #   output_dir=\"$MOTOR_OUTPUT_DIR\""
+    # Build the evaluation command
+    EVAL_CMD="meds-evaluation-cli predictions_path=\"$MOTOR_PREDICTION_FOLDER\" \
+      output_dir=\"$MOTOR_OUTPUT_DIR\""
 
-    # # Run the third command to compute the metrics
-    # echo "Running meds-evaluation for $TASK_NAME..."
-    # echo "Executing command: $EVAL_CMD"
+    # Run the third command to compute the metrics
+    echo "Running meds-evaluation for $TASK_NAME..."
+    echo "Executing command: $EVAL_CMD"
 
-    # # Execute the command
-    # eval $EVAL_CMD
+    # Execute the command
+    eval $EVAL_CMD
 
-    # # Check if the third command succeeded
-    # if [ $? -ne 0 ]; then
-    #     echo "Error: Running meds-evaluation failed for task $TASK_NAME"
-    # fi
+    # Check if the third command succeeded
+    if [ $? -ne 0 ]; then
+        echo "Error: Running meds-evaluation failed for task $TASK_NAME"
+    fi
 
-    # echo "Completed processing of task: $TASK_NAME"
-    # echo "----------------------------------------"
+    echo "Completed processing of task: $TASK_NAME"
+    echo "----------------------------------------"
 done
 
 echo "All tasks processed."
 
 
 # phenotype
-# export CUDA_VISIBLE_DEVICES=2
-# bash run_motor_cbs.sh \
+# export CUDA_VISIBLE_DEVICES=3
+
+
+# bash run_motor_cbs.sh  \
 #   --pretraining_data   /user/zj2398/cache/motor_mimic_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
 #   --model_path         /user/zj2398/cache/motor_mimic_8k/output/best_100620 \
+#   --model_name         motor \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
 #   --ontology_path       /user/zj2398/cache/motor_mimic_8k/ontology.pkl \
 #   --main_split_path     /user/zj2398/cache/motor_mimic_8k/main_split.csv \
-#   --model_name motor \
-#   --loss_type  labeled_subjects \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
+#   --output_dir   /shared/share_mala/zj2398/mimic/phenotype_task/motor/ \
+#   /shared/share_mala/zj2398/mimic/phenotype_task/cohort/
 
+# bash run_motor_cbs.sh  \
+#   --pretraining_data   /user/zj2398/cache/motor_mimic_8k \
+#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/motor_mimic_8k/output/best_100620 \
+#   --model_name         motor \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/motor_mimic_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/motor_mimic_8k/main_split.csv \
+#   --output_dir   /shared/share_mala/zj2398/mimic/phenotype_task/motor/ \
+#   /shared/share_mala/zj2398/mimic/patient_outcome_tasks/cohort/
 
 # export CUDA_VISIBLE_DEVICES=3
 # bash run_motor_cbs.sh \

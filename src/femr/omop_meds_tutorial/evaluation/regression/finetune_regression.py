@@ -20,6 +20,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import femr.splits
 import argparse
 from femr.omop_meds_tutorial.evaluation.generate_motor_features import get_model_name
+from sklearn.linear_model import LinearRegression
 
 from femr.omop_meds_tutorial.evaluation.generate_labels import (  # type: ignore
         create_omop_meds_tutorial_arg_parser,
@@ -187,9 +188,11 @@ def main():
 
             # print(f"Train shape: {X_train.shape}, Test shape: {X_test.shape}")
 
+            # potential issue 1 scale back?
+            # not ridge... just linear regression
             model = Pipeline([
                 ("scaler", StandardScaler(with_mean=True, with_std=True)),
-                ("ridge", RidgeCV(alphas=np.logspace(-3, 3, 13))),
+                ("ridge", LinearRegression()),
             ])
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
@@ -210,9 +213,9 @@ def main():
                 "rmse": rmse,
                 "mae": mae,
                 "r2": r2,
-                "alpha": float(model.named_steps["ridge"].alpha_),
             }
-            print(f"{label_name} ridge α={metrics['alpha']:.4g} | RMSE={rmse:.4g} | MAE={mae:.4g} | R2={r2:.4g}")
+            print(f"{label_name} ridge | RMSE={rmse:.4g} | MAE={mae:.4g} | R2={r2:.4g}")
+            # print(f"{label_name} ridge α={metrics['alpha']:.4g} | RMSE={rmse:.4g} | MAE={mae:.4g} | R2={r2:.4g}")
             with open(test_result_file, "w") as f:
                 json.dump(metrics, f, indent=4)
 

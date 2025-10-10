@@ -12,7 +12,11 @@ import pickle
 import meds
 import pathlib
 import torch
-from .generate_labels import create_omop_meds_tutorial_arg_parser, LABEL_NAMES
+from femr.omop_meds_tutorial.evaluation.generate_labels import (  # type: ignore
+        create_omop_meds_tutorial_arg_parser,
+        LABEL_NAMES,
+    )
+# from .generate_labels import create_omop_meds_tutorial_arg_parser, LABEL_NAMES
 
 
 def create_arg_parser():
@@ -89,6 +93,17 @@ def create_arg_parser():
         default=None,
         help="The loss type",
     )
+    args.add_argument(
+        "--task_type",
+        dest="task_type",
+        default="binary",
+        help="The task type",
+    )
+    args.add_argument(
+        "--output_root",
+        default=None,
+        help="Directory where labels/features/flops will be written. Defaults to --pretraining_data.",
+    )
     return args
 
 
@@ -116,12 +131,16 @@ def main():
     args = create_arg_parser().parse_args()
     with meds_reader.SubjectDatabase(args.meds_reader, num_threads=6) as database:
         pretraining_data = pathlib.Path(args.pretraining_data)
+        output_root = pathlib.Path(args.output_root) if args.output_root else pretraining_data
         ontology_path = args.ontology_path
 
-        features_path = pretraining_data / "features"
+        # features_path = pretraining_data / "features"
+        features_path = output_root / "features"
         features_path.mkdir(exist_ok=True, parents=True)
-        flops_path = pretraining_data / "flops"
+        flops_path = output_root / "flops"
         flops_path.mkdir(exist_ok=True, parents=True)
+        labels_path = output_root / "labels"
+        labels_path.mkdir(exist_ok=True, parents=True)
 
         with open(ontology_path, 'rb') as f:
             ontology = pickle.load(f)
@@ -147,14 +166,15 @@ def main():
             if len(cohort) > 0 and isinstance(cohort.prediction_time.iloc[0], datetime.date):
                 cohort["prediction_time"] = pd.to_datetime(cohort["prediction_time"])
 
-            os.makedirs(pretraining_data / "labels", exist_ok=True)
-            cohort.to_parquet(
-                pretraining_data / "labels" / (label_name + '.parquet')
-            )
-            labels = [label_name]
+            # os.makedirs(pretraining_data / "labels", exist_ok=True)
+            # cohort.to_parquet(
+            #     pretraining_data / "labels" / (label_name + '.parquet')
+            # )
+            # labels = [label_name]
+            cohort.to_parquet(labels_path / (label_name + '.parquet'), index=False)
 
         # eg: label_name=inhospital_mortality
-        for label_name in labels:
+        # for label_name in labels:
             motor_features_name = get_model_name(label_name, args.model_name,args.observation_window)
             feature_output_path = features_path / f"{motor_features_name}.pkl"
             training_metrics_file = flops_path / f"{motor_features_name}.json"
@@ -162,44 +182,42 @@ def main():
                 print(
                     f"The features for {label_name} already exist at {feature_output_path}, it will be skipped!"
                 )
-                continue
-
-            # no split here
-            file_path = pretraining_data / "labels" / (label_name + '.parquet')
-            print("Loading labels from ", file_path)
-            labels = pd.read_parquet(
-                pretraining_data / "labels" / (label_name + '.parquet')
-            )
-            print(f"labels: {labels.head()}")
-            # 
-            typed_labels = [
-                meds.Label(
-                    subject_id=label["subject_id"],
-                    prediction_time=label["prediction_time"],
-                    boolean_value=label["boolean_value"],
-                )
-                for label in labels.to_dict(orient="records")
-            ]
-            print(f"typed_labels length: {len(typed_labels)}")
-            # total_flops = femr.models.transformer.TotalFlops()
-            start_time: datetime.datetime = datetime.datetime.now()
-            if os.path.basename(pretraining_data) == "motor_mimic_bin_8_start_idx_corrected" or  os.path.basename(pretraining_data) == "motor_mimic_bin_8_linear_interpolation":
-                print("load from start_idx or interpolation")
-                features = femr.models.transformer_linear_interpolation.compute_features(
-                    db=database,
-                    model_path=args.model_path,
-                    labels=typed_labels,
-                    ontology=ontology,
-                    device=torch.device(args.device),
-                    tokens_per_batch=args.tokens_per_batch,
-                    num_proc=args.num_proc,
-                    observation_window=args.observation_window,
-                    min_subjects_per_batch=args.min_subjects_per_batch,
-                    use_linear_interpolation=args.use_linear_interpolation,
-                    # total_flops=None
-                )
+                # continue
             else:
-                print("load from normal model")
+                # no split here
+                file_path = labels_path / (label_name + ".parquet")
+                print("Loading labels from ", file_path)
+                labels = pd.read_parquet(file_path)
+                print(f"labels head: {labels.head()}")
+                print(f"task type is {args.task_type}")
+                typed_labels = [
+                    meds.Label(
+                        subject_id=label["subject_id"],
+                        prediction_time=label["prediction_time"],
+                        boolean_value=label["boolean_value"] if args.task_type=="binary" else None,
+                    )
+                    for label in labels.to_dict(orient="records")
+                ]
+                print(f"typed_labels length: {len(typed_labels)}")
+                # total_flops = femr.models.transformer.TotalFlops()
+                start_time: datetime.datetime = datetime.datetime.now()
+                # if os.path.basename(pretraining_data) == "motor_mimic_bin_8_start_idx_corrected" or  os.path.basename(pretraining_data) == "motor_mimic_bin_8_linear_interpolation":
+                #     print("load from start_idx or interpolation")
+                #     features = femr.models.transformer_linear_interpolation.compute_features(
+                #         db=database,
+                #         model_path=args.model_path,
+                #         labels=typed_labels,
+                #         ontology=ontology,
+                #         device=torch.device(args.device),
+                #         tokens_per_batch=args.tokens_per_batch,
+                #         num_proc=args.num_proc,
+                #         observation_window=args.observation_window,
+                #         min_subjects_per_batch=args.min_subjects_per_batch,
+                #         use_linear_interpolation=args.use_linear_interpolation,
+                #         # total_flops=None
+                #     )
+                # else:
+                #     print("load from normal model")
                 features = femr.models.architecture.embedding.compute_features(
                     db=database,
                     model_path=args.model_path,
@@ -211,20 +229,19 @@ def main():
                     observation_window=args.observation_window,
                     min_subjects_per_batch=args.min_subjects_per_batch,
                     loss_type=args.loss_type
-                    # use_linear_interpolation=args.use_linear_interpolation,
                     # total_flops=None
                 )
 
-            with open(feature_output_path, 'wb') as f:
-                pickle.dump(features, f)
+                with open(feature_output_path, 'wb') as f:
+                    pickle.dump(features, f)
 
-            # Save the training metrics to the output file
-            with open(training_metrics_file, "w") as output_file:
-                training_metrics = {
-                    "duration_in_seconds": (datetime.datetime.now() - start_time).total_seconds(),
-                    # "total_flops": total_flops.total_flops,
-                }
-                json.dump(training_metrics, output_file)
+                # Save the training metrics to the output file
+                # with open(training_metrics_file, "w") as output_file:
+                #     training_metrics = {
+                #         "duration_in_seconds": (datetime.datetime.now() - start_time).total_seconds(),
+                #         # "total_flops": total_flops.total_flops,
+                #     }
+                #     json.dump(training_metrics, output_file)
 
 if __name__ == "__main__":
     main()
