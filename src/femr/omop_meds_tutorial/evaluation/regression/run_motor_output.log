@@ -127,3 +127,73 @@ platelets ridge | RMSE=59.11 | MAE=40.17 | R2=0.5958
 Completed processing of task: platelets
 ----------------------------------------
 All selected tasks processed.
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/
+  PRETRAINING_DATA:         /user/zj2398/cache/mtpp_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 100
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+
+[1] Found task: bilirubin
+[2] Found task: creatinine
+[3] Found task: pao2
+[4] Found task: platelets
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression/finetune_regression.py"         --cohort_label "bilirubin"         --model_name "mtpp"         --main_split_path "/user/zj2398/cache/mtpp_8k/main_split.csv"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --model_path "/user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150"         --output_root "/shared/share_mala/zj2398/mimic/regression/mtpp/"
+Using the user defined label at: /shared/share_mala/zj2398/mimic/regression/mtpp/labels/bilirubin.parquet
+The result already existed for bilirubin at /shared/share_mala/zj2398/mimic/regression/mtpp/results/bilirubin/mtpp/metrics.json, it will be skipped!
+Using configuration:
+  COHORT_BASE_DIR:          /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/
+  PRETRAINING_DATA:         /user/zj2398/cache/mtpp_8k
+  OMOP_MEDS_READER:         /user/zj2398/cache/mimic/meds_v0.6_reader
+  NUM_PROC:                 100
+  TOKENS_PER_BATCH:         65536
+  OBSERVATION_WINDOW:       Not specified
+  REGRESSION:               true
+  PYTHONPATH head:          /user/zj2398/femr_chao_meds_v3/src
+  RUN_ROOT (outputs):       /user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression
+
+[1] Found task: bilirubin
+[2] Found task: creatinine
+[3] Found task: pao2
+[4] Found task: platelets
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression/finetune_regression.py"         --cohort_label "bilirubin"         --model_name "mtpp"         --main_split_path "/user/zj2398/cache/mtpp_8k/main_split.csv"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --model_path "/user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150"         --output_root "/shared/share_mala/zj2398/mimic/regression/mtpp/"
+Using the user defined label at: /shared/share_mala/zj2398/mimic/regression/mtpp/labels/bilirubin.parquet
+Saving features and labels to parquet
+Total labels: 145236
+Total train features labels: 130723
+Total test features labels: 14513
+baselie baseline_rmse 2.0083277034538525 baseline_mae 0.6503231046610333 ,baseline_r2 -7.56839154756328e-05 
+Completed processing of task: bilirubin
+----------------------------------------
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression/finetune_regression.py"         --cohort_label "creatinine"         --model_name "mtpp"         --main_split_path "/user/zj2398/cache/mtpp_8k/main_split.csv"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --model_path "/user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150"         --output_root "/shared/share_mala/zj2398/mimic/regression/mtpp/"
+Using the user defined label at: /shared/share_mala/zj2398/mimic/regression/mtpp/labels/creatinine.parquet
+Saving features and labels to parquet
+Total labels: 239518
+Total train features labels: 215551
+Total test features labels: 23967
+baselie baseline_rmse 0.7693182817631736 baseline_mae 0.3367537500836084 ,baseline_r2 -0.00011704906224552225 
+Completed processing of task: creatinine
+----------------------------------------
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression/finetune_regression.py"         --cohort_label "pao2"         --model_name "mtpp"         --main_split_path "/user/zj2398/cache/mtpp_8k/main_split.csv"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --model_path "/user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150"         --output_root "/shared/share_mala/zj2398/mimic/regression/mtpp/"
+Using the user defined label at: /shared/share_mala/zj2398/mimic/regression/mtpp/labels/pao2.parquet
+Saving features and labels to parquet
+Total labels: 46953
+Total train features labels: 42201
+Total test features labels: 4752
+baselie baseline_rmse 102.18388040774163 baseline_mae 78.92257400190861 ,baseline_r2 -4.997396674255583e-08 
+Completed processing of task: pao2
+----------------------------------------
+Executing: python -u "/user/zj2398/femr_chao_meds_v3/src/femr/omop_meds_tutorial/evaluation/regression/finetune_regression.py"         --cohort_label "platelets"         --model_name "mtpp"         --main_split_path "/user/zj2398/cache/mtpp_8k/main_split.csv"         --meds_reader "/user/zj2398/cache/mimic/meds_v0.6_reader"         --model_path "/user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150"         --output_root "/shared/share_mala/zj2398/mimic/regression/mtpp/"
+Using the user defined label at: /shared/share_mala/zj2398/mimic/regression/mtpp/labels/platelets.parquet
+Saving features and labels to parquet
+Total labels: 242041
+Total train features labels: 217840
+Total test features labels: 24201
+baselie baseline_rmse 92.97556789262298 baseline_mae 66.97435838984264 ,baseline_r2 -6.117847847120217e-05 
+Completed processing of task: platelets
+----------------------------------------
+All selected tasks processed.

@@ -175,24 +175,24 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     # echo "cohort_base_dir: $COHORT_BASE_DIR"
     # echo "Task directory: $TASK_DIR"
 
-    GENERATE_CMD="python -u \"$GEN_FEATURES_PY\" \
-        --pretraining_data \"$PRETRAINING_DATA\" \
-        --model_path \"$MODEL_PATH\" \
-        --model_name \"$MODEL_NAME\" \
-        --meds_reader \"$OMOP_MEDS_READER\" \
-        --num_proc \"$NUM_PROC\" \
-        --tokens_per_batch \"$TOKENS_PER_BATCH\" \
-        --device \"$DEVICE\" \
-        --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
-        --cohort_dir \"$TASK_DIR\" \
-        --ontology_path \"$ONTOLOGY_PATH\" \
-        --output_root \"$OUTPUT_DIR\" \
-        --loss_type "labeled_subjects" \
-        --task_type "regression" "
-    [ -n "$OBSERVATION_WINDOW" ] && GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
+    # GENERATE_CMD="python -u \"$GEN_FEATURES_PY\" \
+    #     --pretraining_data \"$PRETRAINING_DATA\" \
+    #     --model_path \"$MODEL_PATH\" \
+    #     --model_name \"$MODEL_NAME\" \
+    #     --meds_reader \"$OMOP_MEDS_READER\" \
+    #     --num_proc \"$NUM_PROC\" \
+    #     --tokens_per_batch \"$TOKENS_PER_BATCH\" \
+    #     --device \"$DEVICE\" \
+    #     --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
+    #     --cohort_dir \"$TASK_DIR\" \
+    #     --ontology_path \"$ONTOLOGY_PATH\" \
+    #     --output_root \"$OUTPUT_DIR\" \
+    #     --loss_type "labeled_subjects" \
+    #     --task_type "regression" "
+    # [ -n "$OBSERVATION_WINDOW" ] && GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
 
-    echo "Executing: $GENERATE_CMD"
-    eval $GENERATE_CMD || { echo "Error: feature generation failed for $TASK_NAME"; echo "----------------------------------------"; continue; }
+    # echo "Executing: $GENERATE_CMD"
+    # eval $GENERATE_CMD || { echo "Error: feature generation failed for $TASK_NAME"; echo "----------------------------------------"; continue; }
 
     FINETUNE_CMD="python -u \"$FINETUNE_PY\" \
         --cohort_label \"$TASK_NAME\" \
@@ -243,11 +243,10 @@ echo "All selected tasks processed."
 #   --main_split_path    /user/zj2398/cache/mtpp_8k/main_split.csv \
 #   --cohort_dir   /shared/share_mala/zj2398/mimic/regression/cohort/regression_labels_random_drop/ \
 #   --output_dir   /shared/share_mala/zj2398/mimic/regression/mtpp/ \
-#   --tasks "bilirubin,creatinine" \
 #   --regression 
 
 
-
+#   --tasks "bilirubin,creatinine" \
 
 # bash run_regression2.sh \
 #   --pretraining_data   /user/zj2398/cache/motor_mimic_8k \
