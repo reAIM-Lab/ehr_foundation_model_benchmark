@@ -324,7 +324,7 @@ echo "All tasks processed."
 
 
 # phenotype
-# export CUDA_VISIBLE_DEVICES=1
+# export CUDA_VISIBLE_DEVICES=2
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/mtpp_8k \
 #   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
@@ -386,82 +386,33 @@ echo "All tasks processed."
 #   --loss_type  labeled_subjects \
 #   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
 
-
-
-# bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/mtpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/mtpp_8k/output_no_divide_mask_L_num/best_120735 \
-#   --tokens_per_batch   65536 \
-#   --device             cuda:0 \
-#   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/mtpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/mtpp_8k/main_split.csv \
-#   --model_name deephit_no_divide_mask_L_num  \
-#   --task celiac \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
+# kuvira
 
 # export CUDA_VISIBLE_DEVICES=3
 # bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
+#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
 #   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um/best_120735 \
+#   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --model_name         tpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --model_name deephit_no_divide_mask_mean_um  \
-#   --task masld \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
-
-
-# export CUDA_VISIBLE_DEVICES=5
-# bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um/best_120735 \
-#   --tokens_per_batch   65536 \
-#   --device             cuda:0 \
-#   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --model_name deephit_no_divide_mask_mean_um \
-#   --task stroke \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
-
-# export CUDA_VISIBLE_DEVICES=5
-# bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_L_num/best_120735 \
-#   --tokens_per_batch   65536 \
-#   --device             cuda:0 \
-#   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --model_name deephit_no_divide_mask_mean_all \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
-
-# pip install mamba-ssm[causal-conv1d] --no-build-isolation
-
-
-
+#   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
+#   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/results/tpp \
+#   /data2/processed_datasets/mimic/phenotype_task/
 
 # bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           100 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/ratio_0.75_output/best_110682 \
+#   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
+#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --num_proc           64 \
+#   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --model_name         tpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --task "in_hospital_mortality" \
-#   --model_name deephit_mtpp_8 \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
+#   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
+#   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/results/tpp \
+#   /data2/processed_datasets/mimic/patient_outcome_tasks/
