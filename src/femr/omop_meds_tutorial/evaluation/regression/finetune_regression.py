@@ -179,56 +179,58 @@ def main():
             X_train = train_data["features"]
             y_train = train_data["numerical_value"]
             X_test = test_data["features"]
-            # if isinstance(X_train, list):
-            #     X_train = np.asarray(X_train)
-            # if isinstance(X_test, list):
-            #     X_test = np.asarray(X_test)
-            # X_train = X_train.astype(np.float32, copy=False)
-            # X_test = X_test.astype(np.float32, copy=False)
 
-            # print(f"Train shape: {X_train.shape}, Test shape: {X_test.shape}")
+            if isinstance(X_train, list):
+                X_train = np.asarray(X_train)
+            if isinstance(X_test, list):
+                X_test = np.asarray(X_test)
+            X_train = X_train.astype(np.float32, copy=False)
+            X_test = X_test.astype(np.float32, copy=False)
+
+            print(f"Train shape: {X_train.shape}, Test shape: {X_test.shape}")
 
             # potential issue 1 scale back?
             # not ridge... just linear regression
 
-            # model = Pipeline([
-            #     ("scaler", StandardScaler(with_mean=True, with_std=True)),
-            #     ("ridge", LinearRegression()),
-            # ])
-            # model.fit(X_train, y_train)
-            # y_pred = model.predict(X_test)
-            # # model.fit(train_set['features'].to_list(), train_set["numerical_value"])
-            # # y_pred = model.predict(test_data['features'])
+            model = Pipeline([
+                ("scaler", StandardScaler(with_mean=True, with_std=True)),
+                ("ridge", LinearRegression()),
+            ])
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+            # model.fit(train_set['features'].to_list(), train_set["numerical_value"])
+            # y_pred = model.predict(test_data['features'])
 
-            # pl.DataFrame({
-            #     "subject_id": test_data["subject_ids"].tolist(),
-            #     "prediction_time": test_data["prediction_times"].tolist(),
-            #     "y_true": test_data["numerical_value"].tolist(),
-            #     "y_pred": y_pred.tolist(),
-            #     "residual": (test_data["numerical_value"] - y_pred).tolist(),
-            # }).write_parquet(label_output_dir / "test_predictions.parquet")
-            # rmse = float(np.sqrt(mean_squared_error(test_data["numerical_value"], y_pred)))
-            # mae = float(mean_absolute_error(test_data["numerical_value"], y_pred))
-            # r2 = float(r2_score(test_data["numerical_value"], y_pred))
-            # metrics = {
-            #     "rmse": rmse,
-            #     "mae": mae,
-            #     "r2": r2,
-            # }
+            pl.DataFrame({
+                "subject_id": test_data["subject_ids"].tolist(),
+                "prediction_time": test_data["prediction_times"].tolist(),
+                "y_true": test_data["numerical_value"].tolist(),
+                "y_pred": y_pred.tolist(),
+                "residual": (test_data["numerical_value"] - y_pred).tolist(),
+            }).write_parquet(label_output_dir / "test_predictions.parquet")
+            rmse = float(np.sqrt(mean_squared_error(test_data["numerical_value"], y_pred)))
+            mae = float(mean_absolute_error(test_data["numerical_value"], y_pred))
+            r2 = float(r2_score(test_data["numerical_value"], y_pred))
+            metrics = {
+                "rmse": rmse,
+                "mae": mae,
+                "r2": r2,
+            }
+            
+            with open(test_result_file, "w") as f:
+                json.dump(metrics, f, indent=4)
 
-            y_train_mean = np.mean(y_train)
-            y_pred_baseline = np.full_like(test_data["numerical_value"], y_train_mean)
+            # y_train_mean = np.mean(y_train)
+            # y_pred_baseline = np.full_like(test_data["numerical_value"], y_train_mean)
 
-            # Calculate baseline metrics
-            baseline_rmse = float(np.sqrt(mean_squared_error(test_data["numerical_value"], y_pred_baseline)))
-            baseline_mae = float(mean_absolute_error(test_data["numerical_value"], y_pred_baseline))
-            baseline_r2 = float(r2_score(test_data["numerical_value"], y_pred_baseline))
-            print(f"baselie baseline_rmse {baseline_rmse} baseline_mae {baseline_mae} ,baseline_r2 {baseline_r2} ")
+            # # Calculate baseline metrics
+            # baseline_rmse = float(np.sqrt(mean_squared_error(test_data["numerical_value"], y_pred_baseline)))
+            # baseline_mae = float(mean_absolute_error(test_data["numerical_value"], y_pred_baseline))
+            # baseline_r2 = float(r2_score(test_data["numerical_value"], y_pred_baseline))
+            # print(f"baselie baseline_rmse {baseline_rmse} baseline_mae {baseline_mae} ,baseline_r2 {baseline_r2} ")
 
             # print(f"{label_name} regression | RMSE={rmse:.4g} | MAE={mae:.4g} | R2={r2:.4g}")
             # # print(f"{label_name} ridge α={metrics['alpha']:.4g} | RMSE={rmse:.4g} | MAE={mae:.4g} | R2={r2:.4g}")
-            # with open(test_result_file, "w") as f:
-            #     json.dump(metrics, f, indent=4)
 
 
 if __name__ == "__main__":

@@ -60,6 +60,7 @@ def create_arg_parser():
     args.add_argument(
         "--cohort_dir",
         dest="cohort_dir",
+        required=True,
         default=None,
     )
     args.add_argument(
@@ -135,10 +136,6 @@ def main():
         output_root = pathlib.Path(args.output_root) if args.output_root else pretraining_data
         ontology_path = args.ontology_path
 
-        # features_path = pathlib.Path(os.path.dirname(args.model_path)) / "features"
-        # features_path.mkdir(exist_ok=True, parents=True)
-        # flops_path = pretraining_data / "flops"
-        # flops_path.mkdir(exist_ok=True, parents=True)
         features_path = output_root / "features"
         features_path.mkdir(exist_ok=True, parents=True)
         flops_path = output_root / "flops"
@@ -150,25 +147,24 @@ def main():
             ontology = pickle.load(f)
 
         labels = LABEL_NAMES
-        if args.cohort_dir is not None:
-            if os.path.isdir(args.cohort_dir):
-                label_name = os.path.basename(os.path.normpath(args.cohort_dir))
-                print(f"label_name of cohort_dir: {label_name}")
-                # concatenate all parquet files into a whole and store
-                cohort = read_recursive_parquet(args.cohort_dir)
+        if os.path.isdir(args.cohort_dir):
+            label_name = os.path.basename(os.path.normpath(args.cohort_dir))
+            print(f"label_name of cohort_dir: {label_name}")
+            # concatenate all parquet files into a whole and store
+            cohort = read_recursive_parquet(args.cohort_dir)
+        else:
+            label_name = os.path.basename(os.path.splitext(args.cohort_dir)[0])
+            file_extension = os.path.splitext(args.cohort_dir)[1]
+            if file_extension.lower() == ".parquet":
+                cohort = pd.read_parquet(args.cohort_dir)
+            elif file_extension.lower() == ".csv":
+                cohort = pd.read_csv(args.cohort_dir)
             else:
-                label_name = os.path.basename(os.path.splitext(args.cohort_dir)[0])
-                file_extension = os.path.splitext(args.cohort_dir)[1]
-                if file_extension.lower() == ".parquet":
-                    cohort = pd.read_parquet(args.cohort_dir)
-                elif file_extension.lower() == ".csv":
-                    cohort = pd.read_csv(args.cohort_dir)
-                else:
-                    raise RuntimeError(f"Unknown file extension: {file_extension}")
-                
-            # We need to cast prediction_time to datetime
-            if len(cohort) > 0 and isinstance(cohort.prediction_time.iloc[0], datetime.date):
-                cohort["prediction_time"] = pd.to_datetime(cohort["prediction_time"])
+                raise RuntimeError(f"Unknown file extension: {file_extension}")
+            
+        # We need to cast prediction_time to datetime
+        if len(cohort) > 0 and isinstance(cohort.prediction_time.iloc[0], datetime.date):
+            cohort["prediction_time"] = pd.to_datetime(cohort["prediction_time"])
 
             # os.makedirs(pretraining_data / "labels", exist_ok=True)
             cohort.to_parquet(labels_path / (label_name + '.parquet'), index=False)
@@ -191,7 +187,6 @@ def main():
             print("Loading labels from ", file_path)
             labels = pd.read_parquet(file_path)
             print(f"labels head: {labels.head()}")
-            # 
             print(f"task type is {args.task_type}")
             typed_labels = [
                 meds.Label(
