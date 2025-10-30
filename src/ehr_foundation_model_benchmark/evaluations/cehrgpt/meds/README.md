@@ -1,6 +1,6 @@
 # CEHR GPT MEDS
 
-After setting a conda environment for CEHRGPT (see README of root folder), instead of using OMOP data, we can use the MEDS format.
+After configuring a conda environment for CEHRGPT (see README of root folder), instead of using OMOP data, we can use the MEDS format.
 
 ## Training
 
