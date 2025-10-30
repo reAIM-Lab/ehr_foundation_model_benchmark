@@ -31,4 +31,4 @@ python -u -m cehrgpt.runners.hf_cehrgpt_pretrain_runner \
 
 ## Inference
 
-Specify the paths in `config.example.yaml` and then run `run.py.
+Specify the paths in `config.example.yaml` and then run `run.py`.
