@@ -5,13 +5,12 @@ import os
 import subprocess
 import sys
 import shutil
+import argparse
 
 # -----------------------------------------------------------------------------
 # CONFIGURATION: adjust these if your base paths differ
 # -----------------------------------------------------------------------------
-BASE_ROOT = (
-    "XXX"
-)
+
 EXTRACT_SCRIPT = os.path.expanduser(
     "postprocessing/extract_features.py"
 )
@@ -22,12 +21,74 @@ RESHARD_SCRIPT = "preprocessing/reshard.py"
 SELECT_FEATURES_SCRIPT = "xgb/select_features.py"
 MEDS_TAB_XGBOOST_CMD = "meds-tab-xgboost"
 
-POST_TRANSFORM_DIR = os.path.join(BASE_ROOT, "XXX")
-OUTPUT_FIX2_LARGE = os.path.join(BASE_ROOT, "XX4")
-OUTPUT_FIX2_LARGE_XGB = os.path.join(BASE_ROOT, "XX6")
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="Configuration for featurization"
+    )
+    parser.add_argument(
+        "--phenotypes-dir", 
+        type=str, 
+        default="XX2",
+        help="Path to phenotypes directory."
+    )
+    parser.add_argument(
+        "--data-dir", 
+        type=str, 
+        default="XX1",
+        help="Path to data directory."
+    )
+    parser.add_argument(
+        "--output-features-dir", 
+        type=str, 
+        default="XX1",
+        help="Path to features output directory."
+    )
+    parser.add_argument(
+        "--output_few_shots_dir", 
+        type=str, 
+        default="XX1",
+        help="Path to few shots output directory."
+    )
+    parser.add_argument(
+        "--output-reshard-dir", 
+        type=str, 
+        default="XX1",
+        help="Path to reshard output directory."
+    )
+    parser.add_argument(
+        "--output-model-dir", 
+        type=str, 
+        default="XX1",
+        help="Path to model output directory."
+    )
+    parser.add_argument(
+        "--output-results-dir", 
+        type=str, 
+        default="XX1",
+        help="Path to results output directory."
+    )
+    parser.add_argument(
+        "--windows", 
+        type=str, 
+        default="XX1",
+        help="Feature windows to compute."
+    )
 
-TASKS = ["long_los", "death", "readmission", "CLL", "AMI"] # edit this line
-SAMPLE_SIZES = [100, 1000, 10000]
+    args = parser.parse_args()
+    return args
+
+args = get_args()
+
+def get_tasks():
+    return list(sorted([
+        name for name in os.listdir(args.phenotypes_dir)
+        if os.path.isdir(os.path.join(args.phenotypes_dir, name))
+    ]))
+
+TASKS = get_tasks()
+
+# TASKS = ["long_los", "death", "readmission", "CLL", "AMI"] # edit this line
+SAMPLE_SIZES = [100, 1000, 10000, 100000] # full = number to make sure
 
 # -----------------------------------------------------------------------------
 # HELPER to run a command and abort on failure
@@ -43,31 +104,36 @@ def main():
     perfs = []
     for task in TASKS:
         # Step 1: linear probing via XGBoost
-        features_label_input = os.path.join(
-            OUTPUT_FIX2_LARGE, f"{task}_final", "tabularize_export"
+        features_input = os.path.join(
+            args.output_features_dir, f"{task}_final", "tabularize_export"
+        )
+        codes_input = os.path.join(
+            args.output_features_dir, f"{task}_final", "metadata"
         )
         label_input_raw = os.path.join(
-            OUTPUT_FIX2_LARGE.replace("output", "labels"), f"{task}"
+            args.output_reshard_dir, f"{task}"
         )
         features_label_input_raw = os.path.join(
-            OUTPUT_FIX2_LARGE, f"{task}_final", "tabularize"
+            args.output_features_dir, f"{task}_final", "tabularize"
         )
-        probing_output = os.path.join(OUTPUT_FIX2_LARGE, f"{task}_probing_xgb_updated")
+        # label_input_output = os.path.join(
+        #     args.output_labels_dir, f"{task}"
+        # )
+        probing_output = os.path.join(args.output_model_dir, f"{task}_probing_xgb_updated")
         os.makedirs(probing_output, exist_ok=True)
 
-        if not os.path.exists(features_label_input):
+        if not os.path.exists(features_input):
             run([
                 sys.executable, EXTRACT_SCRIPT,
-                task, OUTPUT_FIX2_LARGE, OUTPUT_FIX2_LARGE.replace("output", "labels")
-
+                task, features_label_input_raw, codes_input, label_input_raw, features_input
             ])
         else:
             print("Skipping extracting features")
 
         run([
             sys.executable, BENCHMARK_SCRIPT,
-            "--features_label_input_dir", features_label_input,
-            "--meds_dir", POST_TRANSFORM_DIR,
+            "--features_label_input_dir", features_input,
+            "--meds_dir", args.data_dir,
             "--output_dir", probing_output,
             "--model_name", "medstab",
             "--task_name", task
@@ -76,11 +142,13 @@ def main():
         # Steps 2–4: for each sample size
         for n in SAMPLE_SIZES:
             cohort_dir = os.path.join(probing_output, task)
+            cohort_dir_labels = os.path.join(cohort_dir, f'labels_{n}')
+            cohort_dir_outputs = os.path.join(cohort_dir, f'output_{n}')
 
             # Step 2: reshard into labels_{n}
             run([
                 sys.executable, RESHARD_SCRIPT,
-                "--meds_data", os.path.join(POST_TRANSFORM_DIR, "data"),
+                "--meds_data", os.path.join(args.data_dir, "data"),
                 "--cohort_input", os.path.join(cohort_dir, f"medstab_{n}.parquet"),
                 "--cohort_output", os.path.join(cohort_dir, f"labels_{n}"),
                 "--split", "all"
@@ -89,7 +157,8 @@ def main():
             # Step 3: select top‐n features
             run([
                 sys.executable, SELECT_FEATURES_SCRIPT,
-                str(n), task, cohort_dir, features_label_input_raw, label_input_raw
+                str(n), task, cohort_dir, features_label_input_raw, label_input_raw,
+                cohort_dir_labels, cohort_dir_outputs
             ])
 
             # Step 4: hyperparameter sweep with meds-tab-xgboost
@@ -97,10 +166,10 @@ def main():
                 MEDS_TAB_XGBOOST_CMD,
                 "--multirun",
                 "worker=range(0,16)",
-                f"input_dir={POST_TRANSFORM_DIR}",
-                f"output_dir={OUTPUT_FIX2_LARGE_XGB}",
+                f"input_dir={args.data_dir}",
+                f"output_dir={args.output_few_shots_dir}",
                 f"task_name={task}",
-                f"output_model_dir={os.path.join(OUTPUT_FIX2_LARGE_XGB, task)}",
+                f"output_model_dir={os.path.join(args.output_few_shots_dir, task)}",
                 "do_overwrite=False",
                 # "hydra.sweeper.n_trials=2",
                 "hydra.sweeper.n_jobs=16",
@@ -108,15 +177,15 @@ def main():
                 # "hydra.sweeper.n_jobs=16",
                 # "tabularization.min_code_inclusion_count=0",
                 "tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]",
-                "tabularization.window_sizes=[1d,7d,30d,60d,365d,full]",
-                f"input_label_cache_dir={os.path.join(cohort_dir, f'labels_{n}')}",
-                f"input_tabularized_cache_dir={os.path.join(cohort_dir, f'output_{n}')}",
-                f"tabularization.filtered_code_metadata_fp={os.path.join(OUTPUT_FIX2_LARGE, f'{task}_final/metadata/codes.parquet')}"
+                f"tabularization.window_sizes=[{args.windows}]",
+                f"input_label_cache_dir={cohort_dir_labels}",
+                f"input_tabularized_cache_dir={cohort_dir_outputs}",
+                f"tabularization.filtered_code_metadata_fp={os.path.join(args.output_features_dir, f'{task}_final/metadata/codes.parquet')}"
             ])
 
             # copy
-            output_to_copy = f'XX7/{task}'
-            xgb_results = f'{OUTPUT_FIX2_LARGE_XGB}/{task}'
+            output_to_copy = f'{args.output_results_dir}/{task}'
+            xgb_results = f'{args.output_few_shots_dir}/{task}'
             # find last 
             folders = sorted([f for f in os.listdir(xgb_results) if os.path.isdir(os.path.join(xgb_results, f))])
             last_folder = folders[-1] if folders else None

@@ -19,14 +19,15 @@ import scipy.sparse as sp
 from scipy.sparse import coo_array
 from pathlib import Path
 
-task = sys.argv[1]
-base_path = sys.argv[2]
-label_path = sys.argv[3]
+# task = sys.argv[1]
+# base_path = sys.argv[2]
+# label_path = sys.argv[3]
 
-features_path = f"{base_path}/{task}_final/tabularize"
-codes_path = f"{base_path}/{task}_final/metadata"
-labels_path = f"{label_path}/{task}"
-output_path = f"{base_path}/{task}_final/tabularize_export"
+task = sys.argv[1]
+features_path = sys.argv[2]
+codes_path = sys.argv[3]
+labels_path = sys.argv[4]
+output_path = sys.argv[5]
 
 def get_min_dtype(array: np.ndarray) -> np.dtype:
     """Get the minimal dtype that can represent the array.

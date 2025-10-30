@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import yaml
 
 # ===============================
@@ -17,7 +18,8 @@ def load_config(config_path="config.yaml"):
 # ===============================
 
 def main():
-    cfg = load_config(f"{os.path.dirname(__file__)}/config.yaml")
+    config_name = sys.argv[1]
+    cfg = load_config(f"{os.path.dirname(__file__)}/{config_name}.yaml")
 
     # Extract variables
     CEHR_GPT_MODEL_DIR = cfg["CEHR_GPT_MODEL_DIR"]

@@ -24,8 +24,11 @@ input_dir = sys.argv[4]
 original_label_dir = sys.argv[5]
 
 
-input_label_dir=f"{base_path}/labels_{k}"
-output_dir=f"{base_path}/output_{k}"
+# input_label_dir=f"{base_path}/labels_{k}"
+# output_dir=f"{base_path}/output_{k}"
+
+input_label_dir = sys.argv[6]
+output_dir = sys.argv[7]
 
 print(input_dir)
 print(original_label_dir)
