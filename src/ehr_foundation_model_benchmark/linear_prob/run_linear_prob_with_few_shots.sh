@@ -2,7 +2,7 @@
 
 # Display help information
 show_help() {
-  echo "Usage: src/ehr_foundation_model_benchmark/tools/linear_prob/run_linear_prob_with_few_shots.sh [options]"
+  echo "Usage: src/ehr_foundation_model_benchmark/linear_prob/run_linear_prob_with_few_shots.sh [options]"
   echo
   echo "This script runs the EHR foundation model benchmark across multiple cohorts."
   echo
@@ -100,7 +100,7 @@ for cohort_dir in "$BASE_DIR"*/; do
 
   # Run the fine-tuning command
   echo "Running benchmark for $task_name..."
-  python -u -m ehr_foundation_model_benchmark.tools.linear_prob.finetune_with_linear_prob \
+  python -u -m ehr_foundation_model_benchmark.linear_prob.finetune_with_linear_prob \
     --features_label_input_dir "$features_dir" \
     --model_name "$MODEL_NAME" \
     --task_name "$task_name" \
