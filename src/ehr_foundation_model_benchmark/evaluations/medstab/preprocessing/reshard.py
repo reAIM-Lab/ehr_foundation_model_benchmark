@@ -23,9 +23,9 @@ def main(args):
         for shard_path in (Path(args.meds_data) / split).glob("*parquet"):
             print("Reading shard", shard_path.stem)
             output_shard_path = output_folder / shard_path.name
-            # output_shard = cohort.filter(pl.col("subject_id").is_in(pl.read_parquet(shard_path)["subject_id"]))
-            shard_subjects = pl.read_parquet(shard_path).select("subject_id")
-            output_shard = cohort.join(shard_subjects, on="subject_id", how="inner")
+            output_shard = cohort.filter(pl.col("subject_id").is_in(pl.read_parquet(shard_path)["subject_id"]))
+            # shard_subjects = pl.read_parquet(shard_path).select("subject_id")
+            # output_shard = cohort.join(shard_subjects, on="subject_id", how="inner")
             output_shard = output_shard.with_columns(
                 pl.col("prediction_time").cast(pl.Datetime("us"))
             )

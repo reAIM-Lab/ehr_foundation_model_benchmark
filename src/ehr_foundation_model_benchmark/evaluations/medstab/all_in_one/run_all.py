@@ -26,6 +26,20 @@ if __name__ == "__main__":
 
         print("✅ YAML content loaded successfully:\n")
         pprint(data)
+
+        def get_tasks():
+            all_tasks = list(sorted([
+                name for name in os.listdir(data['phenotypes_dir'])
+                if os.path.isdir(os.path.join(data['phenotypes_dir'], name))
+            ]))
+            if data['include'] is not None:
+                all_tasks = [task for task in all_tasks if task in data['include']]
+            if data['exclude'] is not None:
+                all_tasks = [task for task in all_tasks if task not in data['exclude']]
+            return all_tasks
+
+        tasks = get_tasks()
+        tasks_str = ','.join(tasks)
     except FileNotFoundError:
         print(f"❌ Error: File '{yaml_path}' not found.")
     except yaml.YAMLError as e:
@@ -38,7 +52,8 @@ if __name__ == "__main__":
         "--data-dir", data['data_dir'],
         "--output-features-dir", data['output_features_dir'],
         "--output-reshard-dir", data['output_reshard_dir'],
-        "--windows", data['windows']
+        "--windows", data['windows'],
+        "--tasks", tasks_str
     ]
 
     print()
@@ -48,11 +63,12 @@ if __name__ == "__main__":
     # ---- Execute or dry-run ----
     if not data['dry_run']:
         subprocess.run(cmd, check=True)
+        pass
     else:
         print("💡 Dry run: command not executed.")
 
 
-    cmd = ["python", 'xgb/autosweep.py',
+    cmd = ["python", 'xgb/auto_sweep.py',
         "--phenotypes-dir", data["phenotypes_dir"],
         "--data-dir", data["data_dir"],
         "--output-features-dir", data.get("output_features_dir", ""),
@@ -60,7 +76,8 @@ if __name__ == "__main__":
         "--output-reshard-dir", data.get("output_reshard_dir", ""),
         "--output-model-dir", data.get("output_model_dir", ""),
         "--output-results-dir", data.get("output_results_dir", ""),
-        "--windows", data["windows"]
+        "--windows", data["windows"],
+        "--tasks", tasks_str
     ]
 
     # Remove any empty args (in case some dirs aren't defined)
@@ -72,16 +89,10 @@ if __name__ == "__main__":
     # ---- Execute or dry-run ----
     if not data['dry_run']:
         subprocess.run(cmd, check=True)
+        pass
     else:
         print("💡 Dry run: command not executed.")
 
-    def get_tasks():
-        return list(sorted([
-            name for name in os.listdir(data['phenotypes_dir'])
-            if os.path.isdir(os.path.join(data['phenotypes_dir'], name))
-        ]))
-
-    tasks = get_tasks()
 
     print("🚀 Running LR training command:\n", " ".join(cmd))
     print()

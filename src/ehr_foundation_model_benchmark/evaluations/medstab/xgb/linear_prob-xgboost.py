@@ -139,8 +139,11 @@ def main(args):
                             f"The number of positive cases is less than {MINIMUM_NUM_CASES_TRAIN} for {size}"
                         )
                         continue
+                train_size_required_positive = min(train_size_required_positive, len(remaining_train_set.filter(pl.col("boolean_value") == True))) 
                 train_size_required_negative = \
                     size - train_size_required_positive - len(existing_samples.filter(pl.col("boolean_value") == False)) - existing_pos
+                train_size_required_negative = min(train_size_required_negative, len(remaining_train_set.filter(pl.col("boolean_value") == False)))
+                
 
                 subset = pl.concat([
                     remaining_train_set.filter(pl.col("boolean_value") == True).sample(
@@ -167,8 +170,11 @@ def main(args):
                             f"The number of positive cases is less than {MINIMUM_NUM_CASES_TUNING} for {size}"
                         )
                         continue
+                tuning_size_required_positive = min(tuning_size_required_positive, len(remaining_tuning_set.filter(pl.col("boolean_value") == True)))
                 tuning_size_required_negative = \
                     TUNING_SIZES[i] - tuning_size_required_positive - len(existing_samples_tuning.filter(pl.col("boolean_value") == False)) - existing_pos_tuning
+                tuning_size_required_negative = min(tuning_size_required_negative, len(remaining_tuning_set.filter(pl.col("boolean_value") == False)))
+                
                 subset_tuning = pl.concat([
                     remaining_tuning_set.filter(pl.col("boolean_value") == True).sample(
                         n=tuning_size_required_positive, shuffle=True, seed=args.seed
@@ -200,9 +206,10 @@ def main(args):
                 ])
 
                 print(subset_all)
+                actual_size = len(subset_all)
 
-                subset_all.write_parquet(task_output_dir / f"{args.model_name}_{size+TUNING_SIZES[i]}.parquet")
-                print(f"Saved to ", task_output_dir / f"{args.model_name}_{size+TUNING_SIZES[i]}.parquet")
+                subset_all.write_parquet(task_output_dir / f"{args.model_name}_{actual_size}.parquet")
+                print(f"Saved to ", task_output_dir / f"{args.model_name}_{actual_size}.parquet")
 
                 
             except ValueError as e:

@@ -45,8 +45,15 @@ def get_args():
         default="XX1",
         help="Feature windows to compute."
     )
+    parser.add_argument(
+        "--tasks", 
+        type=str, 
+        default="XX1",
+        help="Tasks to do"
+    )
 
     args = parser.parse_args()
+    args.tasks = args.tasks.split(',')
     # print(args.windows)
     # exit()
     return args
@@ -54,7 +61,7 @@ def get_args():
 args = get_args()
 
 # Constants
-N_PARALLEL_WORKERS = 32
+N_PARALLEL_WORKERS = 64
 SPLITS = ["train", "tuning", "held_out"]
 LOG_FILE = "processing_errors.log"
 TIME_LOG_FILE = "task_training_times.log"  # File to save training times
@@ -71,9 +78,10 @@ def log_training_time(task, step, duration):
 
 def clean_cache(task):
     path = f'{args.output_features_dir}/{task}_final/tabularize'
+    # print(path)
 
     files = glob.glob(os.path.join(path, '**', '.*.npz_cache'), recursive=True)
-    print(path)
+    # print(path)
     k = 0
     for file in files:
         try:
@@ -82,7 +90,11 @@ def clean_cache(task):
             if os.path.exists(base_name + '.npz'):
                 continue
             k += 1
-            shutil.rmtree(file)  # Remove the directory containing the cache file
+            if os.path.isfile(file):
+                os.remove(file)
+            elif os.path.isdir(file):
+                shutil.rmtree(file)
+            # shutil.rmtree(file)  # Remove the directory containing the cache file
             print(f"Removed cache file: {file}")
         except Exception as e:
             print(f"Error removing {file}: {e}")
@@ -90,10 +102,12 @@ def clean_cache(task):
     print(f"Total cache files removed: {k}")
 
 # Get all phenotype task subfolders
-phenotype_tasks = list(sorted([
-    name for name in os.listdir(args.phenotypes_dir)
-    if os.path.isdir(os.path.join(args.phenotypes_dir, name))
-]))
+# phenotype_tasks = list(sorted([
+#     name for name in os.listdir(args.phenotypes_dir)
+#     if os.path.isdir(os.path.join(args.phenotypes_dir, name))
+# ]))
+
+phenotype_tasks = args.tasks
 
 for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tasks))):
     if "logs" in task:
@@ -130,8 +144,11 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
 
         start_time = time.time()  # Start timing
         try:
-            print("Running:", " ".join(cmd_reshard))
-            # subprocess.run(cmd_reshard, check=True)
+            if not os.path.exists(os.path.join(cohort_output, split)):
+                print("Running:", " ".join(cmd_reshard))
+                subprocess.run(cmd_reshard, check=True)
+            else:
+                print("Skipping resharding, already exists")
         except Exception as e:
             log_error(task, f"reshard.py ({split})", e)
         finally:
@@ -180,6 +197,8 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     while not complete:
         crash = False
         try:
+            clean_cache(task) # make sure nothing remaining
+            # exit(1)
             print("Running:", " ".join(tabularize_cmd))
             subprocess.run(tabularize_cmd, check=True)
             complete = True

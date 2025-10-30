@@ -1,7 +1,9 @@
 """
 Code to run xgboost models on 100, 1000, and 10000 samples
 """
+import glob
 import os
+import re
 import subprocess
 import sys
 import shutil
@@ -73,22 +75,23 @@ def get_args():
         default="XX1",
         help="Feature windows to compute."
     )
+    parser.add_argument(
+        "--tasks", 
+        type=str, 
+        default="XX1",
+        help="Tasks to do"
+    )
 
     args = parser.parse_args()
+    args.tasks = args.tasks.split(',')
     return args
 
 args = get_args()
 
-def get_tasks():
-    return list(sorted([
-        name for name in os.listdir(args.phenotypes_dir)
-        if os.path.isdir(os.path.join(args.phenotypes_dir, name))
-    ]))
-
-TASKS = get_tasks()
+TASKS = args.tasks
 
 # TASKS = ["long_los", "death", "readmission", "CLL", "AMI"] # edit this line
-SAMPLE_SIZES = [100, 1000, 10000, 100000] # full = number to make sure
+# SAMPLE_SIZES = [100, 1000, 10000] # full = number to make sure
 
 # -----------------------------------------------------------------------------
 # HELPER to run a command and abort on failure
@@ -140,8 +143,26 @@ def main():
         ])
 
         # Steps 2–4: for each sample size
-        for n in SAMPLE_SIZES:
-            cohort_dir = os.path.join(probing_output, task)
+        cohort_dir = os.path.join(probing_output, task)
+        pattern = os.path.join(cohort_dir, "medstab_*.parquet")
+        files = glob.glob(pattern)
+
+        # Extract numeric part and pair it with filenames
+        file_number_pairs = []
+        for f in files:
+            match = re.search(r"medstab_(\d+)\.parquet$", os.path.basename(f))
+            if match:
+                num = int(match.group(1))
+                file_number_pairs.append((num, f))
+
+        # Sort by number
+        file_number_pairs.sort(key=lambda x: x[0])
+
+        # Separate lists of sorted files and numbers
+        sorted_files = [f for _, f in file_number_pairs]
+        numbers = [n for n, _ in file_number_pairs]
+
+        for n, file in zip(sorted_files, numbers):
             cohort_dir_labels = os.path.join(cohort_dir, f'labels_{n}')
             cohort_dir_outputs = os.path.join(cohort_dir, f'output_{n}')
 
