@@ -54,7 +54,7 @@ def main():
             print(f"\n=== Processing cohort: {cohort_name} ===")
 
             output_dir = os.path.join(OUTPUT_BASE, cohort_name)
-            results_dir = os.path.join(RESULTS_BASE, cohort_name)
+            results_dir = RESULTS_BASE
             os.makedirs(output_dir, exist_ok=True)
             os.makedirs(results_dir, exist_ok=True)
 
