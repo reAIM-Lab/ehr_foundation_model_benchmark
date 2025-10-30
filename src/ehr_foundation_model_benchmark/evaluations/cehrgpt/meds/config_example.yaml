@@ -1,0 +1,16 @@
+# ===============================
+# CEHR-GPT Pipeline Configuration
+# ===============================
+
+CEHR_GPT_DATA_DIR: 
+cohorts_root: 
+observation_window: 730
+
+CEHR_GPT_MODEL_DIR: 
+CEHR_GPT_PREPARED_DATA_DIR: 
+tokenized_full_dataset_path: 
+
+output_base: 
+results_base: 
+
+linear_prob_script: src/ehr_foundation_model_benchmark/linear_prob/run_linear_prob_with_few_shots.sh
