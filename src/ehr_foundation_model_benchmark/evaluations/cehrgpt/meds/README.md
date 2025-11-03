@@ -21,7 +21,7 @@ python -u -m cehrgpt.runners.hf_cehrgpt_pretrain_runner \
   --dataset_prepared_path "$CEHR_GPT_PREPARED_DATA_DIR" \
   --do_train true --seed 42 \
   --dataloader_num_workers 16 --dataloader_prefetch_factor 8 \
-  --hidden_size 768 --num_hidden_layers 14 --max_position_embeddings 2048 \
+  --hidden_size 768 --num_hidden_layers 14 --n_head 12 --max_position_embeddings 2048 \
   --evaluation_strategy epoch --save_strategy epoch \
   --sample_packing --max_tokens_per_batch 16384 \
   --warmup_steps 500 --weight_decay 0.01 \

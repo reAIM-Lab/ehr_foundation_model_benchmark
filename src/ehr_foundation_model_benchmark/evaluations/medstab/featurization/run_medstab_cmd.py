@@ -61,7 +61,7 @@ def get_args():
 args = get_args()
 
 # Constants
-N_PARALLEL_WORKERS = 64
+N_PARALLEL_WORKERS = 8
 SPLITS = ["train", "tuning", "held_out"]
 LOG_FILE = "processing_errors.log"
 TIME_LOG_FILE = "task_training_times.log"  # File to save training times
@@ -118,6 +118,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     pbar.set_description(task)
 
     # Step 1: Run reshard.py for each split
+    cohort_output = os.path.join(args.output_reshard_dir, task)
     for split in SPLITS:
         print("Resharding", split)
 
@@ -128,7 +129,6 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
             local_split = split
 
         cohort_input = os.path.join(task_path, f"{local_split}.parquet")
-        cohort_output = os.path.join(args.output_reshard_dir, task)
         if not os.path.exists(cohort_input):
             print(f"Warning: {cohort_input} not found. Skipping.")
             continue
@@ -185,7 +185,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         f"input_dir={os.path.join(args.data_dir, 'data')}",
         f"output_dir={os.path.join(args.output_features_dir, task + '_final')}",
         "do_overwrite=False",
-        f"input_label_dir={os.path.join(args.output_reshard_dir, task)}",
+        f"input_label_dir={cohort_output}",
         "tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]",
         f"tabularization.window_sizes=[{args.windows}]"
         # "tabularization.aggs=[code/count]",
@@ -214,6 +214,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
             repet += 1
             if repet > 5:
                 print("Too many crashes.", repet)
+                exit(1)
 
   
 

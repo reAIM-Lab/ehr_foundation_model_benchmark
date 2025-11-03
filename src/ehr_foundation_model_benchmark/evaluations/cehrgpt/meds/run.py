@@ -31,6 +31,8 @@ def main():
     RESULTS_BASE = cfg["results_base"]
     LINEAR_PROB_SCRIPT = os.path.expanduser(cfg["linear_prob_script"])
     observation_window = cfg['observation_window']
+    observation_window_ignore = cfg['observation_window_ignore']
+    exclude_tables = cfg['exclude_tables']
 
     # Print config summary
     print("=== Loaded Configuration ===")
@@ -54,6 +56,9 @@ def main():
         try:
             cohort_name = os.path.basename(cohort_folder)
             print(f"\n=== Processing cohort: {cohort_name} ===")
+
+            if cohort_name != "Osteoporosis":
+                continue
 
             output_dir = os.path.join(OUTPUT_BASE, cohort_name)
             results_dir = RESULTS_BASE
@@ -85,11 +90,16 @@ def main():
                 "--max_tokens_per_batch", "16384",
                 "--sample_packing"
             ]
+            if exclude_tables:
+                cmd_compute += ["--meds_exclude_tables", "measurement observation device_exposure"]
             if observation_window is not None:
-                cmd_compute = cmd_compute + ["--observation_window", str(observation_window)]
+                if observation_window_ignore is None or cohort_name not in observation_window_ignore:
+                    cmd_compute = cmd_compute + ["--observation_window", str(observation_window)]
 
+            env = os.environ.copy()
+            env["CUDA_VISIBLE_DEVICES"] = "0"
             print("🚀 Running CEHR-GPT feature computation...")
-            subprocess.run(cmd_compute, check=True)
+            subprocess.run(cmd_compute, check=True, env=env)
 
             # -------------------------
             # Step 2: Run linear probing

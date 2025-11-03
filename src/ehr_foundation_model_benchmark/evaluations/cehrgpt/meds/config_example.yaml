@@ -5,6 +5,8 @@
 CEHR_GPT_DATA_DIR: 
 cohorts_root: 
 observation_window: 730
+observation_window_ignore:
+exclude_tables: false
 
 CEHR_GPT_MODEL_DIR: 
 CEHR_GPT_PREPARED_DATA_DIR: 
