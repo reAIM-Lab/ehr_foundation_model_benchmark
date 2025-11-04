@@ -418,23 +418,22 @@ echo "All tasks processed."
 #   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
 #   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um/best_120735 \
+#   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --model_name         tpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
-#   --model_name deephit_no_divide_mask_mean_um  \
-#   --task masld \
-#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
+#   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
+#   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
+#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/results/tpp \
+#   /data2/processed_datasets/mimic/phenotype_task/
 
-
-# export CUDA_VISIBLE_DEVICES=5
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
 #   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_mean_um/best_120735 \
+#   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
+#   --model_name         tpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
