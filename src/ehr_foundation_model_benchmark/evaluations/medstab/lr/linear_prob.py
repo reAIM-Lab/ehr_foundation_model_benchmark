@@ -17,7 +17,6 @@ import scipy.sparse as sp
 
 MINIMUM_NUM_CASES = 10
 TRAIN_SIZES = [100, 1000, 10000, 100000]
-# TRAIN_SIZES = [200000]
 
 # TODO import from medstab
 def load_tab(path):

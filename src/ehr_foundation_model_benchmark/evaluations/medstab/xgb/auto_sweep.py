@@ -162,7 +162,7 @@ def main():
         sorted_files = [f for _, f in file_number_pairs]
         numbers = [n for n, _ in file_number_pairs]
 
-        for n, file in zip(sorted_files, numbers):
+        for file, n in zip(sorted_files, numbers):
             cohort_dir_labels = os.path.join(cohort_dir, f'labels_{n}')
             cohort_dir_outputs = os.path.join(cohort_dir, f'output_{n}')
 
@@ -170,8 +170,8 @@ def main():
             run([
                 sys.executable, RESHARD_SCRIPT,
                 "--meds_data", os.path.join(args.data_dir, "data"),
-                "--cohort_input", os.path.join(cohort_dir, f"medstab_{n}.parquet"),
-                "--cohort_output", os.path.join(cohort_dir, f"labels_{n}"),
+                "--cohort_input", file, #os.path.join(cohort_dir, f"medstab_{n}"),
+                "--cohort_output", cohort_dir_labels,
                 "--split", "all"
             ])
 

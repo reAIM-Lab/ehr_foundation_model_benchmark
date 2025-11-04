@@ -57,9 +57,6 @@ def main():
             cohort_name = os.path.basename(cohort_folder)
             print(f"\n=== Processing cohort: {cohort_name} ===")
 
-            if cohort_name != "Osteoporosis":
-                continue
-
             output_dir = os.path.join(OUTPUT_BASE, cohort_name)
             results_dir = RESULTS_BASE
             os.makedirs(output_dir, exist_ok=True)
