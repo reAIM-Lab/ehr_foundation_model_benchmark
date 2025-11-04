@@ -212,7 +212,7 @@ done
 
 echo "All selected tasks processed."
 
-#export CUDA_VISIBLE_DEVICES=5
+#export CUDA_VISIBLE_DEVICES=0
 
 # bash run_regression.sh \
 #   --pretraining_data   /user/zj2398/cache/mtpp_8k \
@@ -287,7 +287,7 @@ echo "All selected tasks processed."
 
 ##kuvira
 
-# bash run_regression2.sh \
+# bash run_regression.sh \
 #   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
 #   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
 #   --num_proc           64 \
@@ -298,12 +298,12 @@ echo "All selected tasks processed."
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
 #   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
-#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_random_drop/ \
+#   --cohort_dir   /data2/processed_datasets/mimic/regression/icu_stay_4h/ \
 #   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/results/regression \
 #   --tasks "pao2,platelets" \
 #   --regression 
 
-# bash run_regression2.sh \
+# bash run_regression.sh \
 #   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
 #   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
 #   --num_proc           64 \
@@ -313,7 +313,7 @@ echo "All selected tasks processed."
 #   --min_subjects_per_batch 8 \
 #   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
 #   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
-#   --cohort_dir   /data2/processed_datasets/mimic/regression/regression_labels_random_drop/ \
+#   --cohort_dir   /data2/processed_datasets/mimic/regression/icu_stay_4h/ \
 #   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/results/regression/ \
 #   --tasks "bilirubin,creatinine" \
 #   --regression 
