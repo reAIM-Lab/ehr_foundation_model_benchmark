@@ -224,37 +224,37 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     # Run the first command: generate MOTOR features
     echo "Running $MODEL_NAME feature generation for $TASK_NAME..."
 
-    # # Build the command with conditional observation_window parameter
-    GENERATE_CMD="python -u -m femr.omop_meds_tutorial.evaluation.generate_mtpp_features \
-      --pretraining_data \"$PRETRAINING_DATA\" \
-      --model_path \"$MODEL_PATH\" \
-      --model_name \"$MODEL_NAME\" \
-      --meds_reader \"$OMOP_MEDS_READER\" \
-      --num_proc \"$NUM_PROC\" \
-      --tokens_per_batch \"$TOKENS_PER_BATCH\" \
-      --device \"$DEVICE\" \
-      --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
-      --cohort_dir \"$TASK_DIR\" \
-      --ontology_path \"$ONTOLOGY_PATH\" \
-      --output_root \"$OUTPUT_DIR\" \
-      --task_type "binary" \
-      --loss_type "labeled_subjects" "
+    # # # Build the command with conditional observation_window parameter
+    # GENERATE_CMD="python -u -m femr.omop_meds_tutorial.evaluation.generate_mtpp_features \
+    #   --pretraining_data \"$PRETRAINING_DATA\" \
+    #   --model_path \"$MODEL_PATH\" \
+    #   --model_name \"$MODEL_NAME\" \
+    #   --meds_reader \"$OMOP_MEDS_READER\" \
+    #   --num_proc \"$NUM_PROC\" \
+    #   --tokens_per_batch \"$TOKENS_PER_BATCH\" \
+    #   --device \"$DEVICE\" \
+    #   --min_subjects_per_batch \"$MIN_SUBJECTS_PER_BATCH\" \
+    #   --cohort_dir \"$TASK_DIR\" \
+    #   --ontology_path \"$ONTOLOGY_PATH\" \
+    #   --output_root \"$OUTPUT_DIR\" \
+    #   --task_type "binary" \
+    #   --loss_type "labeled_subjects" "
 
-    # Add linear_interpolation parameter if specified
-    if [ "$USE_LINEAR_INTERPOLATION" = true ]; then
-        GENERATE_CMD="$GENERATE_CMD --linear_interpolation"
-    fi
+    # # Add linear_interpolation parameter if specified
+    # if [ "$USE_LINEAR_INTERPOLATION" = true ]; then
+    #     GENERATE_CMD="$GENERATE_CMD --linear_interpolation"
+    # fi
 
-    # Add observation_window parameter if specified
-    if [ -n "$OBSERVATION_WINDOW" ]; then
-        GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
-    fi
+    # # Add observation_window parameter if specified
+    # if [ -n "$OBSERVATION_WINDOW" ]; then
+    #     GENERATE_CMD="$GENERATE_CMD --observation_window \"$OBSERVATION_WINDOW\""
+    # fi
 
-    # Print the command
-    echo "Executing command: $GENERATE_CMD"
+    # # Print the command
+    # echo "Executing command: $GENERATE_CMD"
 
-    # # Execute the command
-    eval $GENERATE_CMD
+    # # # Execute the command
+    # eval $GENERATE_CMD
 
     # Check if the first command succeeded
     if [ $? -ne 0 ]; then
@@ -265,25 +265,25 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     # Run the second command: fine-tune MOTOR
     echo "Running $MODEL_NAME fine-tuning for $TASK_NAME..."
 
-    # Build the command with conditional observation_window parameter
-    FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.evaluation.finetune_motor \
-      --cohort_label \"$TASK_NAME\" \
-      --model_name \"$MODEL_NAME\" \
-      --main_split_path \"$MAIN_SPLIT_PATH\" \
-      --meds_reader \"$OMOP_MEDS_READER\" \
-      --model_path \"$MODEL_PATH\" \
-      --output_root \"$OUTPUT_DIR\""
+    # # Build the command with conditional observation_window parameter
+    # FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.evaluation.finetune_motor \
+    #   --cohort_label \"$TASK_NAME\" \
+    #   --model_name \"$MODEL_NAME\" \
+    #   --main_split_path \"$MAIN_SPLIT_PATH\" \
+    #   --meds_reader \"$OMOP_MEDS_READER\" \
+    #   --model_path \"$MODEL_PATH\" \
+    #   --output_root \"$OUTPUT_DIR\""
 
-    # Add observation_window parameter if specified
-    if [ -n "$OBSERVATION_WINDOW" ]; then
-        FINETUNE_CMD="$FINETUNE_CMD --observation_window \"$OBSERVATION_WINDOW\""
-    fi
+    # # Add observation_window parameter if specified
+    # if [ -n "$OBSERVATION_WINDOW" ]; then
+    #     FINETUNE_CMD="$FINETUNE_CMD --observation_window \"$OBSERVATION_WINDOW\""
+    # fi
 
-    # Print the command
-    echo "Executing command: $FINETUNE_CMD"
+    # # Print the command
+    # echo "Executing command: $FINETUNE_CMD"
 
-    # Execute the command
-    eval $FINETUNE_CMD
+    # # Execute the command
+    # eval $FINETUNE_CMD
 
     # Check if the second command succeeded
     if [ $? -ne 0 ]; then
@@ -292,14 +292,25 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     fi
 
     # Determine the MOTOR prediction folder path based on observation window
-    if [ -n "$OBSERVATION_WINDOW" ]; then
-        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
-        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
-    else
-        MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/test_predictions"
-        MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/"
-    fi
+    # if [ -n "$OBSERVATION_WINDOW" ]; then
+    #     MOTOR_PREDICTION_FOLDER="$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
+    #     MOTOR_OUTPUT_DIR="$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
+    # else
+    #     MOTOR_PREDICTION_FOLDER="$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/test_predictions"
+    #     MOTOR_OUTPUT_DIR="$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/"
+    # fi
 
+            # if args.observation_window:
+            #     label_output_dir = output_dir / label_name / f"{args.model_name}_{args.observation_window}"
+            # else:
+            #     label_output_dir = output_dir / label_name / f"{args.model_name}"
+
+    if $TASK_NAME in ["ami","masld","stroke"]:
+        Base_dir = "/shared/share_mala/zj2398/mimic/patient_outcome_task/results"
+    else:
+        Base_dir = 
+    
+    MOTOR_PREDICTION_FOLDER = $COHORT_BASE_DIR/$TASK_NAME
     # Build the evaluation command
     EVAL_CMD="meds-evaluation-cli predictions_path=\"$MOTOR_PREDICTION_FOLDER\" \
       output_dir=\"$MOTOR_OUTPUT_DIR\""
@@ -324,26 +335,11 @@ echo "All tasks processed."
 
 
 # phenotype
-# export CUDA_VISIBLE_DEVICES=2
-# bash run_mtpp_cbs.sh \
-#   --pretraining_data   /user/zj2398/cache/mtpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           64 \
-#   --model_path         /user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150 \
-#   --model_name         mtpp \
-#   --tokens_per_batch   65536 \
-#   --device             cuda:0 \
-#   --min_subjects_per_batch 8 \
-#   --ontology_path       /user/zj2398/cache/mtpp_8k/ontology.pkl \
-#   --main_split_path     /user/zj2398/cache/mtpp_8k/main_split.csv \
-#   --output_dir   /shared/share_mala/zj2398/mimic/phenotype_task/mtpp/ \
-#   /shared/share_mala/zj2398/mimic/phenotype_task/cohort/
-
 # export CUDA_VISIBLE_DEVICES=5
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/mtpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
-#   --num_proc           64 \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
+#   --num_proc           100 \
 #   --model_path         /user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150 \
 #   --model_name         mtpp \
 #   --tokens_per_batch   65536 \
@@ -351,14 +347,29 @@ echo "All tasks processed."
 #   --min_subjects_per_batch 8 \
 #   --ontology_path       /user/zj2398/cache/mtpp_8k/ontology.pkl \
 #   --main_split_path     /user/zj2398/cache/mtpp_8k/main_split.csv \
-#   --model_name mtpp_mean_all  \
 #   --loss_type  labeled_subjects \
-#   --output_dir   /shared/share_mala/zj2398/mimic/patient_outcome_tasks/mtpp/ \
-#   /shared/share_mala/zj2398/mimic/patient_outcome_tasks/cohort/
+#   --output_dir   /shared/share_mala/zj2398/mimic/phenotype_task/ \
+#   /shared/share_mala/zj2398/mimic/phenotype_task/cohort/
+
+# export CUDA_VISIBLE_DEVICES=6
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/mtpp_8k \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
+#   --num_proc           100 \
+#   --model_path         /user/zj2398/cache/mtpp_8k/mtpp_mean_all/best_134150 \
+#   --model_name         mtpp \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/mtpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/mtpp_8k/main_split.csv \
+#   --loss_type  labeled_subjects \
+#   --output_dir   /shared/share_mala/zj2398/mimic/patient_outcome_task/mtpp/ \
+#   /shared/share_mala/zj2398/mimic/patient_outcome_task/cohort/
 
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/mtpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
 #   --model_path         /user/zj2398/cache/mtpp_8k/output_mean_all_shared/best_120735 \
 #   --tokens_per_batch   65536 \
@@ -374,7 +385,7 @@ echo "All tasks processed."
 
 # bash run_mtpp_cbs.sh \
 #   --pretraining_data   /user/zj2398/cache/mtpp_8k \
-#   --meds_reader        /user/zj2398/cache/mimic/meds_v0.6_reader \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
 #   --model_path         /user/zj2398/cache/mtpp_8k/output_mean_all_hidden_1536/best_107320  \
 #   --tokens_per_batch   65536 \
@@ -386,12 +397,26 @@ echo "All tasks processed."
 #   --loss_type  labeled_subjects \
 #   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/
 
-# kuvira
+
+
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/mtpp_8k \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/mtpp_8k/output_no_divide_mask_L_num/best_120735 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/mtpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/mtpp_8k/main_split.csv \
+#   --model_name deephit_no_divide_mask_L_num  \
+#   --task celiac \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
 
 # export CUDA_VISIBLE_DEVICES=3
 # bash run_mtpp_cbs.sh \
-#   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
-#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
 #   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
 #   --model_name         tpp \
@@ -404,15 +429,49 @@ echo "All tasks processed."
 #   /data2/processed_datasets/mimic/phenotype_task/
 
 # bash run_mtpp_cbs.sh \
-#   --pretraining_data   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp \
-#   --meds_reader        /data/raw_data/mimic/files/mimiciv/meds_v0.6/3.1/MEDS_cohort-reader \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
 #   --num_proc           64 \
 #   --model_path         /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/output_transformer/best_221573\
 #   --model_name         tpp \
 #   --tokens_per_batch   65536 \
 #   --device             cuda:0 \
 #   --min_subjects_per_batch 8 \
-#   --ontology_path      /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/ontology.pkl \
-#   --main_split_path    /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/main_split.csv \
-#   --output_dir   /data2/processed_datasets/zj2398/femr/mimic/deephit_tpp/results/tpp \
-#   /data2/processed_datasets/mimic/patient_outcome_tasks/
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --model_name deephit_no_divide_mask_mean_um \
+#   --task stroke \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
+
+# export CUDA_VISIBLE_DEVICES=5
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
+#   --num_proc           64 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/output_no_divide_mask_L_num/best_120735 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --model_name deephit_no_divide_mask_mean_all \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/phenotype_task/
+
+# pip install mamba-ssm[causal-conv1d] --no-build-isolation
+
+
+
+
+# bash run_mtpp_cbs.sh \
+#   --pretraining_data   /user/zj2398/cache/deephit_tpp_8k \
+#   --meds_reader        /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
+#   --num_proc           100 \
+#   --model_path         /user/zj2398/cache/deephit_tpp_8k/ratio_0.75_output/best_110682 \
+#   --tokens_per_batch   65536 \
+#   --device             cuda:0 \
+#   --min_subjects_per_batch 8 \
+#   --ontology_path       /user/zj2398/cache/deephit_tpp_8k/ontology.pkl \
+#   --main_split_path     /user/zj2398/cache/deephit_tpp_8k/main_split.csv \
+#   --task "in_hospital_mortality" \
+#   --model_name deephit_mtpp_8 \
+#   /user/zj2398/cache/mimic/mimic-3.1-meds/patient_outcome_tasks/task/

@@ -226,13 +226,13 @@ if __name__ == "__main__":
 '''
 mimic
 gsb
-python prepare_motor.prepare_motor.py \
-  --pretraining_data /user/zj2398/cache/deephit_tpp_8k \
+python prepare_motor.py \
+  --pretraining_data /shared/share_mala/zj2398/fomoh/motor \
   --athena_path " " \
   --num_bins 8 \
-  --loss_type mtpp \
+  --loss_type motor \
   --num_threads 100 \
-  --meds_reader /user/zj2398/cache/mimic/meds_v0.6_reader 
+  --meds_reader /shared/share_mala/zj2398/mimic/meds_v0.6_reader
 
 
 kuvira

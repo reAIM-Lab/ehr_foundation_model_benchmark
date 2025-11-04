@@ -116,19 +116,21 @@ class FEMREncoderLayer(nn.Module):
 
         qkv = qkv.reshape(x.shape[0], 3, self.config.n_heads, head_size)
 
-        # it doesn't have absolute time as input
-        q = apply_rotary_pos_emb(qkv[:, 0, :, :], pos_embed)
-        k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
-        v = qkv[:, 2, :, :]
+        with torch.autocast("cuda", dtype=torch.bfloat16):
+            # it doesn't have absolute time as input
+            q = apply_rotary_pos_emb(qkv[:, 0, :, :], pos_embed)
+            k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
+            v = qkv[:, 2, :, :]
 
-        attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
-            q.unsqueeze(0),
-            k.unsqueeze(0),
-            v.unsqueeze(0),
-            attn_bias=attn_bias,
-        )
+            attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
+                q.unsqueeze(0),
+                k.unsqueeze(0),
+                v.unsqueeze(0),
+                attn_bias=attn_bias,
+            )
 
-        attn = attn.reshape(x.shape)
+        attn = attn.to(torch.float32).reshape(x.shape)
+        # attn = attn.reshape(x.shape)
 
         if self.config.hidden_act == "gelu":
             ff = F.gelu(ff)

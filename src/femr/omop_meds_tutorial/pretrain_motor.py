@@ -11,7 +11,7 @@ import femr.models.tokenizer
 import femr.models.processor
 from hydra import initialize_config_dir, compose
 from omegaconf import OmegaConf
-from femr.omop_meds_tutorial.motor_evaluation.generate_labels import create_omop_meds_tutorial_arg_parser
+from femr.omop_meds_tutorial.evaluation.generate_labels import create_omop_meds_tutorial_arg_parser
 import torch.nn as nn
 from transformers import TrainerCallback
 import wandb
@@ -234,16 +234,16 @@ def main():
         learning_rate=learning_rate,
         output_dir=output_dir,
         remove_unused_columns=False,
-        bf16=True,
+        # bf16=True,
 
         weight_decay=0.1,
         adam_beta2=0.95,
-        # report_to="none",
-        report_to=["wandb"],
-        run_name="mttp_mean_all_shared_task_layer",
+        report_to="none",
+        # report_to=["wandb"],
+        run_name="motor_bf16_attention_only",
         # run_name="motor_pretrain_mimic",
         num_train_epochs=args.n_epochs,
-        ddp_find_unused_parameters=True,
+        ddp_find_unused_parameters=False,
 
         warmup_steps=500,
 
@@ -306,17 +306,16 @@ python pretrain_motor.py \
   --learning_rate 5e-6 \
   --n_layers 12
 
-CUDA_VISIBLE_DEVICES=3,4,6 accelerate launch \
-  --num_processes 3 \
-  --mixed_precision bf16 \
-  --gpu_ids "3,4,6" \
+CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch \
+  --num_processes 4 \
+  --gpu_ids "4,5,6,7" \
   pretrain_motor.py \
-  --pretraining_data /user/zj2398/cache/mtpp_8k \
-  --meds_reader /user/zj2398/cache/hf_ehr/mimic/meds_v0.6_reader \
+  --pretraining_data /shared/share_mala/zj2398/fomoh/motor \
+  --meds_reader /shared/share_mala/zj2398/mimic/meds_v0.6_reader \
   --per_device_train_batch_size 1 \
-  --output_dir /user/zj2398/cache/mtpp_8k/output_mean_all_shared \
+  --output_dir /shared/share_mala/zj2398/fomoh/motor/test \
   --model transformer \
-  --loss_type mtpp_shared 
+  --loss_type motor
 
 python pretrain_motor.py \
   --pretraining_data /user/zj2398/cache/motor_mimic_8k \

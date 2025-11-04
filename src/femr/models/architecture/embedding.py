@@ -34,89 +34,6 @@ from femr.models.tasks.motor import LabeledSubjectTask
 
 # logger = logging.getLogger(__name__)
 
-# class LoadReport:
-#     renamed_keys: List[Tuple[str, str]]
-#     dropped_keys: List[str]
-
-#     def log(self) -> None:
-#         if self.renamed_keys:
-#             logger.info(
-#                 "Renamed %d keys while adapting checkpoint (showing first 5): %s",
-#                 len(self.renamed_keys),
-#                 ", ".join(f"{src}->{dst}" for src, dst in self.renamed_keys[:5]),
-#             )
-#         if self.dropped_keys:
-#             logger.info(
-#                 "Dropped %d task head keys from checkpoint (showing first 5): %s",
-#                 len(self.dropped_keys),
-#                 ", ".join(self.dropped_keys[:5]),
-#             )
-
-# def _load_raw_state_dict(checkpoint_dir: str) -> Dict[str, torch.Tensor]:
-#     for filename in (SAFE_WEIGHTS_NAME, WEIGHTS_NAME):
-#         candidate = os.path.join(checkpoint_dir, filename)
-#         if os.path.exists(candidate):
-#             return load_state_dict(candidate)
-#     raise FileNotFoundError(
-#         f"Could not find {SAFE_WEIGHTS_NAME} or {WEIGHTS_NAME} under {checkpoint_dir}"
-#     )
-
-
-# def _rewrite_legacy_keys(state_dict: Dict[str, torch.Tensor]) -> Tuple[Dict[str, torch.Tensor], LoadReport]:
-#     renamed: List[Tuple[str, str]] = []
-#     dropped: List[str] = []
-#     adapted: Dict[str, torch.Tensor] = {}
-
-#     for key, value in state_dict.items():
-#         if key.startswith("transformer."):
-#             new_key = "backbone." + key[len("transformer."):]
-#             adapted[new_key] = value
-#             renamed.append((key, new_key))
-#         elif key.startswith("task_model."):
-#             dropped.append(key)
-#             continue
-#         else:
-#             adapted[key] = value
-
-#     return adapted, LoadReport(renamed_keys=renamed, dropped_keys=dropped)
-
-# def load_femr_model_with_compat(
-#     checkpoint_dir: str,
-#     *,
-#     model_cls: Type[FEMRModel],
-#     **model_kwargs: Any,
-# ) -> Tuple[FEMRModel, LoadReport]:
-#     """
-#     Load a FEMRModel checkpoint while providing backwards compatibility with older key layouts.
-
-#     Args:
-#         checkpoint_dir: Directory containing a HuggingFace-formatted checkpoint.
-#         model_cls: Model class to instantiate (defaults to FEMRModel).
-#         model_kwargs: Extra kwargs forwarded to model_cls.from_pretrained.
-
-#     Returns:
-#         A tuple of (model, LoadReport).
-#     """
-#     # Let HuggingFace handle config/tokenizer metadata, but replace the state dict on the fly.
-#     raw_state_dict = _load_raw_state_dict(checkpoint_dir)
-#     state_dict = raw_state_dict
-
-#     if any(key.startswith("transformer.") for key in raw_state_dict):
-#         state_dict, report = _rewrite_legacy_keys(raw_state_dict)
-#     else:
-#         report = LoadReport(renamed_keys=[], dropped_keys=[])
-
-#     model = model_cls.from_pretrained(
-#         checkpoint_dir,
-#         state_dict=state_dict,
-#         ignore_mismatched_sizes=True,
-#         **model_kwargs,
-#     )
-#     report.log()
-#     return model, report
-
-
-
 
 @dataclass(frozen=False)
 class TotalFlops:
@@ -173,67 +90,6 @@ def apply_rotary_pos_emb(x, sincos):
     return (x * cos) + (rotate_every_two_v2(x) * sin)
 
 
-# class FEMREncoderLastLayer(nn.Module):
-#     def __init__(self, config: femr.models.config.FEMRTransformerConfig):
-#         super().__init__()
-#         self.config = config
-#         self.norm = femr.models.rmsnorm.RMSNorm(self.config.hidden_size)
-#         if self.config.hidden_act == "swiglu":
-#             hidden_mult = 2
-#         else:
-#             hidden_mult = 1
-
-#         self.input_proj = nn.Linear(
-#             self.config.hidden_size,
-#             self.config.hidden_size * 3 + hidden_mult * self.config.intermediate_size,
-#             bias=self.config.use_bias,
-#         )
-
-#         self.output_proj = nn.Linear(
-#             self.config.hidden_size + self.config.intermediate_size, self.config.hidden_size*4, bias=self.config.use_bias
-#         )
-
-#     def forward(self, x, time_data, pos_embed, attn_bias, s):
-#         x = self.norm(x)
-
-#         if self.config.use_normed_ages:
-#             all_time = torch.concatenate((time_data, time_data ** 2), axis=-1)
-#             x[:, -all_time.shape[1]:] = all_time.to(dtype=x.dtype)
-
-#         transformed = self.input_proj(x)
-
-#         ff = transformed[:, : -self.config.hidden_size * 3]
-#         qkv = transformed[:, -self.config.hidden_size * 3:]
-
-#         head_size = self.config.hidden_size // self.config.n_heads
-
-#         qkv = qkv.reshape(x.shape[0], 3, self.config.n_heads, head_size)
-
-#         # it doesn't have absolute time as input
-#         q = apply_rotary_pos_emb(qkv[:, 0, :, :], pos_embed)
-#         k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
-#         v = qkv[:, 2, :, :]
-
-#         attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
-#             q.unsqueeze(0),
-#             k.unsqueeze(0),
-#             v.unsqueeze(0),
-#             attn_bias=attn_bias,
-#         )
-
-#         attn = attn.reshape(x.shape)
-
-#         if self.config.hidden_act == "gelu":
-#             ff = F.gelu(ff)
-#         elif self.config.hidden_act == "swiglu":
-#             x1, x2 = ff.chunk(2, dim=-1)
-#             ff = F.silu(x1) * x2
-
-#         combined = torch.concatenate((attn, ff), axis=-1)
-#         result = self.output_proj(combined)
-
-#         return result
-
 class FEMREncoderLayer(nn.Module):
     def __init__(self, config: femr.models.config.FEMRTransformerConfig):
         super().__init__()
@@ -276,18 +132,34 @@ class FEMREncoderLayer(nn.Module):
         qkv = qkv.reshape(x.shape[0], 3, self.config.n_heads, head_size)
 
         # it doesn't have absolute time as input
-        q = apply_rotary_pos_emb(qkv[:, 0, :, :], pos_embed)
-        k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
-        v = qkv[:, 2, :, :]
+        # q = apply_rotary_pos_emb(qkv[:, 0, :, :], pos_embed)
+        # k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
+        # v = qkv[:, 2, :, :]
 
-        attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
-            q.unsqueeze(0),
-            k.unsqueeze(0),
-            v.unsqueeze(0),
-            attn_bias=attn_bias,
-        )
+        # attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
+        #     q.unsqueeze(0),
+        #     k.unsqueeze(0),
+        #     v.unsqueeze(0),
+        #     attn_bias=attn_bias,
+        # )
 
-        attn = attn.reshape(x.shape)
+        # attn = attn.reshape(x.shape)
+
+        with torch.autocast("cuda", dtype=torch.bfloat16):
+            # print("using bf16 attention")
+            # it doesn't have absolute time as input
+            q = apply_rotary_pos_emb(qkv[:, 0, :, :], pos_embed)
+            k = apply_rotary_pos_emb(qkv[:, 1, :, :], pos_embed)
+            v = qkv[:, 2, :, :]
+
+            attn = femr.models.architecture.xformers.memory_efficient_attention_wrapper(
+                q.unsqueeze(0),
+                k.unsqueeze(0),
+                v.unsqueeze(0),
+                attn_bias=attn_bias,
+            )
+
+        attn = attn.to(torch.float32).reshape(x.shape)
 
         if self.config.hidden_act == "gelu":
             ff = F.gelu(ff)

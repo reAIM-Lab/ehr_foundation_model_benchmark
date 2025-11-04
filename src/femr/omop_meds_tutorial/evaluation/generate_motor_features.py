@@ -128,6 +128,7 @@ def main():
     with meds_reader.SubjectDatabase(args.meds_reader, num_threads=6) as database:
         pretraining_data = pathlib.Path(args.pretraining_data)
         output_root = pathlib.Path(args.output_root) if args.output_root else pretraining_data
+        output_root = output_root/args.model_name
         ontology_path = args.ontology_path
 
         features_path = output_root / "features"

@@ -615,16 +615,6 @@ class FEMRBatchProcessor:
             path_to_database=db.path_to_database,
         )
 
-        # batch_dataset = datasets.Dataset.from_generator(
-        #     batch_func,
-        #     gen_kwargs={
-        #         "batch_data": final_batch_data,
-        #     },
-        #     num_proc=num_proc // 4,
-        #     writer_batch_size=8,
-        #     cache_dir="/shared/share_mala/zj2398/huggingface/datasets",
-        # )
-
         batch_dataset = datasets.Dataset.from_generator(
             batch_func,
             gen_kwargs={
@@ -632,6 +622,16 @@ class FEMRBatchProcessor:
             },
             num_proc=num_proc // 4,
             writer_batch_size=8,
+            cache_dir="/shared/share_mala/zj2398/huggingface/datasets",
         )
+
+        # batch_dataset = datasets.Dataset.from_generator(
+        #     batch_func,
+        #     gen_kwargs={
+        #         "batch_data": final_batch_data,
+        #     },
+        #     num_proc=num_proc // 4,
+        #     writer_batch_size=8,
+        # )
 
         return batch_dataset

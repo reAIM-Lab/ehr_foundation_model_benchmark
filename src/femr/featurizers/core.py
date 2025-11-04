@@ -309,16 +309,17 @@ class FeaturizerList:
         raise IndexError(f"Column index '{column_idx}' out of bounds for this FeaturizerList")
 
 
-def join_labels(features: Mapping[str, np.ndarray], labels: pd.DataFrame) -> Mapping[str, np.ndarray]:
+def join_labels(features: Mapping[str, np.ndarray], labels: pd.DataFrame,label_name: str) -> Mapping[str, np.ndarray]:
     indices = []
     boolean_label = []
     tte_label = []
+    time_to_event = []
     prediction_times = []
 
     order = np.lexsort((features["feature_times"], features["subject_ids"]))
 
     feature_index = 0
-
+    print(f"label_name is {label_name}")
     for label in labels.itertuples(index=False):
         while ((feature_index + 1) < len(order)):
             next_key = (features['subject_ids'][order[feature_index + 1]], features["feature_times"][order[feature_index + 1]])
@@ -339,17 +340,33 @@ def join_labels(features: Mapping[str, np.ndarray], labels: pd.DataFrame) -> Map
         )
         indices.append(order[feature_index])
         boolean_label.append(label.boolean_value)
-        tte_label.append(label.tte_label)
         prediction_times.append(label.prediction_time)
 
-    return {
-        "boolean_values": np.array(boolean_label),
-        "tte_label": np.array(tte_label),
-        "subject_ids": features["subject_ids"][indices],
-        "times": features["feature_times"][indices],
-        "features": features["features"][indices, :],
-        "prediction_times" : np.asarray(prediction_times)
-    }
+        if label_name in ["ami","masld","stroke"]:
+            tte_label.append(label.tte_label)
+            time_to_event.append(label.time_to_event_days)
+
+    if label_name in ["ami","masld","stroke"]:
+        # print(np.array(tte_label).shape)
+        # print(np.array(time_to_event).shape)
+        # print(np.array(boolean_label).shape)
+        return {
+            "boolean_values": np.array(boolean_label),
+            "tte_label": np.array(tte_label),
+            "time_to_event":np.array(time_to_event),
+            "subject_ids": features["subject_ids"][indices],
+            "times": features["feature_times"][indices],
+            "features": features["features"][indices, :],
+            "prediction_times" : np.asarray(prediction_times)
+        }
+    else:
+        return {
+            "boolean_values": np.array(boolean_label),
+            "subject_ids": features["subject_ids"][indices],
+            "times": features["feature_times"][indices],
+            "features": features["features"][indices, :],
+            "prediction_times" : np.asarray(prediction_times)
+        }
 
 def join_labels_numerical(features: Mapping[str, np.ndarray], labels: pd.DataFrame) -> Mapping[str, np.ndarray]:
     indices = []
