@@ -121,7 +121,7 @@ def tte_evaluation(train_set,test_set,label_output_dir):
 
     # Extract features and labels
     x_train = np.stack(train_set.features.values)
-    y_train = labtrans.fit_transform(*get_target(train))
+    y_train = labtrans.fit_transform(*get_target(train_set))
     train = (x_train, y_train)
 
     x_val = np.stack(val.features.values)
@@ -165,7 +165,7 @@ def main():
     label_names = LABEL_NAMES
     output_root = Path(args.output_root)
     if args.cohort_label is not None:
-        label_path = output_root / "labels" / (args.cohort_label + '.parquet')
+        label_path = output_root /args.model_name/ "labels" / (args.cohort_label + '.parquet')
         if label_path.exists():
             print(f"Using the user defined label at: {label_path}")
             label_names = [args.cohort_label]
@@ -177,9 +177,9 @@ def main():
     with meds_reader.SubjectDatabase(args.meds_reader, num_threads=32) as database:
         for label_name in label_names:
             if args.observation_window:
-                label_output_dir = output_dir / label_name/ args.model_name / f"{args.model_name}_{args.observation_window}"
+                label_output_dir = output_dir / label_name/ f"{args.model_name}_{args.observation_window}"
             else:
-                label_output_dir = output_dir / label_name/ args.model_name / f"{args.model_name}"
+                label_output_dir = output_dir / label_name/ f"{args.model_name}"
             label_output_dir.mkdir(exist_ok=True, parents=True)
             test_result_file = label_output_dir / 'metrics.json'
             features_label_data = label_output_dir / 'features_with_label'
@@ -208,7 +208,7 @@ def main():
 
             main_split = femr.splits.SubjectSplit.load_from_csv(args.main_split_path)
 
-            print(main_split)
+            # print(main_split)
             train_mask = np.isin(labeled_features['subject_ids'], main_split.train_subject_ids)
             test_mask = np.isin(labeled_features['subject_ids'], main_split.test_subject_ids)
 

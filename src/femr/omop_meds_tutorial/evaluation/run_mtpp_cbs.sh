@@ -265,25 +265,25 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     # Run the second command: fine-tune MOTOR
     echo "Running $MODEL_NAME fine-tuning for $TASK_NAME..."
 
-    # # Build the command with conditional observation_window parameter
-    # FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.evaluation.finetune_motor \
-    #   --cohort_label \"$TASK_NAME\" \
-    #   --model_name \"$MODEL_NAME\" \
-    #   --main_split_path \"$MAIN_SPLIT_PATH\" \
-    #   --meds_reader \"$OMOP_MEDS_READER\" \
-    #   --model_path \"$MODEL_PATH\" \
-    #   --output_root \"$OUTPUT_DIR\""
+    # Build the command with conditional observation_window parameter
+    FINETUNE_CMD="python -u -m femr.omop_meds_tutorial.evaluation.finetune_motor \
+      --cohort_label \"$TASK_NAME\" \
+      --model_name \"$MODEL_NAME\" \
+      --main_split_path \"$MAIN_SPLIT_PATH\" \
+      --meds_reader \"$OMOP_MEDS_READER\" \
+      --model_path \"$MODEL_PATH\" \
+      --output_root \"$OUTPUT_DIR\""
 
-    # # Add observation_window parameter if specified
-    # if [ -n "$OBSERVATION_WINDOW" ]; then
-    #     FINETUNE_CMD="$FINETUNE_CMD --observation_window \"$OBSERVATION_WINDOW\""
-    # fi
+    # Add observation_window parameter if specified
+    if [ -n "$OBSERVATION_WINDOW" ]; then
+        FINETUNE_CMD="$FINETUNE_CMD --observation_window \"$OBSERVATION_WINDOW\""
+    fi
 
-    # # Print the command
-    # echo "Executing command: $FINETUNE_CMD"
+    # Print the command
+    echo "Executing command: $FINETUNE_CMD"
 
-    # # Execute the command
-    # eval $FINETUNE_CMD
+    # Execute the command
+    eval $FINETUNE_CMD
 
     # Check if the second command succeeded
     if [ $? -ne 0 ]; then
@@ -292,25 +292,25 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     fi
 
     # Determine the MOTOR prediction folder path based on observation window
-    # if [ -n "$OBSERVATION_WINDOW" ]; then
-    #     MOTOR_PREDICTION_FOLDER="$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
-    #     MOTOR_OUTPUT_DIR="$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
-    # else
-    #     MOTOR_PREDICTION_FOLDER="$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/test_predictions"
-    #     MOTOR_OUTPUT_DIR="$OUTPUT_DIR/$TASK_NAME/$MODEL_NAME/"
-    # fi
+    if [ -n "$OBSERVATION_WINDOW" ]; then
+        MOTOR_PREDICTION_FOLDER="$OUTPUT_DIR/"results"/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
+        MOTOR_OUTPUT_DIR="$OUTPUT_DIR/"results"/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
+    else
+        MOTOR_PREDICTION_FOLDER="$OUTPUT_DIR/"results"/$TASK_NAME/$MODEL_NAME/test_predictions"
+        MOTOR_OUTPUT_DIR="$OUTPUT_DIR/"results"/$TASK_NAME/$MODEL_NAME/"
+    fi
 
             # if args.observation_window:
             #     label_output_dir = output_dir / label_name / f"{args.model_name}_{args.observation_window}"
             # else:
             #     label_output_dir = output_dir / label_name / f"{args.model_name}"
 
-    if $TASK_NAME in ["ami","masld","stroke"]:
-        Base_dir = "/shared/share_mala/zj2398/mimic/patient_outcome_task/results"
-    else:
-        Base_dir = 
+    # if $TASK_NAME in ["ami","masld","stroke"]:
+    #     Base_dir = "/shared/share_mala/zj2398/mimic/patient_outcome_task/results"
+    # else:
+    #     Base_dir = 
     
-    MOTOR_PREDICTION_FOLDER = $COHORT_BASE_DIR/$TASK_NAME
+    # MOTOR_PREDICTION_FOLDER = $OUTPUT_DIR/"results"/$TASK_NAME
     # Build the evaluation command
     EVAL_CMD="meds-evaluation-cli predictions_path=\"$MOTOR_PREDICTION_FOLDER\" \
       output_dir=\"$MOTOR_OUTPUT_DIR\""
@@ -364,7 +364,7 @@ echo "All tasks processed."
 #   --ontology_path       /user/zj2398/cache/mtpp_8k/ontology.pkl \
 #   --main_split_path     /user/zj2398/cache/mtpp_8k/main_split.csv \
 #   --loss_type  labeled_subjects \
-#   --output_dir   /shared/share_mala/zj2398/mimic/patient_outcome_task/mtpp/ \
+#   --output_dir   /shared/share_mala/zj2398/mimic/patient_outcome_task/ \
 #   /shared/share_mala/zj2398/mimic/patient_outcome_task/cohort/
 
 # bash run_mtpp_cbs.sh \

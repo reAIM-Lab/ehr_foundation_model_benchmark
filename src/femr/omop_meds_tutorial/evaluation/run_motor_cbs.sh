@@ -292,13 +292,13 @@ for TASK_DIR in "$COHORT_BASE_DIR"*/; do
     fi
 
     # # Determine the MOTOR prediction folder path based on observation window
-    # if [ -n "$OBSERVATION_WINDOW" ]; then
-    #     MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
-    #     MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
-    # else
-    #     MOTOR_PREDICTION_FOLDER="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/test_predictions"
-    #     MOTOR_OUTPUT_DIR="$PRETRAINING_DATA/results/$TASK_NAME/$MODEL_NAME/"
-    # fi
+    if [ -n "$OBSERVATION_WINDOW" ]; then
+        MOTOR_PREDICTION_FOLDER="$OUTPUT_DIR/"results"/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/test_predictions"
+        MOTOR_OUTPUT_DIR="$OUTPUT_DIR/"results"/$TASK_NAME/$MODEL_NAME_$OBSERVATION_WINDOW/"
+    else
+        MOTOR_PREDICTION_FOLDER="$OUTPUT_DIR/"results"/$TASK_NAME/$MODEL_NAME/test_predictions"
+        MOTOR_OUTPUT_DIR="$OUTPUT_DIR/"results"/$TASK_NAME/$MODEL_NAME/"
+    fi
 
     # Build the evaluation command
     EVAL_CMD="meds-evaluation-cli predictions_path=\"$MOTOR_PREDICTION_FOLDER\" \
