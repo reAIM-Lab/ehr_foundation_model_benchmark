@@ -109,55 +109,6 @@ def logistic_regression(train_set,test_data,label_output_dir):
     pr_auc = sklearn.metrics.auc(recall, precision)
     return roc_auc,pr_auc
 
-def tte_evaluation(train_set,test_set,label_output_dir):
-    val = train_set.sample(frac = 0.1, replace = False)
-    train_set = train_set.drop(val.index)
-    # train[~train.boolean_value].time_to_event_days.plot.hist(bins = 1000)
-
-    # Transform labels
-    num_durations = 100
-    labtrans = DeepHitSingle.label_transform(num_durations)
-    get_target = lambda df: (df['time_to_event'].values, df['tte_label'].values) 
-
-    # Extract features and labels
-    x_train = np.stack(train_set.features.values)
-    y_train = labtrans.fit_transform(*get_target(train_set))
-    train = (x_train, y_train)
-
-    x_val = np.stack(val.features.values)
-    y_val = labtrans.transform(*get_target(val))
-    val = (x_val, y_val)
-
-    x_test = np.stack(test_set.features.values)
-    durations_test, events_test = get_target(test_set)
-
-    # Define one layer NN for Deephit
-    in_features = x_train.shape[1]
-    out_features = labtrans.out_features
-
-    net = tt.practical.MLPVanilla(in_features, [], out_features)
-
-    # Train Deephit
-    model = DeepHitSingle(net, tt.optim.Adam, duration_index=labtrans.cuts)
-    epochs, batch = 100, 2048
-    log = model.fit(x_train, y_train, batch, epochs, [tt.callbacks.EarlyStopping()], val_data=val)
-
-    # Predict on test set
-    surv = model.predict_surv_df(x_test)
-
-    # Compute boostrapped performance
-    results = {'C-Index':[], 'Int-Brier':[]}
-    time_grid = np.linspace(durations_test.min(), durations_test.max(), 100)
-    for boot in tqdm(range(100)):
-        sample = np.random.choice(len(x_test), len(x_test))
-        ev = EvalSurv(surv[sample], durations_test[sample], events_test[sample], censor_surv='km')
-        results['C-Index'].append(ev.concordance_td('antolini'))
-        results['Int-Brier'].append(ev.integrated_brier_score(time_grid))
-
-    # Display
-    for metric in results:
-        print('{}: {:.2f} ({:.2f})'.format(metric, np.mean(results[metric]), np.std(results[metric])))
-    return results
     
 def main():
     args = create_arg_parser().parse_args()
@@ -165,7 +116,7 @@ def main():
     label_names = LABEL_NAMES
     output_root = Path(args.output_root)
     if args.cohort_label is not None:
-        label_path = output_root /args.model_name/ "labels" / (args.cohort_label + '.parquet')
+        label_path = output_root / "labels" / (args.cohort_label + '.parquet')
         if label_path.exists():
             print(f"Using the user defined label at: {label_path}")
             label_names = [args.cohort_label]
@@ -187,11 +138,11 @@ def main():
             # if test_result_file.exists():
             #     print(f"The result already existed for {label_name} at {test_result_file}, it will be skipped!")
             #     continue
-            labels = pd.read_parquet(output_root /args.model_name/ "labels" / (label_name + '.parquet'))
+            labels = pd.read_parquet(output_root / "labels" / (label_name + '.parquet'))
 
-            motor_features_name = get_model_name(label_name, args.model_name, args.observation_window)
-            features_path = output_root / args.model_name /"features"
-            with open(features_path / f"{motor_features_name}.pkl", 'rb') as f:
+            # motor_features_name = get_model_name(label_name, args.model_name, args.observation_window)
+            features_path = output_root / "features"/ args.model_name
+            with open(features_path / f"{label_name}_tpp.pkl", 'rb') as f:
                 features = pickle.load(f)
 
             # Find labels that have no features
@@ -312,10 +263,6 @@ def main():
                 "auroc": roc_auc,
                 "aucpr": pr_auc
             }
-            if label_name in ["ami","masld","stroke"]:
-                tte_results = tte_evaluation(train_set,test_set,label_output_dir)
-                metrics['C-Index'] = (np.mean(tte_results['C-Index']), np.std(tte_results['C-Index']))
-                metrics['Int-Brier'] = (np.mean(tte_results['Int-Brier']), np.std(tte_results['Int-Brier']))
             with open(test_result_file, "w") as f:
                 json.dump(metrics, f, indent=4)
 
