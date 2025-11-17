@@ -65,6 +65,14 @@ def main(args):
         pl.col("split").is_in([train_split, tuning_split])
     )
 
+    train_counts = (
+        train_dataset
+        .group_by("split")
+        .agg(pl.count().alias("num_rows"))
+    )
+
+    print(train_counts)
+
     test_dataset = features_label.join(
         subject_splits.select("subject_id", "split"), "subject_id"
     ).filter(
@@ -156,6 +164,7 @@ def main(args):
                     model = LogisticRegressionCV(scoring="roc_auc", random_state=args.seed, max_iter=500, n_jobs=64)
 
                     X_train = feature_matrix[subset["sample_id"].to_numpy()]
+                    print("training length", X_train.shape[0])
 
                     model.fit(X_train, subset["boolean_value"].to_numpy())
                     with open(logistic_model_file, "wb") as f:
@@ -180,6 +189,7 @@ def main(args):
                 logistic_predictions.write_parquet(
                     logistic_test_predictions / "predictions.parquet"
                 )
+                # print("output length", len(logistic_predictions))
                 logistic_predictions.write_parquet(
                     test_prediction_parquet_file
                 )

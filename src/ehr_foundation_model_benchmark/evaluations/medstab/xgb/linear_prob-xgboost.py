@@ -66,11 +66,13 @@ def main(args):
     # print(features_label)
     # print(subject_splits)
 
-    train_dataset = features_label.join(
+    # train_dataset = features_label.join(
+    train_dataset = features_label.with_columns(pl.col("subject_id").cast(pl.Int64)).join(
         subject_splits.select("subject_id", "split"), "subject_id"
     ).filter(
         pl.col("split").is_in([train_split])
     )
+    print("Train dataset", train_dataset)
     original_positive_prevalence_train = train_dataset.filter(
         pl.col("boolean_value") == True
     ).shape[0] / train_dataset.shape[0]

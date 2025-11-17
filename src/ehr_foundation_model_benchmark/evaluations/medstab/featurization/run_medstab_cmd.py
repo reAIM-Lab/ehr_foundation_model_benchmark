@@ -61,7 +61,7 @@ def get_args():
 args = get_args()
 
 # Constants
-N_PARALLEL_WORKERS = 8
+N_PARALLEL_WORKERS = 16 #8
 SPLITS = ["train", "tuning", "held_out"]
 LOG_FILE = "processing_errors.log"
 TIME_LOG_FILE = "task_training_times.log"  # File to save training times
@@ -100,6 +100,18 @@ def clean_cache(task):
             print(f"Error removing {file}: {e}")
             exit()
     print(f"Total cache files removed: {k}")
+
+def count_parquet_files(path):
+    count = 0
+    for root, _, files in os.walk(path):
+        count += sum(1 for f in files if f.endswith('.parquet'))
+    return count
+
+def count_npz_files(path):
+    count = 0
+    for root, _, files in os.walk(path):
+        count += sum(1 for f in files if f.endswith('.npz'))
+    return count
 
 # Get all phenotype task subfolders
 # phenotype_tasks = list(sorted([
@@ -177,6 +189,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     # exit(1)
 
     # Step 3: Run meds-tab-tabularize-time-series
+    aggs = 'code/count,value/count,value/sum,value/sum_sqd,value/min,value/max'.split(',')
     tabularize_cmd = [
         "meds-tab-tabularize-time-series",
         "--multirun",
@@ -186,7 +199,7 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
         f"output_dir={os.path.join(args.output_features_dir, task + '_final')}",
         "do_overwrite=False",
         f"input_label_dir={cohort_output}",
-        "tabularization.aggs=[code/count,value/count,value/sum,value/sum_sqd,value/min,value/max]",
+        f"tabularization.aggs=[{','.join(aggs)}]",
         f"tabularization.window_sizes=[{args.windows}]"
         # "tabularization.aggs=[code/count]",
         # "tabularization.window_sizes=[full]"
@@ -194,27 +207,36 @@ for i, task in (pbar := tqdm(enumerate(phenotype_tasks), total=len(phenotype_tas
     start_time = time.time()  # Start timing
     complete = False
     repet = 0
-    while not complete:
-        crash = False
-        try:
-            clean_cache(task) # make sure nothing remaining
-            # exit(1)
-            print("Running:", " ".join(tabularize_cmd))
-            subprocess.run(tabularize_cmd, check=True)
-            complete = True
-        except Exception as e:
-            log_error(task, "meds-tab-tabularize-time-series", e)
-            crash = True
-        finally:
-            duration = time.time() - start_time  # Calculate duration
-            log_training_time(task, "meds-tab-tabularize-time-series", duration)
-        if crash:
-            print("Crash in meds-tab-tabularize-time-series")
-            clean_cache(task)
-            repet += 1
-            if repet > 5:
-                print("Too many crashes.", repet)
-                exit(1)
+    print("Getting shard number")
+    n_shards = count_parquet_files(os.path.join(args.data_dir, 'data'))
+    expected_nb = len(aggs) * len(args.windows.split(',')) * n_shards 
+    print("Expected number", expected_nb)
+    current_files = count_npz_files(os.path.join(args.output_features_dir, task + '_final', 'tabularize'))
+    print("Number found", current_files)
+    if current_files < expected_nb:
+        while not complete:
+            crash = False
+            try:
+                clean_cache(task) # make sure nothing remaining
+                # exit(1)
+                print("Running:", " ".join(tabularize_cmd))
+                subprocess.run(tabularize_cmd, check=True)
+                complete = True
+            except Exception as e:
+                log_error(task, "meds-tab-tabularize-time-series", e)
+                crash = True
+            finally:
+                duration = time.time() - start_time  # Calculate duration
+                log_training_time(task, "meds-tab-tabularize-time-series", duration)
+            if crash:
+                print("Crash in meds-tab-tabularize-time-series")
+                clean_cache(task)
+                repet += 1
+                if repet > 20:
+                    print("Too many crashes.", repet)
+                    exit(1)
+    else:
+        print(f"Skipping featurization for {task} - already done")
 
   
 

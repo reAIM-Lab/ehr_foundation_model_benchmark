@@ -94,7 +94,7 @@ if __name__ == "__main__":
         print("💡 Dry run: command not executed.")
 
 
-    print("🚀 Running LR training command:\n", " ".join(cmd))
+    print("🚀 Running LR training command:\n")
     print()
     for task in tasks:
         command = [
