@@ -16,7 +16,7 @@ from sklearn.metrics import auc, precision_recall_curve, roc_auc_score
 import scipy.sparse as sp
 
 MINIMUM_NUM_CASES = 10
-TRAIN_SIZES = [100, 1000, 10000, 100000]
+TRAIN_SIZES = [100, 1000, 10000, 100000, 'full']
 
 # TODO import from medstab
 def load_tab(path):
@@ -91,6 +91,10 @@ def main(args):
         # This indicates the data set has reached its maximum size, and we should terminate
         if should_terminate:
             break
+
+        if size == 'full':
+            size = len(train_dataset)
+            should_terminate = True
 
         if len(train_dataset) < size:
             size = len(train_dataset)

@@ -3,9 +3,13 @@ import time
 from tqdm import tqdm
 
 folder_src_path = "XX1/data"
+folder_src_path = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/post_transform"
 folder_path = "XX4/tabularize"
+folder_path = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-2year/death_final/tabularize"
+# folder_path = "/data2/processed_datasets/ehr_foundation_data/ohdsi_cumc_deid/ohdsi_cumc_deid_2023q4r3_v3_mapped/models/meds_tab/output-2year/Schizophrenia_final/tabularize"
+
 n_agg = 6
-n_windows = 6
+n_windows = 7
 
 
 def count_parquet_files(path):

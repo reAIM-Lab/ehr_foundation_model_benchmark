@@ -166,6 +166,12 @@ def main():
             cohort_dir_labels = os.path.join(cohort_dir, f'labels_{n}')
             cohort_dir_outputs = os.path.join(cohort_dir, f'output_{n}')
 
+            output_to_copy = f'{args.output_results_dir}/{task}'
+            output_file = f'{output_to_copy}/medstab_{n}.parquet'
+            if os.path.exists(output_file):
+                print(f"File already exists for {n}, skipping")
+                continue
+
             # Step 2: reshard into labels_{n}
             run([
                 sys.executable, RESHARD_SCRIPT,
@@ -205,7 +211,6 @@ def main():
             ])
 
             # copy
-            output_to_copy = f'{args.output_results_dir}/{task}'
             xgb_results = f'{args.output_few_shots_dir}/{task}'
             # find last 
             folders = sorted([f for f in os.listdir(xgb_results) if os.path.isdir(os.path.join(xgb_results, f))])
@@ -213,7 +218,7 @@ def main():
 
             file_to_copy = f"{xgb_results}/{last_folder}/best_trial/held_out_predictions.parquet"
             os.makedirs(output_to_copy, exist_ok=True)
-            shutil.copy2(file_to_copy, f'{output_to_copy}/medstab_{n}.parquet')
+            shutil.copy2(file_to_copy, output_file)
 
             file_perf = f"{xgb_results}/{last_folder}/best_trial/performance.log"
             with open(file_perf, 'r') as f:

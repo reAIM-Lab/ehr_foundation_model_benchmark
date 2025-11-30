@@ -19,8 +19,8 @@ import scipy.sparse as sp
 
 MINIMUM_NUM_CASES_TRAIN = 8
 MINIMUM_NUM_CASES_TUNING = 2
-TRAIN_SIZES = [80, 800, 8000, 80000]
-TUNING_SIZES = [20, 200, 2000, 20000]
+TRAIN_SIZES = [80, 800, 8000, 80000, 'full']
+TUNING_SIZES = [20, 200, 2000, 20000, 'full']
 
 # TODO import from medstab
 def load_tab(path):
@@ -109,6 +109,10 @@ def main(args):
         if should_terminate:
             break
 
+        if size == 'full':
+            size = len(train_dataset)
+            should_terminate = True
+
         if len(train_dataset) < size:
             size = len(train_dataset)
             should_terminate = True
@@ -160,6 +164,9 @@ def main(args):
                     shuffle=True,
                     seed=args.seed
                 )
+
+                if TUNING_SIZES[i] == 'full':
+                    TUNING_SIZES[i] = len(tuning_dataset)
 
                 existing_pos_tuning = len(existing_samples_tuning.filter(pl.col("boolean_value") == True))
                 tuning_size_required_positive = \
