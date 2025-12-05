@@ -3,7 +3,7 @@
 # Default values
 SCRIPT_NAME=$(basename "$0")
 NUM_PROC=10
-TOKENS_PER_BATCH=231072
+TOKENS_PER_BATCH=16384
 # Use empty value to indicate no observation window specified
 OBSERVATION_WINDOW=""
 
