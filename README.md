@@ -97,6 +97,8 @@ disease progression, and diagnostic complexity across varying prediction scenari
 | **Type 2 Diabetes Mellitus (T2DM)** | A chronic metabolic disease. Requires diagnosis plus antidiabetic drug use or elevated HbA1c; risk factors include age, obesity, and prediabetes. |
 | **Schizophrenia**                 | A chronic psychiatric disorder. Defined by diagnostic transition from psychosis to schizophrenia in patients aged 10–35 with adequate history. |
 
+**Cohort definitions.** The phenotype cohort definitions are available in the [`phenotypes/`](src/ehr_foundation_model_benchmark/phenotypes) folder.
+
 ### Patient Outcomes
 These three patient outcome tasks—**in-hospital mortality**, **30-day readmission**, and **prolonged length-of-stay**—are closely tied to hospital operations. They reflect critical quality metrics that impact resource allocation, patient safety, and institutional performance, 
 making them essential for both clinical decision support and healthcare management.
