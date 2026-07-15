@@ -97,6 +97,8 @@ disease progression, and diagnostic complexity across varying prediction scenari
 | **Type 2 Diabetes Mellitus (T2DM)** | A chronic metabolic disease. Requires diagnosis plus antidiabetic drug use or elevated HbA1c; risk factors include age, obesity, and prediabetes. |
 | **Schizophrenia**                 | A chronic psychiatric disorder. Defined by diagnostic transition from psychosis to schizophrenia in patients aged 10–35 with adequate history. |
 
+**Cohort definitions.** The phenotype cohort definitions are available in the [`phenotypes/`](src/ehr_foundation_model_benchmark/phenotypes) folder.
+
 ### Patient Outcomes
 These three patient outcome tasks—**in-hospital mortality**, **30-day readmission**, and **prolonged length-of-stay**—are closely tied to hospital operations. They reflect critical quality metrics that impact resource allocation, patient safety, and institutional performance, 
 making them essential for both clinical decision support and healthcare management.
@@ -106,6 +108,8 @@ making them essential for both clinical decision support and healthcare manageme
 | **In-hospital mortality** | Predicts whether a patient will die during a current hospitalization. Includes admissions lasting >48 hours. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
 | **30-day readmission** | Predicts all-cause readmission within 30 days of discharge. Prediction time is at discharge. Patients must have ≥2 years of prior history and not be censored within 30 days post-discharge. Same-day readmissions are excluded. |
 | **Prolonged length-of-stay** | Predicts whether a hospitalization lasts more than 7 days. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
+
+**Label generation.** For both the CUMC and MIMIC datasets, the **in-hospital mortality** and **prolonged length-of-stay** labels are generated with [FEMR](https://github.com/ChaoPang/femr/tree/omop_meds_v3_tutorial) labelers (`OmopInpatientMortalityLabeler` and `OmopLongAdmissionLabeler` in `src/femr/omop_meds_tutorial/generate_labels.py`), and the **30-day readmission** labels are generated with [ACES](https://github.com/justin13601/ACES) (Automatic Cohort Extraction System).
 
 
 ## Model Evaluation
