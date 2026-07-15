@@ -107,6 +107,8 @@ making them essential for both clinical decision support and healthcare manageme
 | **30-day readmission** | Predicts all-cause readmission within 30 days of discharge. Prediction time is at discharge. Patients must have ≥2 years of prior history and not be censored within 30 days post-discharge. Same-day readmissions are excluded. |
 | **Prolonged length-of-stay** | Predicts whether a hospitalization lasts more than 7 days. Prediction is made 48 hours after admission. Patients must have ≥2 years of prior observation. |
 
+**Label generation.** For both the CUMC and MIMIC datasets, the **in-hospital mortality** and **prolonged length-of-stay** labels are generated with [FEMR](https://github.com/ChaoPang/femr/tree/omop_meds_v3_tutorial) labelers (`OmopInpatientMortalityLabeler` and `OmopLongAdmissionLabeler` in `src/femr/omop_meds_tutorial/generate_labels.py`), and the **30-day readmission** labels are generated with [ACES](https://github.com/justin13601/ACES) (Automatic Cohort Extraction System).
+
 
 ## Model Evaluation
 The EHR foundation models are pre-trained prior to evaluation, while the baseline models are evaluated directly without pretraining. 
